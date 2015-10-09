@@ -1,0 +1,13 @@
+package: wildcard
+version: '5.0-alpha7'
+author: Thomas Blum
+supportpage: www.redaxo.org/de/forum/
+
+page:
+    title: 'translate:wildcard'
+    perm: wildcard[]
+    pjax: false
+    icon: rex-icon rex-icon-refresh
+    subpages:
+        wildcard: { title: 'translate:wildcard' }
+        settings: { title: 'translate:settings' }

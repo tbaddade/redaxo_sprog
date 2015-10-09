@@ -1,0 +1,12 @@
+wildcard = Platzhalter
+wildcard_title = Platzhalter
+wildcard_settings = Konfiguration
+wildcard_config_saved = Konfiguration gespeichert.
+wildcard_no_results = Keine Ergebnisse
+
+wildcard_open_tag = öffnendes Tag
+wildcard_close_tag = schließendes Tag
+
+wildcard_caption = Liste der Platzhalter
+wildcard_edited = Platzhalter wurde editiert
+wildcard_function = Funktion
