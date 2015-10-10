@@ -40,11 +40,11 @@ class Wildcard
         }
 
         if (! $clang_id) {
-            $clang_id = rex_clang::getCurrentId();
+            $clang_id = \rex_clang::getCurrentId();
         }
 
-        $sql = rex_sql::factory();
-        $sql->setQuery('SELECT wildcard, replace FROM ' . rex::getTable('wildcard') . ' WHERE clang_id = "' . $clang_id . '"');
+        $sql = \rex_sql::factory();
+        $sql->setQuery('SELECT `wildcard`, `replace` FROM ' . \rex::getTable('wildcard') . ' WHERE clang_id = "' . $clang_id . '"');
         
         $search  = array();
         $replace = array();
