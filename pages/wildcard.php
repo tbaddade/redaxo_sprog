@@ -133,7 +133,7 @@ if ($func == 'add') {
                 <tr class="mark">
                     <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                     <td class="rex-table-id" data-title="' . $this->i18n('id') . '">–</td>
-                    <td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars($wildcard_name) . '" autofocus /></td>
+                    <td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars($wildcard_name) . '" /></td>
                     ' . $td_add . '
                     <td class="rex-table-action" colspan="2"><button class="btn btn-save" type="submit" name="add_wildcard_save"' . rex::getAccesskey($this->i18n('add'), 'save') . ' value="1">' . $this->i18n('add') . '</button></td>
                 </tr>
@@ -178,7 +178,7 @@ if (count($entries)) {
                         <tr class="mark">
                             <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
-                            <td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" autofocus /></td>
+                            <td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" /></td>
                             ' . $td . '
                             <td class="rex-table-action" colspan="2"><button class="btn btn-save" type="submit" name="edit_wildcard_save"' . rex::getAccesskey( $this->i18n('update'), 'save') . ' value="1">' .  $this->i18n('update') . '</button></td>
                         </tr>';
@@ -197,7 +197,7 @@ if (count($entries)) {
                             <td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>
                             ' . $td . '
                             <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('edit') . '</a></td>
-                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $lang_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete') . '</a></td>
+                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete') . '</a></td>
                         </tr>';
         }
     }
@@ -226,3 +226,47 @@ if ($func == 'add' || $func == 'edit') {
 }
 
 echo $content;
+
+
+$missingWildcards = \Wildcard\Wildcard::getMissingWildcards();
+
+if (count($missingWildcards)) {
+
+    $content = '';
+    $content .= '
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'add']) . '#wildcard"' . rex::getAccesskey( $this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a></th>
+                        <th>' . $this->i18n('wildcard') . '</th>
+                        <th class="rex-table-action" colspan="2">' . $this->i18n('function') . '</th>
+                    </tr>
+                </thead>
+                <tbody>
+        ';
+    
+    foreach ($missingWildcards as $name => $params) {
+
+        $content .= '
+                    <tr>
+                        <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
+                        <td data-title="' . $this->i18n('wildcard') . '">' . $name . '</td>
+                        <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('add') . '</a></td>
+                        <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . $this->i18n('go_to_the_article') . '</a></td>
+                    </tr>';
+
+    }
+
+    $content .= '
+            </tbody>
+        </table>';
+
+
+    $fragment = new rex_fragment();
+    $fragment->setVar('title',  $this->i18n('caption_missing', rex_i18n::msg('title_structure')), false);
+    $fragment->setVar('content', $content, false);
+    $content = $fragment->parse('core/page/section.php');
+    
+    echo $content;
+
+}

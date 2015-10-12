@@ -8,5 +8,8 @@ wildcard_open_tag = öffnendes Tag
 wildcard_close_tag = schließendes Tag
 
 wildcard_caption = Liste der Platzhalter
+wildcard_caption_missing = Liste der noch nicht ersetzten Platzhalter innerhalb der {0}
 wildcard_edited = Platzhalter wurde editiert
 wildcard_function = Funktion
+
+wildcard_go_to_the_article = zum Artikel
