@@ -9,16 +9,11 @@
  * file that was distributed with this source code.
  */
 
-if (! rex::isBackend()) {
-
+if (!rex::isBackend()) {
     rex_extension::register('OUTPUT_FILTER', '\Wildcard\Extension::replace');
-
 }
 
-
 if (rex::isBackend() && rex::getUser()) {
-
     rex_extension::register('CLANG_ADDED', '\Wildcard\Extension::clangAdded');
     rex_extension::register('CLANG_DELETED', '\Wildcard\Extension::clangDeleted');
-
 }

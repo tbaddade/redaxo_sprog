@@ -8,19 +8,17 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace Wildcard;
 
-use \Wildcard\Wildcard;
+use Wildcard\Wildcard;
 
 class Extension
 {
-
     public static function replace(\rex_extension_point $ep)
     {
-        $ep->setSubject( Wildcard::replace( $ep->getSubject() ) );
+        $ep->setSubject(Wildcard::replace($ep->getSubject()));
     }
-
-
 
     public static function clangAdded($params)
     {
@@ -45,15 +43,11 @@ class Extension
 
             $newLang->insert();
         }
-
     }
-
-
 
     public static function clangDeleted($params)
     {
         $deleteLang = \rex_sql::factory();
         $deleteLang->setQuery('DELETE FROM ' . rex::getTable('wildcard') . ' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
     }
-
 }

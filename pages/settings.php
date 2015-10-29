@@ -8,14 +8,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
+
 namespace Wildcard;
 
-use \Wildcard\Wildcard;
+use Wildcard\Wildcard;
 
 $content = '';
 
 $func = rex_request('func', 'string');
-$openTag  = rex_request('open_tag', 'string');
+$openTag = rex_request('open_tag', 'string');
 $closeTag = rex_request('close_tag', 'string');
 
 if ($func == 'update') {
@@ -39,7 +40,6 @@ $content .= '
         $n['label'] = '<label for="wildcard-close-tag">' . $this->i18n('close_tag') . '</label>';
         $n['field'] = '<input class="form-control" type="text" id="wildcard-close-tag" name="close_tag" value="' . htmlspecialchars(Wildcard::getCloseTag()) . '" />';
         $formElements[] = $n;
-
 
         $fragment = new \rex_fragment();
         $fragment->setVar('flush', true);
