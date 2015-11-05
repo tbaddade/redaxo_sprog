@@ -16,13 +16,12 @@ use Wildcard\Wildcard;
 $content = '';
 
 $func = rex_request('func', 'string');
-$openTag = rex_request('open_tag', 'string');
-$closeTag = rex_request('close_tag', 'string');
 
 if ($func == 'update') {
+    // clang_switch wird in der boot.php neu gesetzt
     echo \rex_view::info($this->i18n('config_saved'));
-    \rex_config::set('wildcard', 'open_tag', $openTag);
-    \rex_config::set('wildcard', 'close_tag', $closeTag);
+    \rex_config::set('wildcard', 'open_tag', rex_request('open_tag', 'string'));
+    \rex_config::set('wildcard', 'close_tag', rex_request('close_tag', 'string'));
 }
 
 $content .= '
@@ -39,6 +38,21 @@ $content .= '
         $n = [];
         $n['label'] = '<label for="wildcard-close-tag">' . $this->i18n('close_tag') . '</label>';
         $n['field'] = '<input class="form-control" type="text" id="wildcard-close-tag" name="close_tag" value="' . htmlspecialchars(Wildcard::getCloseTag()) . '" />';
+        $formElements[] = $n;
+
+        $clangSwitchSelect = new \rex_select();
+        $clangSwitchSelect->setName('clang_switch');
+        $clangSwitchSelect->setSize(1);
+        $clangSwitchSelect->setAttribute('class', 'form-control');
+        $clangSwitchSelect->setAttribute('id', 'wildcard-clang-switch');
+        for ($i = 1; $i<= \rex_clang::count(); $i++) {
+            $clangSwitchSelect->addOption($i, $i);
+        }
+        $clangSwitchSelect->setSelected(\rex_config::get('wildcard', 'clang_switch', \rex_clang::count()));
+
+        $n = [];
+        $n['label'] = '<label for="wildcard-clang-switch">' . $this->i18n('clang_switch') . '</label>';
+        $n['field'] = $clangSwitchSelect->get();
         $formElements[] = $n;
 
         $fragment = new \rex_fragment();
@@ -65,7 +79,7 @@ $content .= '
 
 $fragment = new \rex_fragment();
 $fragment->setVar('class', 'edit', false);
-$fragment->setVar('title', $this->i18n('config'), false);
+$fragment->setVar('title', $this->i18n('settings'), false);
 $fragment->setVar('body', $content, false);
 $fragment->setVar('buttons', $buttons, false);
 $content = $fragment->parse('core/page/section.php');

@@ -28,6 +28,11 @@ class Wildcard
         return '@' . preg_quote(trim(self::getOpenTag())) . '\s*' . $value . '\s*' . preg_quote(trim(self::getCloseTag())) . '@';
     }
 
+    public static function isClangSwitchMode()
+    {
+        return (\rex_clang::count() > \rex_config::get('wildcard', 'clang_switch', \rex_clang::count()) ? true : false);
+    }
+
     /**
      * Returns the replaced content.
      *
@@ -67,6 +72,8 @@ class Wildcard
 
         if (\rex_addon::get('structure')->isAvailable() && \rex_plugin::get('structure', 'content')->isAvailable()) {
 
+            $sql = \rex_sql::factory();
+
             // Slices der Artikel durchsuchen
             // Werden Slices gefunden, dann die Strukturartikel überschreiben
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,14 +87,14 @@ class Wildcard
                 $concatFields = [];
                 foreach ($numbers as $number) {
                     $concatFields[] = $field . $number;
-                    $searchFields[] = $field . $number . ' RLIKE "' . mysql_real_escape_string(preg_quote(trim(self::getOpenTag())) . '.*' . preg_quote(trim(self::getCloseTag()))) . '"';
+                    $searchFields[] = $field . $number . ' RLIKE ' . $sql->escape(preg_quote(trim(self::getOpenTag())) . '.*' . preg_quote(trim(self::getCloseTag())));
                 }
                 $selectFields[] = 'CONCAT_WS("|", ' . implode(',', $concatFields) . ') AS subject';
             }
 
             $fields = $searchFields;
 
-            $sql_query = ' SELECT      s.article_id AS id,
+            $sql_query = ' SELECT       s.article_id AS id,
                                         s.clang_id,
                                         s.ctype_id,
                                         ' . implode(', ', $selectFields) . '
@@ -98,8 +105,7 @@ class Wildcard
                             WHERE       ' . implode(' OR ', $fields) . '
                             ';
 
-            $sql = \rex_sql::factory();
-            //$sql->setDebug();
+            $sql->setDebug(false);
             $sql->setQuery($sql_query);
 
             if ($sql->getRows() >= 1) {
@@ -124,12 +130,12 @@ class Wildcard
             }
 
             if (count($wildcards)) {
+                $sql = \rex_sql::factory();
                 $sql_query = '
-                                SELECT  CONCAT("' . mysql_real_escape_string(self::getOpenTag()) . '", wildcard, "' . mysql_real_escape_string(self::getCloseTag()) . '") AS wildcard 
-                                FROM    ' . \rex::getTable('wildcard') . ' 
+                                SELECT  CONCAT("' . $sql->escape(self::getOpenTag()) . '", wildcard, "' . mysql_real_escape_string(self::getCloseTag()) . '") AS wildcard
+                                FROM    ' . \rex::getTable('wildcard') . '
                                 WHERE   clang_id = "' . \rex_clang::getStartId() . '"';
 
-                $sql = \rex_sql::factory();
                 //$sql->setDebug();
                 $sql->setQuery($sql_query);
 

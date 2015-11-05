@@ -108,7 +108,7 @@ $content .= '
                 <tr>
                     <th class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a></th>
                     <th class="rex-table-id">' . $this->i18n('id') . '</th>
-                    <th>' . $this->i18n('wildcard') . '</th>
+                    <th class="rex-table-minwidth-6">' . $this->i18n('wildcard') . '</th>
                     ' . $th . '
                     <th class="rex-table-action" colspan="2">' . $this->i18n('function') . '</th>
                 </tr>
@@ -132,7 +132,7 @@ if ($func == 'add') {
 $querySelect = [];
 $queryJoin = [];
 foreach (rex_clang::getAll() as $clang_id => $clang) {
-    $as = strtolower($clang->getName());
+    $as = \rex_string::normalize($clang->getName());
     $querySelect[] = $as . '.replace AS ' . 'id' . $clang->getId();
     $queryJoin[] = 'LEFT JOIN ' . rex::getTable('wildcard') . ' AS ' . $as . ' ON a.id = ' . $as . '.id AND ' . $as . '.clang_id = ' . $clang->getId();
 }
@@ -176,7 +176,7 @@ if (count($entries)) {
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
                             <td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>
                             ' . $td . '
-                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('edit') . '</a></td>
+                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_edit') . '</a></td>
                             <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete') . '</a></td>
                         </tr>';
         }
@@ -215,7 +215,7 @@ if (count($missingWildcards)) {
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a></th>
+                        <th class="rex-table-icon"></th>
                         <th>' . $this->i18n('wildcard') . '</th>
                         <th class="rex-table-action" colspan="2">' . $this->i18n('function') . '</th>
                     </tr>
@@ -228,7 +228,7 @@ if (count($missingWildcards)) {
                     <tr>
                         <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                         <td data-title="' . $this->i18n('wildcard') . '">' . $name . '</td>
-                        <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('add') . '</a></td>
+                        <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_add') . '</a></td>
                         <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . $this->i18n('go_to_the_article') . '</a></td>
                     </tr>';
     }

@@ -6,10 +6,17 @@ wildcard_no_results = Keine Ergebnisse
 
 wildcard_open_tag = öffnendes Tag
 wildcard_close_tag = schließendes Tag
+wildcard_clang_switch = Ab wieviel Sprachen soll die Unternavigation eingeblendet werden
 
+wildcard_add = Platzhalter hinzufügen
 wildcard_caption = Liste der Platzhalter
 wildcard_caption_missing = Liste der noch nicht ersetzten Platzhalter innerhalb der {0}
+wildcard_edit = Platzhalter editieren
 wildcard_edited = Platzhalter wurde editiert
+wildcard_error_no_wildcard = Bitte einen Platzhalter angeben
 wildcard_function = Funktion
+wildcard_function_add = hinzufügen
+wildcard_function_edit = editieren
+wildcard_replace = Ersetzung
 
 wildcard_go_to_the_article = zum Artikel
