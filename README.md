@@ -1,3 +1,3 @@
-# redaxo_wildcard
+# redaxo_sprog
 Platzhalter ersetzen
 
