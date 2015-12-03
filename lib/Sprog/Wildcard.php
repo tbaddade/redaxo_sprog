@@ -66,7 +66,7 @@ class Wildcard
         return preg_replace($search, $replace, $content);
     }
 
-    private static function getMissingWildcards()
+    public static function getMissingWildcards()
     {
         $wildcards = [];
 
