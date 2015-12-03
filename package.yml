@@ -1,13 +1,15 @@
-package: wildcard
-version: '5.0-alpha7'
+package: sprog
+version: '1.0.0-alpha'
 author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
 
 page:
-    title: 'translate:wildcard'
-    perm: wildcard[]
+    title: 'translate:sprog'
+    perm: sprog[]
     pjax: false
-    icon: rex-icon rex-icon-refresh
+    icon: rex-icon rex-icon-language
     subpages:
         wildcard: { title: 'translate:wildcard' }
-        settings: { title: 'translate:settings' }
+        settings:
+            title: 'translate:settings'
+            perm: admin[]

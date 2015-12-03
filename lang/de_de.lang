@@ -1,22 +1,29 @@
-wildcard = Platzhalter
-wildcard_title = Platzhalter
-wildcard_settings = Konfiguration
-wildcard_config_saved = Konfiguration gespeichert.
-wildcard_no_results = Keine Ergebnisse
+sprog = Sprog
+sprog_title = Sprog
 
-wildcard_open_tag = öffnendes Tag
-wildcard_close_tag = schließendes Tag
-wildcard_clang_switch = Ab wieviel Sprachen soll die Unternavigation eingeblendet werden
+sprog_function = Funktion
+sprog_function_add = hinzufügen
+sprog_function_edit = editieren
+sprog_no_results = Keine Ergebnisse
 
-wildcard_add = Platzhalter hinzufügen
-wildcard_caption = Liste der Platzhalter
-wildcard_caption_missing = Liste der noch nicht ersetzten Platzhalter innerhalb der {0}
-wildcard_edit = Platzhalter editieren
-wildcard_edited = Platzhalter wurde editiert
-wildcard_error_no_wildcard = Bitte einen Platzhalter angeben
-wildcard_function = Funktion
-wildcard_function_add = hinzufügen
-wildcard_function_edit = editieren
-wildcard_replace = Ersetzung
 
-wildcard_go_to_the_article = zum Artikel
+sprog_settings = Konfiguration
+sprog_settings_title = Konfiguration
+sprog_settings_config_saved = Konfiguration gespeichert.
+sprog_settings_wildcard_clang_switch = Ab wieviele Sprachen soll die Unternavigation eingeblendet werden
+sprog_settings_wildcard_close_tag = schließendes Tag
+sprog_settings_wildcard_open_tag = öffnendes Tag
+
+
+
+sprog_wildcard = Platzhalter
+sprog_wildcard_title = Platzhalter
+sprog_wildcard_add = Platzhalter hinzufügen
+sprog_wildcard_added = Platzhalter wurd hinzugefügt
+sprog_wildcard_caption = Liste der Platzhalter
+sprog_wildcard_caption_missing = Liste der noch nicht ersetzten Platzhalter innerhalb der {0}
+sprog_wildcard_edit = Platzhalter editieren
+sprog_wildcard_edited = Platzhalter wurde editiert
+sprog_wildcard_error_no_wildcard = Bitte einen Platzhalter angeben
+sprog_wildcard_go_to_the_article = zum Artikel
+sprog_wildcard_replace = Ersetzung

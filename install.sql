@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%wildcard` (
+CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%sprog_wildcard` (
     `pid` int(10) unsigned NOT NULL AUTO_INCREMENT,
     `id` int(10) unsigned NOT NULL,
     `clang_id` int(10) unsigned NOT NULL,

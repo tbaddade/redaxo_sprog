@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Wildcard package.
+ * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
  *
@@ -11,6 +11,6 @@
 
 $subpage = rex_be_controller::getCurrentPagePart(2);
 
-echo rex_view::title(rex_i18n::msg('wildcard_title'));
+echo rex_view::title(rex_i18n::msg('sprog_title'));
 
 include rex_be_controller::getCurrentPageObject()->getSubPath();

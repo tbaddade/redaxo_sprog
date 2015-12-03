@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Wildcard package.
+ * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
  *
@@ -9,13 +9,11 @@
  * file that was distributed with this source code.
  */
 
-namespace Wildcard;
-
-use Wildcard\Wildcard;
+namespace Sprog;
 
 class Extension
 {
-    public static function replace(\rex_extension_point $ep)
+    public static function replaceWildcards(\rex_extension_point $ep)
     {
         $ep->setSubject(Wildcard::replace($ep->getSubject()));
     }
@@ -23,13 +21,13 @@ class Extension
     public static function clangAdded(\rex_extension_point $ep)
     {
         $firstLang = \rex_sql::factory();
-        $firstLang->setQuery('SELECT * FROM ' . \rex::getTable('wildcard') . ' WHERE clang_id=?', [\rex_clang::getStartId()]);
+        $firstLang->setQuery('SELECT * FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [\rex_clang::getStartId()]);
         $fields = $firstLang->getFieldnames();
 
         $newLang = \rex_sql::factory();
         $newLang->setDebug(false);
         foreach ($firstLang as $firstLangEntry) {
-            $newLang->setTable(\rex::getTable('wildcard'));
+            $newLang->setTable(\rex::getTable('sprog_wildcard'));
 
             foreach ($fields as $key => $value) {
                 if ($value == 'pid') {
@@ -48,6 +46,6 @@ class Extension
     public static function clangDeleted(\rex_extension_point $ep)
     {
         $deleteLang = \rex_sql::factory();
-        $deleteLang->setQuery('DELETE FROM ' . \rex::getTable('wildcard') . ' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
+        $deleteLang->setQuery('DELETE FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
     }
 }

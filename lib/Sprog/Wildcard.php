@@ -1,7 +1,7 @@
 <?php
 
 /**
- * This file is part of the Wildcard package.
+ * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
  *
@@ -9,18 +9,18 @@
  * file that was distributed with this source code.
  */
 
-namespace Wildcard;
+namespace Sprog;
 
 class Wildcard
 {
     public static function getOpenTag()
     {
-        return \rex_config::get('wildcard', 'open_tag', '{{ ');
+        return \rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
     }
 
     public static function getCloseTag()
     {
-        return \rex_config::get('wildcard', 'close_tag', ' }}');
+        return \rex_config::get('sprog', 'wildcard_close_tag', ' }}');
     }
 
     public static function getRegexp($value = '.*?')
@@ -30,7 +30,7 @@ class Wildcard
 
     public static function isClangSwitchMode()
     {
-        return (\rex_clang::count() > \rex_config::get('wildcard', 'clang_switch', \rex_clang::count()) ? true : false);
+        return (\rex_clang::count() > \rex_config::get('sprog', 'wildcard_clang_switch', \rex_clang::count()) ? true : false);
     }
 
     /**
@@ -52,7 +52,7 @@ class Wildcard
         }
 
         $sql = \rex_sql::factory();
-        $sql->setQuery('SELECT `wildcard`, `replace` FROM ' . \rex::getTable('wildcard') . ' WHERE clang_id = "' . $clang_id . '"');
+        $sql->setQuery('SELECT `wildcard`, `replace` FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id = "' . $clang_id . '"');
 
         $search = [];
         $replace = [];
@@ -66,12 +66,11 @@ class Wildcard
         return preg_replace($search, $replace, $content);
     }
 
-    public static function getMissingWildcards()
+    private static function getMissingWildcards()
     {
         $wildcards = [];
 
         if (\rex_addon::get('structure')->isAvailable() && \rex_plugin::get('structure', 'content')->isAvailable()) {
-
             $sql = \rex_sql::factory();
 
             // Slices der Artikel durchsuchen
@@ -132,16 +131,15 @@ class Wildcard
             if (count($wildcards)) {
                 $sql = \rex_sql::factory();
                 $sql_query = '
-                                SELECT  CONCAT("' . $sql->escape(self::getOpenTag()) . '", wildcard, "' . mysql_real_escape_string(self::getCloseTag()) . '") AS wildcard
-                                FROM    ' . \rex::getTable('wildcard') . '
+                                SELECT  CONCAT("' . self::getOpenTag() . '", wildcard, "' . self::getCloseTag() . '") AS wildcard
+                                FROM    ' . \rex::getTable('sprog_wildcard') . '
                                 WHERE   clang_id = "' . \rex_clang::getStartId() . '"';
 
-                //$sql->setDebug();
+                $sql->setDebug(false);
                 $sql->setQuery($sql_query);
 
                 if ($sql->getRows() >= 1) {
                     $items = $sql->getArray();
-
                     foreach ($items as $item) {
                         if (isset($wildcards[ $item['wildcard'] ])) {
                             unset($wildcards[ $item['wildcard'] ]);
@@ -149,10 +147,49 @@ class Wildcard
                     }
                 }
             }
-
             return $wildcards;
         }
 
         return false;
+    }
+
+    public static function getMissingWildcardsAsTable()
+    {
+        $missingWildcards = self::getMissingWildcards();
+        if (count($missingWildcards)) {
+            $content = '';
+            $content .= '
+                <table class="table table-striped table-hover">
+                   <thead>
+                       <tr>
+                           <th class="rex-table-icon"></th>
+                           <th>' . \rex_addon::get('sprog')->i18n('wildcard') . '</th>
+                           <th class="rex-table-action" colspan="2">' . \rex_addon::get('sprog')->i18n('function') . '</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+               ';
+
+            foreach ($missingWildcards as $name => $params) {
+                $content .= '
+                           <tr>
+                               <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
+                               <td data-title="' . \rex_addon::get('sprog')->i18n('wildcard') . '">' . $name . '</td>
+                               <td class="rex-table-action"><a href="' . \rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' .  \rex_addon::get('sprog')->i18n('function_add') . '</a></td>
+                               <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . \rex_addon::get('sprog')->i18n('wildcard_go_to_the_article') . '</a></td>
+                           </tr>';
+            }
+
+            $content .= '
+                   </tbody>
+               </table>';
+
+            $fragment = new \rex_fragment();
+            $fragment->setVar('title',  \rex_addon::get('sprog')->i18n('wildcard_caption_missing',  \rex_addon::get('structure')->i18n('title_structure')), false);
+            $fragment->setVar('content', $content, false);
+            $content = $fragment->parse('core/page/section.php');
+
+            echo $content;
+        }
     }
 }
