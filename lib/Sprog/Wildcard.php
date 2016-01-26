@@ -30,7 +30,33 @@ class Wildcard
 
     public static function isClangSwitchMode()
     {
-        return (\rex_clang::count() > \rex_config::get('sprog', 'wildcard_clang_switch', \rex_clang::count()) ? true : false);
+        return (\rex_config::get('sprog', 'wildcard_clang_switch', '1') == 1) ? true : false;
+    }
+
+    /**
+     * Returns the replaced wildcard.
+     *
+     * @param string $content
+     * @param int    $clang_id
+     *
+     * @return string
+     */
+    public static function get($wildcard, $clang_id = null)
+    {
+        if (trim($wildcard) == '') {
+            return $wildcard;
+        }
+
+        if (!$clang_id) {
+            $clang_id = \rex_clang::getCurrentId();
+        }
+
+        $sql = \rex_sql::factory();
+        $sql->setQuery('SELECT `replace` FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id = :clang_id AND `wildcard` = :wildcard', [':clang_id' => $clang_id, ':wildcard' => trim($wildcard)]);
+        if ($sql->getRows() == 1 && trim($sql->getValue('replace')) != '') {
+            return nl2br($sql->getValue('replace'));
+        }
+        return false;
     }
 
     /**
@@ -74,7 +100,6 @@ class Wildcard
             $sql = \rex_sql::factory();
 
             // Slices der Artikel durchsuchen
-            // Werden Slices gefunden, dann die Strukturartikel überschreiben
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             $fields = [
                 's.value' => range('1', '20'),
@@ -128,6 +153,7 @@ class Wildcard
                 }
             }
 
+            // Alle bereits angelegten Platzhalter entfernen
             if (count($wildcards)) {
                 $sql = \rex_sql::factory();
                 $sql_query = '
@@ -189,7 +215,7 @@ class Wildcard
             $fragment->setVar('content', $content, false);
             $content = $fragment->parse('core/page/section.php');
 
-            echo $content;
+            return $content;
         }
     }
 }
