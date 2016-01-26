@@ -48,4 +48,15 @@ class Extension
         $deleteLang = \rex_sql::factory();
         $deleteLang->setQuery('DELETE FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
     }
+
+    public static function wildcardFormControlElement(\rex_extension_point $ep)
+    {
+        if (! \rex::getUser()->getComplexPerm('clang')->hasAll()) {
+            $subject = $ep->getSubject();
+            unset($subject['delete']);
+            $ep->setSubject($subject);
+        }
+    }
+
+
 }
