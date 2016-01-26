@@ -11,6 +11,8 @@
 
 use \Sprog\Wildcard;
 
+class_alias('\Sprog\Wildcard', 'Wildcard');
+
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 
 if (!rex::isBackend()) {
@@ -27,7 +29,7 @@ if (rex::isBackend() && rex::getUser()) {
             if (\rex_be_controller::getCurrentPage() == 'sprog/settings') {
                 $func = rex_request('func', 'string');
                 if ($func == 'update') {
-                    \rex_config::set('sprog', 'wildcard_clang_switch', rex_request('clang_switch', 'int'));
+                    \rex_config::set('sprog', 'wildcard_clang_switch', rex_request('clang_switch', 'bool'));
                 }
             }
         }
@@ -39,10 +41,12 @@ if (rex::isBackend() && rex::getUser()) {
                 $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
                 $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
                 foreach (\rex_clang::getAll() as $id => $clang) {
-                    $page->addSubpage((new rex_be_page('clang' . $id, $clang->getName()))
-                        ->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'))
-                        ->setIsActive($id == $clang_id)
-                    );
+                    if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
+                        $page->addSubpage((new rex_be_page('clang' . $id, $clang->getName()))
+                            ->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'))
+                            ->setIsActive($id == $clang_id)
+                        );
+                    }
                 }
             } else {
                 $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_all.php'));
