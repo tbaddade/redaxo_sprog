@@ -10,7 +10,7 @@
  */
 
 use \Sprog\Wildcard;
-echo 'All: ' . rex::getUser()->getComplexPerm('clang')->hasAll();
+
 $content = '';
 $message = '';
 
@@ -104,11 +104,13 @@ foreach (rex_clang::getAll() as $clang_id => $clang) {
     }
 }
 
+$add_icon = rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . rex_url::currentBackendPage(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a>' : '';
+
 $content .= '
         <table class="table table-striped table-hover">
             <thead>
                 <tr>
-                    <th class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a></th>
+                    <th class="rex-table-icon">' . $add_icon . '</th>
                     <th class="rex-table-id">' . $this->i18n('id') . '</th>
                     <th class="rex-table-minwidth-6">' . $this->i18n('wildcard') . '</th>
                     ' . $th . '
@@ -211,4 +213,6 @@ if ($func == 'add' || $func == 'edit') {
 
 echo $content;
 
-echo Wildcard::getMissingWildcardsAsTable();
+if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
+    echo Wildcard::getMissingWildcardsAsTable();
+}

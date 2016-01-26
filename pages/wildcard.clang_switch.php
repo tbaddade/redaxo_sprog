@@ -41,7 +41,7 @@ if ($func == '') {
     $list->addTableAttribute('class', 'table-striped');
 
     $tdIcon = '<i class="rex-icon rex-icon-refresh"></i>';
-    $thIcon = '<a href="' . $list->getUrl(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a>';
+    $thIcon = rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . $list->getUrl(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a>' : '';
     $list->addColumn($thIcon, $tdIcon, 0, ['<th class="rex-table-icon">###VALUE###</th>', '<td class="rex-table-icon">###VALUE###</td>']);
     $list->setColumnParams($thIcon, ['func' => 'edit', 'pid' => '###pid###']);
 
@@ -73,13 +73,20 @@ if ($func == '') {
 } else {
     $title = $func == 'edit' ? $this->i18n('edit') : $this->i18n('add');
 
+    \rex_extension::register('REX_FORM_CONTROL_FIELDS', '\Sprog\Extension::wildcardFormControlElement');
+
     $form = rex_form::factory(rex::getTable('sprog_wildcard'), '', 'pid = ' . $pid);
     $form->addParam('pid', $pid);
     $form->setApplyUrl(rex_url::currentBackendPage());
     $form->setLanguageSupport('id', 'clang_id');
     $form->setEditMode($func == 'edit');
 
-    $field = $form->addTextField('wildcard', rex_request('wildcard_name', 'string', null));
+    if ($func == 'add' && rex::getUser()->getComplexPerm('clang')->hasAll()) {
+        $field = $form->addTextField('wildcard', rex_request('wildcard_name', 'string', null));
+        $field->setNotice($this->i18n('wildcard_without_tag'));
+    } else {
+        $field = $form->addReadOnlyField('wildcard', rex_request('wildcard_name', 'string', null));
+    }
     $field->setLabel($this->i18n('wildcard'));
     $field->getValidator()->add('notEmpty', $this->i18n('wildcard_error_no_wildcard'));
 
@@ -98,4 +105,6 @@ if ($func == '') {
 echo $message;
 echo $content;
 
-echo Wildcard::getMissingWildcardsAsTable();
+if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
+    echo Wildcard::getMissingWildcardsAsTable();
+}
