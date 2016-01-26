@@ -37,29 +37,30 @@ $content .= '
         $n['label'] = '<label for="wildcard-close-tag">' . $this->i18n('settings_wildcard_close_tag') . '</label>';
         $n['field'] = '<input class="form-control" type="text" id="wildcard-close-tag" name="close_tag" value="' . htmlspecialchars(Wildcard::getCloseTag()) . '" />';
         $formElements[] = $n;
-
-        $clangSwitchSelect = new \rex_select();
-        $clangSwitchSelect->setName('clang_switch');
-        $clangSwitchSelect->setSize(1);
-        $clangSwitchSelect->setAttribute('class', 'form-control');
-        $clangSwitchSelect->setAttribute('id', 'wildcard-clang-switch');
-        for ($i = 1; $i <= \rex_clang::count(); ++$i) {
-            $clangSwitchSelect->addOption($i, $i);
-        }
-        $clangSwitchSelect->setSelected(\rex_config::get('sprog', 'wildcard_clang_switch', \rex_clang::count()));
-
-        $n = [];
-        $n['label'] = '<label for="wildcard-clang-switch">' . $this->i18n('settings_wildcard_clang_switch') . '</label>';
-        $n['field'] = $clangSwitchSelect->get();
-        $formElements[] = $n;
-
+        
         $fragment = new \rex_fragment();
-        $fragment->setVar('flush', true);
         $fragment->setVar('elements', $formElements, false);
         $content .= $fragment->parse('core/form/form.php');
 
-        $formElements = [];
 
+        $field = '';
+        $field .= '<input type="checkbox" id="wildcard-clang-switch" name="clang_switch"';
+        if (Wildcard::isClangSwitchMode()) {
+            $field .= ' checked="checked" ';
+        }
+        $field .= ' value="1" />';
+
+        $formElements = [];
+        $n = [];
+        $n['label'] = '<label for="wildcard-clang-switch">' . $this->i18n('settings_wildcard_clang_switch') . '</label>';
+        $n['field'] = $field;
+        $formElements[] = $n;
+
+        $fragment = new \rex_fragment();
+        $fragment->setVar('elements', $formElements, false);
+        $content .= $fragment->parse('core/form/checkbox.php');
+
+        $formElements = [];
         $n = [];
         $n['field'] = '<a class="btn btn-abort" href="' . \rex_url::currentBackendPage() . '">' . \rex_i18n::msg('form_abort') . '</a>';
         $formElements[] = $n;
