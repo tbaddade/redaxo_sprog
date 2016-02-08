@@ -1,0 +1,29 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Function
+sprog_function_add = add
+sprog_function_edit = edit
+sprog_no_results = No results
+
+
+sprog_settings = Settings
+sprog_settings_title = Configuration title
+sprog_settings_config_saved = Configuration has been saved.
+sprog_settings_wildcard_clang_switch = From how many languages the site navigation should be displayed
+sprog_settings_wildcard_close_tag = Closing tag
+sprog_settings_wildcard_open_tag = Opening tag
+
+
+
+sprog_wildcard = Placeholder
+sprog_wildcard_title = Placeholder title
+sprog_wildcard_add = Add placeholder
+sprog_wildcard_added = Placeholder has been added
+sprog_wildcard_caption = List of placeholders
+sprog_wildcard_caption_missing = List of not yet replaced placeholders within the {0}
+sprog_wildcard_edit = Edit placeholder
+sprog_wildcard_edited = PLaceholder has been edited
+sprog_wildcard_error_no_wildcard = Please enter a placeholder name
+sprog_wildcard_go_to_the_article = To article
+sprog_wildcard_replace = Replacement
