@@ -60,6 +60,25 @@ class Wildcard
     }
 
     /**
+     * Returns the replaced wildcard.
+     *
+     * @param string $wildcard
+     * @param int    $clang_id
+     *
+     * @return string
+     */
+    public static function replace($content, $clang_id = null)
+    {
+        if (trim($content) == '') {
+            return $content;
+        }
+        if (strpos($content, self::getOpenTag()) === false) {
+            $content = self::getOpenTag() . $content . self::getCloseTag();
+        }
+        return self::parse($content, $clang_id = null);
+    }
+
+    /**
      * Returns the replaced content.
      *
      * @param string $content
@@ -67,7 +86,7 @@ class Wildcard
      *
      * @return string
      */
-    public static function replace($content, $clang_id = null)
+    public static function parse($content, $clang_id = null)
     {
         if (trim($content) == '') {
             return $content;
