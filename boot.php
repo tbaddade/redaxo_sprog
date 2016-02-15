@@ -15,6 +15,21 @@ class_alias('\Sprog\Wildcard', 'Wildcard');
 
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 
+/**
+ * Replaced some wildcards in given text
+ */
+function sprogdown($text, $clang_id = null) {
+	return Wildcard::parse($text, $clang_id);
+}
+/**
+ * Replaced given wildcard
+ */
+function sprogcard($wildcard, $clang_id = null) {
+	return Wildcard::replace($wildcard, $clang_id);
+}
+
+
+
 if (!rex::isBackend()) {
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards');
 }
