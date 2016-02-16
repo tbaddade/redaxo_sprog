@@ -15,7 +15,7 @@ class Extension
 {
     public static function replaceWildcards(\rex_extension_point $ep)
     {
-        $ep->setSubject(Wildcard::replace($ep->getSubject()));
+        $ep->setSubject(Wildcard::parse($ep->getSubject()));
     }
 
     public static function clangAdded(\rex_extension_point $ep)
