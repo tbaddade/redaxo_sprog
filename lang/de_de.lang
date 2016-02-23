@@ -13,6 +13,22 @@ sprog_settings_config_saved = Konfiguration gespeichert.
 sprog_settings_wildcard_clang_switch = Sprachen als Unternavigation einblenden
 sprog_settings_wildcard_close_tag = schließendes Tag
 sprog_settings_wildcard_open_tag = öffnendes Tag
+sprog_settings_synchronization = Synchronisierung
+
+sprog_settings_sync_metainfo = Meta Info
+sprog_settings_sync_metainfo_art = Artikel
+sprog_settings_sync_metainfo_cat = Kategorien
+sprog_settings_sync_metainfo_med = Medien
+sprog_settings_sync_metainfo_note = Selektiere die Meta Infos, die zwischen den Sprachen synchron bleiben
+sprog_settings_sync_metainfo_not_found = Keine Meta Infos gefunden
+
+sprog_settings_sync_structure = Struktur
+sprog_settings_sync_structure_article_name_to_category_name = Kategoriename mit Artikelname innerhalb derselben Sprache synchronisieren
+sprog_settings_sync_structure_category_name_to_article_name = Artikelname mit Kategoriename innerhalb derselben Sprache synchronisieren
+sprog_settings_sync_structure_status = Status (Online/Offline) zwischen den Sprachen synchronisieren
+sprog_settings_sync_structure_template = Template zwischen den Sprachen synchronisieren
+
+sprog_settings_wildcard_open_close_tag = öffnendes/schließendes Tag
 
 
 

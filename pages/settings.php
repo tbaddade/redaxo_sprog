@@ -11,83 +11,239 @@
 
 namespace Sprog;
 
-$content = '';
+$sections = '';
 
 $func = rex_request('func', 'string');
 
 if ($func == 'update') {
     // clang_switch wird in der boot.php neu gesetzt
-    echo \rex_view::info($this->i18n('settings_config_saved'));
-    \rex_config::set('sprog', 'wildcard_open_tag', rex_request('open_tag', 'string'));
-    \rex_config::set('sprog', 'wildcard_close_tag', rex_request('close_tag', 'string'));
+
+    $this->setConfig(rex_post('settings', [
+        ['wildcard_open_tag', 'string'],
+        ['wildcard_close_tag', 'string'],
+        ['sync_structure_category_name_to_article_name', 'bool'],
+        ['sync_structure_article_name_to_category_name', 'bool'],
+        ['sync_structure_status', 'bool'],
+        ['sync_structure_template', 'bool'],
+        ['sync_metainfo_cat', 'array'],
+        ['sync_metainfo_art', 'array'],
+        //['sync_metainfo_med', 'array'],
+    ]));
+
+    echo \rex_view::success($this->i18n('settings_config_saved'));
 }
 
-$content .= '
+// - - - - - - - - - - - - - - - - - - - - - - Wildcard
+$panelElements = '';
+$formElements = [];
+$n = [];
+$n['header'] = '<div class="row"><div class="col-md-5">';
+$n['footer'] = '</div></div>';
+$n['label'] = '<label for="wildcard-open-tag">' . $this->i18n('settings_wildcard_open_close_tag') . '</label>';
+$n['field'] = '
+    <div class="input-group">
+        <input class="form-control text-right" type="text" id="wildcard-open-tag" name="settings[wildcard_open_tag]" value="' . htmlspecialchars(Wildcard::getOpenTag()) . '" placeholder="' . $this->i18n('settings_wildcard_open_tag') . '" />
+        <span class="input-group-addon">' . strtolower($this->i18n('wildcard')) . '</span>
+        <input class="form-control" type="text" id="wildcard-close-tag" name="settings[wildcard_close_tag]" value="' . htmlspecialchars(Wildcard::getCloseTag()) . '" placeholder="' . $this->i18n('settings_wildcard_close_tag') . '" />
+    </div>';
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$panelElements .= $fragment->parse('core/form/form.php');
+
+
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="wildcard-clang-switch">' . $this->i18n('settings_wildcard_clang_switch') . '</label>';
+$n['field'] = '<input type="checkbox" id="wildcard-clang-switch" name="clang_switch"' . (Wildcard::isClangSwitchMode() ? ' checked="checked"' : '') . ' value="1" />';
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$panelElements .= $fragment->parse('core/form/checkbox.php');
+
+
+$panelBody = '
     <fieldset>
         <input type="hidden" name="func" value="update" />
-';
-
-        $formElements = [];
-        $n = [];
-        $n['label'] = '<label for="wildcard-open-tag">' . $this->i18n('settings_wildcard_open_tag') . '</label>';
-        $n['field'] = '<input class="form-control" type="text" id="wildcard-open-tag" name="open_tag" value="' . htmlspecialchars(Wildcard::getOpenTag()) . '" />';
-        $formElements[] = $n;
-
-        $n = [];
-        $n['label'] = '<label for="wildcard-close-tag">' . $this->i18n('settings_wildcard_close_tag') . '</label>';
-        $n['field'] = '<input class="form-control" type="text" id="wildcard-close-tag" name="close_tag" value="' . htmlspecialchars(Wildcard::getCloseTag()) . '" />';
-        $formElements[] = $n;
-        
-        $fragment = new \rex_fragment();
-        $fragment->setVar('elements', $formElements, false);
-        $content .= $fragment->parse('core/form/form.php');
-
-
-        $field = '';
-        $field .= '<input type="checkbox" id="wildcard-clang-switch" name="clang_switch"';
-        if (Wildcard::isClangSwitchMode()) {
-            $field .= ' checked="checked" ';
-        }
-        $field .= ' value="1" />';
-
-        $formElements = [];
-        $n = [];
-        $n['label'] = '<label for="wildcard-clang-switch">' . $this->i18n('settings_wildcard_clang_switch') . '</label>';
-        $n['field'] = $field;
-        $formElements[] = $n;
-
-        $fragment = new \rex_fragment();
-        $fragment->setVar('elements', $formElements, false);
-        $content .= $fragment->parse('core/form/checkbox.php');
-
-        $formElements = [];
-        $n = [];
-        $n['field'] = '<a class="btn btn-abort" href="' . \rex_url::currentBackendPage() . '">' . \rex_i18n::msg('form_abort') . '</a>';
-        $formElements[] = $n;
-
-        $n = [];
-        $n['field'] = '<button class="btn btn-apply rex-form-aligned" type="submit" name="send" value="1"' . \rex::getAccesskey(\rex_i18n::msg('update'), 'apply') . '>' . \rex_i18n::msg('update') . '</button>';
-        $formElements[] = $n;
-
-        $fragment = new \rex_fragment();
-        $fragment->setVar('elements', $formElements, false);
-        $buttons = $fragment->parse('core/form/submit.php');
-
-$content .= '
+        ' . $panelElements . '
     </fieldset>';
 
 $fragment = new \rex_fragment();
 $fragment->setVar('class', 'edit', false);
-$fragment->setVar('title', $this->i18n('settings'), false);
-$fragment->setVar('body', $content, false);
+$fragment->setVar('title', $this->i18n('wildcard'), false);
+$fragment->setVar('body', $panelBody, false);
+$sections .= $fragment->parse('core/page/section.php');
+
+// - - - - - - - - - - - - - - - - - - - - - - Synchronization
+$panelElements = '';
+$panelElements .= '<fieldset><legend>' . $this->i18n('settings_sync_structure') . '</legend>';
+
+$formElements = [];
+$n = [];
+$n['label'] = '<label for="sync-structure-category-name-to-article-name">' . $this->i18n('settings_sync_structure_category_name_to_article_name') . '</label>';
+$n['field'] = '<input type="checkbox" id="sync-structure-category-name-to-article-name" name="settings[sync_structure_category_name_to_article_name]"' . ($this->getConfig('sync_structure_category_name_to_article_name') ? ' checked="checked"' : '') . ' value="1" />';
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label for="sync-structure-article-name-to-category-name">' . $this->i18n('settings_sync_structure_article_name_to_category_name') . '</label>';
+$n['field'] = '<input type="checkbox" id="sync-structure-article-name-to-category-name" name="settings[sync_structure_article_name_to_category_name]"' . ($this->getConfig('sync_structure_article_name_to_category_name') ? ' checked="checked"' : '') . ' value="1" />';
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label for="sync-structure-status">' . $this->i18n('settings_sync_structure_status') . '</label>';
+$n['field'] = '<input type="checkbox" id="sync-structure-status" name="settings[sync_structure_status]"' . ($this->getConfig('sync_structure_status') ? ' checked="checked"' : '') . ' value="1" />';
+$formElements[] = $n;
+
+$n = [];
+$n['label'] = '<label for="sync-structure-template">' . $this->i18n('settings_sync_structure_template') . '</label>';
+$n['field'] = '<input type="checkbox" id="sync-structure-template" name="settings[sync_structure_template]"' . ($this->getConfig('sync_structure_template') ? ' checked="checked"' : '') . ' value="1" />';
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$panelElements .= $fragment->parse('core/form/checkbox.php');
+
+
+$panelElements .= '</fieldset>';
+$panelElements .= '<fieldset><legend>' . $this->i18n('settings_sync_metainfo') . '</legend><p>' . $this->i18n('settings_sync_metainfo_note') . '</p>';
+
+// type_id => 12 => exlude legends
+$query = 'SELECT title, name FROM ' . \rex::getTable('metainfo_field') . ' WHERE name LIKE :name AND type_id != :type_id ORDER BY name';
+$catOptions = \rex_sql::factory()->getArray($query, ['name' => 'cat_%', 'type_id' => '12']);
+$artOptions = \rex_sql::factory()->getArray($query, ['name' => 'art_%', 'type_id' => '12']);
+// $medOptions = \rex_sql::factory()->getArray($query, ['name' => 'med_%', 'type_id' => '12']);
+
+$sizeSelectMax = 10;
+$sizeSelectPlus = 2;
+$sizeSelect = $sizeSelectPlus + count($catOptions);
+$sizeSelect = $sizeSelect > $sizeSelectMax ? $sizeSelectMax : $sizeSelect;
+$catSelect = new \rex_select();
+$catSelect->setId('sync-metainfo-cat');
+$catSelect->setName('settings[sync_metainfo_cat][]');
+$catSelect->setMultiple();
+$catSelect->setAttribute('placeholder', 'Platzhalter');
+$catSelect->setSelected($this->getConfig('sync_metainfo_cat'));
+$catSelect->setSize($sizeSelect);
+if (count($catOptions)) {
+    foreach ($catOptions as $option) {
+        $catSelect->addOption($option['name'] . '   |   ' . \rex_i18n::translate($option['title']) . '', $option['name']);
+    }
+} else {
+    $catSelect->addOption($this->i18n('settings_sync_metainfo_not_found'), '', 0, 0, ['disabled' => 'disabled']);
+}
+
+$sizeSelect = $sizeSelectPlus + count($artOptions);
+$sizeSelect = $sizeSelect > $sizeSelectMax ? $sizeSelectMax : $sizeSelect;
+$artSelect = new \rex_select();
+$artSelect->setId('sync-metainfo-art');
+$artSelect->setName('settings[sync_metainfo_art][]');
+$artSelect->setMultiple();
+$artSelect->setSelected($this->getConfig('sync_metainfo_art'));
+$artSelect->setSize($sizeSelect);
+if (count($artOptions)) {
+    foreach ($artOptions as $option) {
+        $artSelect->addOption($option['name'] . '   |   ' . \rex_i18n::translate($option['title']) . '', $option['name']);
+    }
+} else {
+    $artSelect->addOption($this->i18n('settings_sync_metainfo_not_found'), '', 0, 0, ['disabled' => 'disabled']);
+}
+/*
+$sizeSelect = $sizeSelectPlus + count($medOptions);
+$sizeSelect = $sizeSelect > $sizeSelectMax ? $sizeSelectMax : $sizeSelect;
+$medSelect = new \rex_select();
+$medSelect->setId('sync-metainfo-med');
+$medSelect->setName('settings[sync_metainfo_med][]');
+$medSelect->setMultiple();
+$medSelect->setSelected($this->getConfig('sync_metainfo_med'));
+$medSelect->setSize($sizeSelect);
+if (count($medOptions)) {
+    foreach ($medOptions as $option) {
+        $medSelect->addOption($option['name'] . '   |   ' . \rex_i18n::translate($option['title']) . '', $option['name']);
+    }
+} else {
+    $medSelect->addOption($this->i18n('settings_sync_metainfo_not_found'), '', 0, 0, ['disabled' => 'disabled']);
+}
+*/
+
+$grid = [];
+$formElements = [];
+$n = [];
+$n['before'] = '<div class="rex-select-style">';
+$n['after'] = '</div>';
+$n['label'] = '<label for="sync-metainfo-art">' . $this->i18n('settings_sync_metainfo_art') . '</label>';
+$n['field'] = $artSelect->get();
+$n['note'] = \rex_i18n::msg('ctrl');
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$grid[] = $fragment->parse('core/form/form.php');
+
+$formElements = [];
+$n = [];
+$n['header'] = '';
+$n['before'] = '<div class="rex-select-style">';
+$n['after'] = '</div>';
+$n['label'] = '<label for="sync-metainfo-cat">' . $this->i18n('settings_sync_metainfo_cat') . '</label>';
+$n['field'] = $catSelect->get();
+$n['note'] = \rex_i18n::msg('ctrl');
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$grid[] = $fragment->parse('core/form/form.php');
+/*
+$formElements = [];
+$n = [];
+$n['before'] = '<div class="rex-select-style">';
+$n['after'] = '</div>';
+$n['label'] = '<label for="sync-metainfo-med">' . $this->i18n('settings_sync_metainfo_med') . '</label>';
+$n['field'] = $medSelect->get();
+$n['note'] = \rex_i18n::msg('ctrl');
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$grid[] = $fragment->parse('core/form/form.php');
+*/
+
+$fragment = new \rex_fragment();
+$fragment->setVar('content', $grid, false);
+$panelElements .= $fragment->parse('core/page/grid.php');
+
+$panelElements .= '</fieldset>';
+
+$fragment = new \rex_fragment();
+$fragment->setVar('class', 'edit', false);
+$fragment->setVar('title', $this->i18n('settings_synchronization'), false);
+$fragment->setVar('body', $panelElements, false);
+$sections .= $fragment->parse('core/page/section.php');
+
+
+
+$formElements = [];
+$n = [];
+$n['field'] = '<a class="btn btn-abort" href="' . \rex_url::currentBackendPage() . '">' . \rex_i18n::msg('form_abort') . '</a>';
+$formElements[] = $n;
+
+$n = [];
+$n['field'] = '<button class="btn btn-apply rex-form-aligned" type="submit" name="send" value="1"' . \rex::getAccesskey(\rex_i18n::msg('update'), 'apply') . '>' . \rex_i18n::msg('update') . '</button>';
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$buttons = $fragment->parse('core/form/submit.php');
+
+
+$fragment = new \rex_fragment();
+$fragment->setVar('class', 'edit', false);
 $fragment->setVar('buttons', $buttons, false);
-$content = $fragment->parse('core/page/section.php');
+$sections .= $fragment->parse('core/page/section.php');
 
-$content = '
+echo '
     <form action="' . \rex_url::currentBackendPage() . '" method="post">
-        ' . $content . '
+        ' . $sections . '
     </form>
-
-    ';
-
-echo $content;
+';

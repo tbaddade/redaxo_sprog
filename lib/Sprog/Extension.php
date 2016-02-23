@@ -11,12 +11,69 @@
 
 namespace Sprog;
 
+
 class Extension
 {
     public static function replaceWildcards(\rex_extension_point $ep)
     {
         $ep->setSubject(Wildcard::parse($ep->getSubject()));
     }
+
+    public static function articleUpdated(\rex_extension_point $ep)
+    {
+        $addon = \rex_addon::get('sprog');
+
+        if ($addon->getConfig('sync_structure_article_name_to_category_name')) {
+            Sync::articleNameToCategoryName($ep->getParams());
+        }
+
+        if ($addon->getConfig('sync_structure_status')) {
+            Sync::articleStatus($ep->getParams());
+        }
+
+        if ($addon->getConfig('sync_structure_template')) {
+            Sync::articleTemplate($ep->getParams());
+        }
+    }
+
+    public static function articleMetadataUpdated(\rex_extension_point $ep)
+    {
+        $addon = \rex_addon::get('sprog');
+
+        if (count($addon->getConfig('sync_metainfo_art'))) {
+            Sync::articleMetainfo($ep->getParams(), $addon->getConfig('sync_metainfo_art'));
+        }
+    }
+
+
+    public static function categoryUpdated(\rex_extension_point $ep)
+    {
+        $addon = \rex_addon::get('sprog');
+
+        if ($addon->getConfig('sync_structure_category_name_to_article_name')) {
+            Sync::categoryNameToArticleName($ep->getParams());
+        }
+
+        if (count($addon->getConfig('sync_metainfo_cat'))) {
+            Sync::categoryMetainfo($ep->getParams(), $addon->getConfig('sync_metainfo_cat'));
+        }
+
+        if ($addon->getConfig('sync_structure_status')) {
+            Sync::articleStatus($ep->getParams());
+        }
+    }
+
+    /*
+     * Medienpool ist noch nicht mehrsprachig
+    public static function mediaUpdated(\rex_extension_point $ep)
+    {
+        $addon = \rex_addon::get('sprog');
+
+        if (count($addon->getConfig('sync_metainfo_med'))) {
+            Sync::mediaMetainfo($ep->getParams(), $addon->getConfig('sync_metainfo_med'));
+        }
+    }
+    */
 
     public static function clangAdded(\rex_extension_point $ep)
     {

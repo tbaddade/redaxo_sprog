@@ -35,10 +35,59 @@ if (!rex::isBackend()) {
 }
 
 if (rex::isBackend() && rex::getUser()) {
+    if ($this->getConfig('sync_structure_category_name_to_article_name')) {
+        // Bug #607
+        // https://github.com/redaxo/redaxo/issues/607
+        // CAT_UPDATED wird nicht ausgelöst, wenn `pjax = true`
+        $structureAddon = rex_addon::get('structure');
+        $structurePropertyPage = $structureAddon->getProperty('page');
+        $structurePropertyPage['pjax'] = false;
+        $structureAddon->setProperty('page', $structurePropertyPage );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | ART_STATUS / ART_UPDATED / ART_META_UPDATED
+    |--------------------------------------------------------------------------
+    | LATE, damit MetaInfo die neuen Daten zunächst in die DB schreiben kann
+    */
+    \rex_extension::register('ART_STATUS', '\Sprog\Extension::articleUpdated');
+    \rex_extension::register('ART_UPDATED', '\Sprog\Extension::articleUpdated');
+    \rex_extension::register('ART_META_UPDATED', '\Sprog\Extension::articleMetadataUpdated', rex_extension::LATE);
+
+    /*
+    |--------------------------------------------------------------------------
+    | CAT_STATUS / CAT_UPDATED
+    |--------------------------------------------------------------------------
+    | LATE, damit MetaInfo die neuen Daten zunächst in die DB schreiben kann
+    */
+    \rex_extension::register('CAT_STATUS', '\Sprog\Extension::categoryUpdated');
+    \rex_extension::register('CAT_UPDATED', '\Sprog\Extension::categoryUpdated', rex_extension::LATE);
+
+    /*
+    | Medienpool ist noch nicht mehrsprachig
+    |
+    |--------------------------------------------------------------------------
+    | MEDIA_ADDED / MEDIA_UPDATED
+    |--------------------------------------------------------------------------
+    | LATE, damit MetaInfo die neuen Daten zunächst in die DB schreiben kann
+    */
+    // rex_extension::register('MEDIA_ADDED', '\Sprog\Extension::mediaUpdated', rex_extension::LATE);
+    // rex_extension::register('MEDIA_UPDATED', '\Sprog\Extension::mediaUpdated', rex_extension::LATE);
+
+    /*
+    |--------------------------------------------------------------------------
+    | CLANG_ADDED / CLANG_DELETED
+    |--------------------------------------------------------------------------
+    */
     \rex_extension::register('CLANG_ADDED', '\Sprog\Extension::clangAdded');
     \rex_extension::register('CLANG_DELETED', '\Sprog\Extension::clangDeleted');
 
-
+    /*
+    |--------------------------------------------------------------------------
+    | PAGES_PREPARED
+    |--------------------------------------------------------------------------
+    */
     rex_extension::register('PAGES_PREPARED', function () {
         if (rex::getUser()->isAdmin()) {
             if (\rex_be_controller::getCurrentPage() == 'sprog/settings') {

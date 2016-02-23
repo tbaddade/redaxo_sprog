@@ -13,6 +13,22 @@ sprog_settings_config_saved = Configuration has been saved.
 sprog_settings_wildcard_clang_switch = From how many languages the site navigation should be displayed
 sprog_settings_wildcard_close_tag = Closing tag
 sprog_settings_wildcard_open_tag = Opening tag
+sprog_settings_synchronization = Synchronisierung
+
+sprog_settings_sync_metainfo = Meta Info
+sprog_settings_sync_metainfo_art = Article
+sprog_settings_sync_metainfo_cat = Categories
+sprog_settings_sync_metainfo_med = Media
+sprog_settings_sync_metainfo_note = Select the metainfo that stay in sync between languages.
+sprog_settings_sync_metainfo_not_found = No metainfo found
+
+sprog_settings_sync_structure = Structure
+sprog_settings_sync_structure_article_name_to_category_name = Synchronize categoryname with articlename within the same language
+sprog_settings_sync_structure_category_name_to_article_name = Synchronize articlename with categoryname within the same language
+sprog_settings_sync_structure_status = Synchronize status (online / offline) between languages
+sprog_settings_sync_structure_template = Synchronize template between languages
+
+sprog_settings_wildcard_open_close_tag = opening / closing tag
 
 
 
@@ -27,3 +43,6 @@ sprog_wildcard_edited = PLaceholder has been edited
 sprog_wildcard_error_no_wildcard = Please enter a placeholder name
 sprog_wildcard_go_to_the_article = To article
 sprog_wildcard_replace = Replacement
+sprog_wildcard_without_tag = Note placeholder without opening / closing tag
+
+
