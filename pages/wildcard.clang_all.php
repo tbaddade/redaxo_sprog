@@ -137,7 +137,7 @@ $querySelect = [];
 $queryJoin = [];
 foreach (rex_clang::getAll() as $clang_id => $clang) {
     if (rex::getUser()->getComplexPerm('clang')->hasPerm($clang_id)) {
-        $as = rex_string::normalize($clang->getName());
+        $as = 'clang' . $clang->getId();
         $querySelect[] = $as . '.replace AS ' . 'id' . $clang->getId();
         $queryJoin[] = 'LEFT JOIN ' . rex::getTable('sprog_wildcard') . ' AS ' . $as . ' ON a.id = ' . $as . '.id AND ' . $as . '.clang_id = ' . $clang->getId();
     }
