@@ -149,8 +149,14 @@ if (count($artOptions)) {
 } else {
     $artSelect->addOption($this->i18n('settings_sync_metainfo_not_found'), '', 0, 0, ['disabled' => 'disabled']);
 }
+
 /*
+
+
 $sizeSelect = $sizeSelectPlus + count($medOptions);
+
+
+
 $sizeSelect = $sizeSelect > $sizeSelectMax ? $sizeSelectMax : $sizeSelect;
 $medSelect = new \rex_select();
 $medSelect->setId('sync-metainfo-med');

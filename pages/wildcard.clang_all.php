@@ -28,7 +28,7 @@ $error = '';
 $success = '';
 
 // ----- delete wildcard
-if ($func == 'delete' && $wildcard_id > 0) {
+if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->isAdmin()) {
     $deleteWildcard = rex_sql::factory();
     $deleteWildcard->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE id=?', [$wildcard_id]);
     $success = $this->i18n('wildcard_deleted');
@@ -39,7 +39,7 @@ if ($func == 'delete' && $wildcard_id > 0) {
 
 // ----- add wildcard
 if ($add_wildcard_save || $edit_wildcard_save) {
-    if ($wildcard_name == '') {
+    if (($wildcard_name == '' && $add_wildcard_save) || (rex::getUser()->isAdmin() && $wildcard_name == '' && $edit_wildcard_save)) {
         $error = $this->i18n('wildcard_enter_wildcard');
         $func = $add_wildcard_save ? 'add' : 'edit';
     } elseif ($add_wildcard_save) {
@@ -75,7 +75,9 @@ if ($add_wildcard_save || $edit_wildcard_save) {
             if (isset($wildcard_replaces[$clang_id])) {
                 $editWildcard->setTable(rex::getTable('sprog_wildcard'));
                 $editWildcard->setWhere(['id' => $wildcard_id, 'clang_id' => $clang_id]);
-                $editWildcard->setValue('wildcard', $wildcard_name);
+                if (rex::getUser()->isAdmin()) {
+                    $editWildcard->setValue('wildcard', $wildcard_name);
+                }
                 $editWildcard->setValue('replace', $wildcard_replaces[$clang_id]);
                 $editWildcard->addGlobalUpdateFields();
                 $editWildcard->update();
@@ -157,6 +159,11 @@ if (count($entries)) {
         // Edit form
         if ($func == 'edit' && $wildcard_id == $entry_id) {
             $td = '';
+            if (rex::getUser()->isAdmin()) {
+                $td .= '<td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" /></td>';
+            } else {
+                $td .= '<td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>';
+            }
             foreach ($entry as $lang_name => $replace) {
                 $clang_id = (int) trim($lang_name, 'id');
                 $td .= '<td data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . htmlspecialchars($replace) . '</textarea></td>';
@@ -165,7 +172,6 @@ if (count($entries)) {
                         <tr class="mark">
                             <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
-                            <td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" /></td>
                             ' . $td . '
                             <td class="rex-table-action" colspan="2"><button class="btn btn-save" type="submit" name="edit_wildcard_save"' . rex::getAccesskey($this->i18n('update'), 'save') . ' value="1">' .  $this->i18n('update') . '</button></td>
                         </tr>';
@@ -183,7 +189,7 @@ if (count($entries)) {
                             <td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>
                             ' . $td . '
                             <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_edit') . '</a></td>
-                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete') . '</a></td>
+                            <td class="rex-table-action">' . (rex::getUser()->isAdmin() ? '<a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'). '</a>' : '' ) . '</td>
                         </tr>';
         }
     }
