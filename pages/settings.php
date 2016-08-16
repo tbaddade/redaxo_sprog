@@ -16,7 +16,7 @@ $sections = '';
 $func = rex_request('func', 'string');
 
 if ($func == 'update') {
-    // clang_switch wird in der boot.php neu gesetzt
+    // clang_switch und clang_base wird in der boot.php neu gesetzt
 
     $this->setConfig(rex_post('settings', [
         ['wildcard_open_tag', 'string'],
@@ -75,6 +75,53 @@ $fragment->setVar('class', 'edit', false);
 $fragment->setVar('title', $this->i18n('wildcard'), false);
 $fragment->setVar('body', $panelBody, false);
 $sections .= $fragment->parse('core/page/section.php');
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - -
+$clangAll = \rex_clang::getAll();
+if (count($clangAll) >= 2) {
+    $clangOptions = [];
+    foreach ($clangAll as $clang) {
+        $clangOptions[$clang->getId()] = $clang->getName();
+    }
+    $panelElements = '';
+    $formElements = [];
+    $clangBase = $this->getConfig('clang_base');
+    foreach ($clangAll as $clang) {
+        $select = new \rex_select();
+        $select->setName('clang_base[' . $clang->getId() . ']');
+        if (isset($clangBase[$clang->getId()])) {
+            $select->setSelected($clangBase[$clang->getId()]);
+        } else {
+            $select->setSelected($clang->getId());
+        }
+        $select->addArrayOptions($clangOptions);
+
+        $n = [];
+        $n['header'] = '<div class="col-md-5">';
+        $n['footer'] = '</div>';
+        $n['label'] = '<label>' . $clang->getName() . '</label>';
+        $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+        $formElements[] = $n;
+    }
+
+    $fragment = new \rex_fragment();
+    $fragment->setVar('elements', $formElements, false);
+    $panelElements .= $fragment->parse('core/form/form.php');
+
+    $panelBody = '
+        <fieldset>
+            <div class="row">' . $panelElements . '</div>
+        </fieldset>';
+
+    $fragment = new \rex_fragment();
+    $fragment->setVar('class', 'edit', false);
+    $fragment->setVar('title', $this->i18n('clang_base'), false);
+    $fragment->setVar('body', $panelBody, false);
+    $sections .= $fragment->parse('core/page/section.php');
+}
+
 
 // - - - - - - - - - - - - - - - - - - - - - - Synchronization
 $panelElements = '';

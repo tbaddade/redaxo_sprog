@@ -149,6 +149,7 @@ if (rex::isBackend() && rex::getUser()) {
                 $func = rex_request('func', 'string');
                 if ($func == 'update') {
                     \rex_config::set('sprog', 'wildcard_clang_switch', rex_request('clang_switch', 'bool'));
+                    \rex_config::set('sprog', 'clang_base', rex_request('clang_base', 'array'));
                 }
             }
         }
@@ -159,7 +160,15 @@ if (rex::isBackend() && rex::getUser()) {
             if (Wildcard::isClangSwitchMode()) {
                 $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
                 $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
-                foreach (\rex_clang::getAll() as $id => $clang) {
+                $clangAll = \rex_clang::getAll();
+                $clangBase = $this->getConfig('clang_base');
+                // Alle Sprachen die eine andere Basis haben, nicht in der Navigation erscheinen lassen
+                foreach ($clangAll as $clang) {
+                    if (isset($clangBase[$clang->getId()]) && $clangBase[$clang->getId()] != $clang->getId()) {
+                        unset($clangAll[$clang->getId()]);
+                    }
+                }
+                foreach ($clangAll as $id => $clang) {
                     if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
                         $page->addSubpage((new rex_be_page('clang' . $id, $clang->getName()))
                             ->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'))

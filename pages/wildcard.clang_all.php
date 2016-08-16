@@ -27,6 +27,15 @@ $edit_wildcard_save = rex_post('edit_wildcard_save', 'boolean');
 $error = '';
 $success = '';
 
+$clangAll = \rex_clang::getAll();
+$clangBase = $this->getConfig('clang_base');
+// Alle Sprachen die eine andere Basis haben, nicht anzeigen lassen
+foreach ($clangAll as $clang) {
+    if (isset($clangBase[$clang->getId()]) && $clangBase[$clang->getId()] != $clang->getId()) {
+        unset($clangAll[$clang->getId()]);
+    }
+}
+
 // ----- delete wildcard
 if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->isAdmin()) {
     $deleteWildcard = rex_sql::factory();
@@ -99,10 +108,10 @@ if ($error != '') {
 
 $th = '';
 $td_add = '';
-foreach (rex_clang::getAll() as $clang_id => $clang) {
-    if (rex::getUser()->getComplexPerm('clang')->hasPerm($clang_id)) {
+foreach ($clangAll as $clang_id => $clang) {
+    if (rex::getUser()->getComplexPerm('clang')->hasPerm($clang->getId())) {
         $th .= '<th>' . $clang->getName() . '</th>';
-        $td_add .= '<td data-title="' . $clang->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . (isset($wildcard_replaces[$clang_id]) ? htmlspecialchars($wildcard_replaces[$clang_id]) : '') . '</textarea></td>';
+        $td_add .= '<td data-title="' . $clang->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang->getId() . ']" rows="6">' . (isset($wildcard_replaces[$clang->getId()]) ? htmlspecialchars($wildcard_replaces[$clang->getId()]) : '') . '</textarea></td>';
     }
 }
 
@@ -137,8 +146,8 @@ if ($func == 'add') {
 
 $querySelect = [];
 $queryJoin = [];
-foreach (rex_clang::getAll() as $clang_id => $clang) {
-    if (rex::getUser()->getComplexPerm('clang')->hasPerm($clang_id)) {
+foreach ($clangAll as $clang_id => $clang) {
+    if (rex::getUser()->getComplexPerm('clang')->hasPerm($clang->getId())) {
         $as = 'clang' . $clang->getId();
         $querySelect[] = $as . '.replace AS ' . 'id' . $clang->getId();
         $queryJoin[] = 'LEFT JOIN ' . rex::getTable('sprog_wildcard') . ' AS ' . $as . ' ON a.id = ' . $as . '.id AND ' . $as . '.clang_id = ' . $clang->getId();

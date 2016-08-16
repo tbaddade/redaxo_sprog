@@ -51,6 +51,11 @@ class Wildcard
             $clang_id = \rex_clang::getCurrentId();
         }
 
+        $clangBase = \rex_config::get('clang_base');
+        if (isset($clangBase[$clang_id])) {
+            $clang_id = $clangBase[$clang_id];
+        }
+
         $sql = \rex_sql::factory();
         $sql->setQuery('SELECT `replace` FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id = :clang_id AND `wildcard` = :wildcard', [':clang_id' => $clang_id, ':wildcard' => trim($wildcard)]);
         if ($sql->getRows() == 1 && trim($sql->getValue('replace')) != '') {
@@ -89,6 +94,11 @@ class Wildcard
 
         if (!$clang_id) {
             $clang_id = \rex_clang::getCurrentId();
+        }
+
+        $clangBase = \rex_config::get('clang_base');
+        if (isset($clangBase[$clang_id])) {
+            $clang_id = $clangBase[$clang_id];
         }
 
         $sql = \rex_sql::factory();
