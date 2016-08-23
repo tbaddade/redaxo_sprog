@@ -117,7 +117,7 @@ if (count($clangAll) >= 2) {
 
     $fragment = new \rex_fragment();
     $fragment->setVar('class', 'edit', false);
-    $fragment->setVar('title', $this->i18n('clang_base'), false);
+    $fragment->setVar('title', $this->i18n('settings_clang_base'), false);
     $fragment->setVar('body', $panelBody, false);
     $sections .= $fragment->parse('core/page/section.php');
 }

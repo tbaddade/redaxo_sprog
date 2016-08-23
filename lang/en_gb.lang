@@ -9,6 +9,7 @@ sprog_no_results = No results
 
 sprog_settings = Settings
 sprog_settings_title = Configuration title
+sprog_settings_clang_base = Source language
 sprog_settings_config_saved = Configuration has been saved.
 sprog_settings_wildcard_clang_switch = From how many languages the site navigation should be displayed
 sprog_settings_wildcard_close_tag = Closing tag
@@ -45,4 +46,4 @@ sprog_wildcard_go_to_the_article = To article
 sprog_wildcard_replace = Replacement
 sprog_wildcard_without_tag = Note placeholder without opening / closing tag
 
-
+sprog_search = Search

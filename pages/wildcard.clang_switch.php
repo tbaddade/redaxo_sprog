@@ -4,6 +4,7 @@
  * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
+ * @author (c) Alex Platter <a.platter@kreatif.it>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -54,9 +55,15 @@ if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->isAdmin()) {
 }
 
 if ($func == '') {
+    $search_term = rex_request('search-term', 'string', '');
     $title = $this->i18n('wildcard_caption');
 
-    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM ' . rex::getTable('sprog_wildcard') . ' WHERE `clang_id`="' . $clang_id . '" ORDER BY wildcard');
+    $sqlWhere = '';
+    if (strlen($search_term)) {
+        $sqlWhere = ' AND (`wildcard` LIKE "%' . $search_term . '%" OR `replace` LIKE "%' . $search_term . '%")';
+    }
+
+    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM ' . rex::getTable('sprog_wildcard') . ' WHERE `clang_id`="' . $clang_id . '"' .$sqlWhere . ' ORDER BY `wildcard`');
     $list->addTableAttribute('class', 'table-striped');
 
     $tdIcon = '<i class="rex-icon rex-icon-refresh"></i>';
@@ -91,9 +98,12 @@ if ($func == '') {
 
     $content .= $list->get();
 
+    $searchControl = '<form action="' . \rex_url::currentBackendPage() . '" method="post" class="form-inline"><div class="input-group input-group-xs"><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="' . htmlspecialchars($search_term) . '" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">' . $this->i18n('search') . '</button></div></div></form>';
+
     $fragment = new rex_fragment();
     $fragment->setVar('title', $title);
     $fragment->setVar('content', $content, false);
+    $fragment->setVar('options', $searchControl, false);
     $content = $fragment->parse('core/page/section.php');
 } else {
     $title = $func == 'edit' ? $this->i18n('edit') : $this->i18n('add');

@@ -9,7 +9,8 @@ page:
     pjax: false
     icon: rex-icon rex-icon-language
     subpages:
-        wildcard: { title: 'translate:wildcard' }
+        wildcard:
+            title: 'translate:wildcard'
         settings:
             title: 'translate:settings'
             perm: admin[]

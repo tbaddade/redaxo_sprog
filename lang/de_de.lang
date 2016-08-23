@@ -9,6 +9,7 @@ sprog_no_results = Keine Ergebnisse
 
 sprog_settings = Konfiguration
 sprog_settings_title = Konfiguration
+sprog_settings_clang_base = Sprachbasis
 sprog_settings_config_saved = Konfiguration gespeichert.
 sprog_settings_wildcard_clang_switch = Sprachen als Unternavigation einblenden
 sprog_settings_wildcard_close_tag = schließendes Tag
@@ -44,3 +45,5 @@ sprog_wildcard_error_no_wildcard = Bitte einen Platzhalter angeben
 sprog_wildcard_go_to_the_article = zum Artikel
 sprog_wildcard_replace = Ersetzung
 sprog_wildcard_without_tag = Platzhalter ohne öffnendes/schließendes Tag notieren
+
+sprog_search = Suchen

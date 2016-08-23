@@ -4,6 +4,7 @@
  * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
+ * @author (c) Alex Platter <a.platter@kreatif.it>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -19,6 +20,7 @@ $wildcard_id = rex_request('wildcard_id', 'int');
 $wildcard_name = rex_request('wildcard_name', 'string');
 $wildcard_replaces = rex_request('wildcard_replaces', 'array');
 $func = rex_request('func', 'string');
+$search_term = rex_request('search-term', 'string');
 
 // -------------- Form Submits
 $add_wildcard_save = rex_post('add_wildcard_save', 'boolean');
@@ -155,7 +157,12 @@ foreach ($clangAll as $clang_id => $clang) {
 }
 $querySelectAsString = count($querySelect) ? ', ' . implode(',', $querySelect) : '';
 $wildcards = rex_sql::factory();
-$entries = $wildcards->setQuery('SELECT DISTINCT a.id, a.wildcard AS wildcard' . $querySelectAsString . ' FROM ' . rex::getTable('sprog_wildcard') . ' AS a ' . implode(' ', $queryJoin) . ' ORDER BY wildcard')->getArray();
+$search  = '';
+if (strlen($search_term)) {
+    $search = 'AND (a.`wildcard` LIKE "%' . $search_term . '%" OR a.`replace` LIKE "%' . $search_term . '%")';
+}
+$entries = $wildcards->setQuery('SELECT DISTINCT a.id, a.wildcard AS wildcard' . $querySelectAsString . ' FROM ' . rex::getTable('sprog_wildcard') . ' AS a ' . implode(' ', $queryJoin) . ' WHERE 1 ' . $search . ' ORDER BY wildcard')->getArray();
+//$entries = $wildcards->setQuery('SELECT DISTINCT a.id, a.wildcard AS wildcard' . $querySelectAsString . ' FROM ' . rex::getTable('sprog_wildcard') . ' AS a ' . implode(' ', $queryJoin) . ' ORDER BY wildcard')->getArray();
 
 if (count($entries)) {
     foreach ($entries as $entry) {
@@ -178,7 +185,7 @@ if (count($entries)) {
                 $td .= '<td data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . htmlspecialchars($replace) . '</textarea></td>';
             }
             $content .= '
-                        <tr class="mark">
+                        <tr class="mark" id="wildcard-' . $entry_id . '">
                             <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
                             ' . $td . '
@@ -192,12 +199,12 @@ if (count($entries)) {
             }
 
             $content .= '
-                        <tr>
-                            <td class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-refresh"></i></a></td>
+                        <tr id="wildcard-' . $entry_id . '">
+                            <td class="rex-table-icon"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '#wildcard-' . $entry_id . '"><i class="rex-icon rex-icon-refresh"></i></a></td>
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
                             <td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>
                             ' . $td . '
-                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_edit') . '</a></td>
+                            <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '#wildcard-' . $entry_id . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_edit') . '</a></td>
                             <td class="rex-table-action">' . (rex::getUser()->isAdmin() ? '<a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'). '</a>' : '' ) . '</td>
                         </tr>';
         }
@@ -210,9 +217,13 @@ $content .= '
 
 echo $message;
 
+$searchControl = '<div class="form-inline"><div class="input-group input-group-xs"><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="' . htmlspecialchars($search_term) . '" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">' . $this->i18n('search') . '</button></div></div></div>';
+$searchControl =  ($func == '') ? '<form action="' . \rex_url::currentBackendPage() . '" method="post">' . $searchControl . '</form>' :  $searchControl;
+
 $fragment = new rex_fragment();
 $fragment->setVar('title', $this->i18n('wildcard_caption'), false);
 $fragment->setVar('content', $content, false);
+$fragment->setVar('options', $searchControl, false);
 $content = $fragment->parse('core/page/section.php');
 
 if ($func == 'add' || $func == 'edit') {
