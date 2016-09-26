@@ -13,7 +13,6 @@ namespace Sprog;
 
 class Sync
 {
-
     public static function articleNameToCategoryName($params)
     {
         try {
@@ -32,7 +31,6 @@ class Sync
 
                 \rex_article_cache::delete($id, $clangId);
             }
-
         } catch (\rex_sql_exception $e) {
             throw new \rex_api_exception($e);
         }
@@ -55,7 +53,6 @@ class Sync
 
                 \rex_article_cache::delete($id, $clangId);
             }
-
         } catch (\rex_sql_exception $e) {
             throw new \rex_api_exception($e);
         }
@@ -77,7 +74,6 @@ class Sync
                 ->update();
 
             \rex_article_cache::delete($id);
-
         } catch (\rex_sql_exception $e) {
             throw new \rex_api_exception($e);
         }
@@ -101,13 +97,12 @@ class Sync
 
                 \rex_article_cache::delete($id);
             }
-
         } catch (\rex_sql_exception $e) {
             throw new \rex_api_exception($e);
         }
     }
 
-    public static function articleMetainfo($params, $fields)
+    public static function articleMetainfo($params, $fields, $toClangId = 0)
     {
         $id = $params['id'];
         $clangId = $params['clang'];
@@ -123,13 +118,12 @@ class Sync
                 // ----- Update Category Metainfo
                 \rex_sql::factory()
                     ->setTable(\rex::getTable('article'))
-                    ->setWhere('id = :id AND clang_id != :clang', ['id' => $id, 'clang' => $clangId])
+                    ->setWhere('id = :id AND clang_id ' . ($toClangId > 0 ? '=' : '!=') . ' :clang', ['id' => $id, 'clang' => ($toClangId > 0 ? $toClangId : $clangId)])
                     ->setValues($saveFields)
                     ->addGlobalUpdateFields()
                     ->update();
 
                 \rex_article_cache::delete($id);
-
             } catch (\rex_sql_exception $e) {
                 throw new \rex_api_exception($e);
             }

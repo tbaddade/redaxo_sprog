@@ -1,0 +1,6 @@
+.panel-sprog-copy .panel-body {
+    height: 250px;
+    overflow: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}

@@ -47,3 +47,69 @@ sprog_wildcard_replace = Ersetzung
 sprog_wildcard_without_tag = Platzhalter ohne öffnendes/schließendes Tag notieren
 
 sprog_search = Suchen
+
+sprog_import = Importieren
+sprog_import_csv_upload = CSV importieren
+sprog_upload = hochladen
+sprog_import_file_label = CSV Datei
+sprog_import_overwrite_wildcards = Bestehende Platzhalter überschreiben
+sprog_import_process = Importiere Platzhalter:
+sprog_import_lang_not_exists = {0} wurde nicht gefunden!
+sprog_import_lang_importing = {0} gefunden
+sprog_import_wildcard_added = {0} wurde hinzugefügt
+sprog_import_wildcard_updated = {0} wurde aktualisiert
+sprog_import_wildcard_deleted = {0} wurde gelöscht
+
+sprog_export = Exportieren
+sprog_cleanup = Aufräumen
+
+
+sprog_copy_content = Inhalte kopieren
+sprog_copy_structure_content = Artikelinhalte kopieren
+sprog_copy_metadata = Metadaten kopieren
+
+sprog_copy_clang_from = von der Sprache
+sprog_copy_clang_to = zur Sprache
+sprog_copy_delete_before = Inhalte vorher löschen?
+
+sprog_copy_name = Artikelname
+sprog_copy_catname = Kategoriename
+sprog_copy_priority = Artikelpriorität
+sprog_copy_catpriority = Kategoriepriorität
+sprog_copy_status = Status
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Metadaten kopieren/synchronisieren
+sprog_copy_structure_metadata_articles = Artikel
+sprog_copy_structure_metadata_categories = Kategorien
+sprog_copy_structure_metadata_fields = Felder auswählen
+sprog_copy_structure_metadata_structure = Struktur
+
+
+
+sprog_copy_button_start = Los geht es!
+sprog_copy_button_success = Prima, danke!
+sprog_copy_button_cancel = Abbrechen
+sprog_copy_button_again = Nochmal versuchen
+
+
+sprog_copy_time_elapsed = Verstrichene Zeit
+sprog_copy_error_title = Verdammt, etwas ist schief gelaufen!
+sprog_copy_error_text = <p>Beim Kopieren der Artikelinhalte ist ein Fehler aufgetreten. Details befinden sich auf der Fehlerseite. Wir freuen uns über jede Mithilfe, die Qualität des Addons zu verbessern, indem Fehler bei <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a> gemeldet werden. Vielen Dank!</p>
+sprog_copy_error_link = Link zur Fehlerseite
+
+
+sprog_copy_structure_content_title = Kopierte Artikel…
+sprog_copy_structure_content_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Fertig: Artikeinhalte wurden kopiert
+sprog_copy_structure_content_finished_text = <p>Die Inhalte wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
+sprog_copy_structure_content_nothing_title = Keine Inhalte?
+sprog_copy_structure_content_nothing_text = <p>Tut mir leid, aber es gibt keine Inhalte zum kopieren.</p>
+
+sprog_copy_structure_metadata_title = Kopierte/Synchronisierte Artikel…
+sprog_copy_structure_metadata_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Fertig: Metadaten wurden kopiert/synchronisiert
+sprog_copy_structure_metadata_finished_text = <p>Die Metadaten wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert/synchronisiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
+sprog_copy_structure_metadata_nothing_title = Keine Metadaten?
+sprog_copy_structure_metadata_nothing_text = <p>Tut mir leid, aber es gibt keine Metadaten zum kopieren/synchronisieren.</p>
+

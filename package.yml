@@ -11,6 +11,44 @@ page:
     subpages:
         wildcard:
             title: 'translate:wildcard'
+        copy:
+            title: 'translate:copy_content'
+            perm: admin[]
+            subpages:
+                structure_content:
+                    title: 'translate:copy_structure_content'
+                structure_metadata:
+                    title: 'translate:copy_structure_metadata'
         settings:
             title: 'translate:settings'
             perm: admin[]
+        artefacts:
+            title: 'translate:artefacts'
+            perm: admin[]
+            subpages:
+                import: { title: 'translate:import' }
+                export: { title: 'translate:export' }
+                cleanup: { title: 'translate:cleanup' }
+
+
+pages:
+    sprog.copy.structure_content_popup:
+        title: 'translate:copy_structure_content_popup'
+        main: true
+        popup: true
+        hidden: true
+    sprog.copy.structure_content_generate:
+        title: 'translate:copy_structure_content_generate'
+        main: true
+        hasLayout: false
+        hidden: true
+    sprog.copy.structure_metadata_popup:
+        title: 'translate:copy_structure_metadata_popup'
+        main: true
+        popup: true
+        hidden: true
+    sprog.copy.structure_metadata_generate:
+        title: 'translate:copy_structure_metadata_generate'
+        main: true
+        hasLayout: false
+        hidden: true

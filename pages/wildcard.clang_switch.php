@@ -19,7 +19,7 @@ $message = '';
 $pid = rex_request('pid', 'int');
 $wildcard_id = rex_request('wildcard_id', 'int');
 $func = rex_request('func', 'string');
-$clang_id = (int)str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
+$clang_id = (int) str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
 
 
 $error = '';
@@ -27,7 +27,7 @@ $success = '';
 
 // Wenn der Platzhalter vom Admin geändert wird, muss dieser in den anderen Sprachen synchronisiert werden
 if (rex::getUser()->isAdmin() && count(rex_clang::getAll()) >= 2) {
-    \rex_extension::register('REX_FORM_SAVED', function(rex_extension_point $ep) use ($pid, $clang_id) {
+    \rex_extension::register('REX_FORM_SAVED', function (rex_extension_point $ep) use ($pid, $clang_id) {
         $form = $ep->getParam('form');
         if ($form->isEditMode()) {
             $items = rex_sql::factory()->getArray('SELECT `id`, `wildcard` FROM ' . $form->getTablename() . ' WHERE `pid` = :pid LIMIT 2', ['pid' => $pid]);

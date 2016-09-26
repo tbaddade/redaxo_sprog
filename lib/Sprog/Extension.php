@@ -11,7 +11,6 @@
 
 namespace Sprog;
 
-
 class Extension
 {
     public static function replaceWildcards(\rex_extension_point $ep)
@@ -108,12 +107,10 @@ class Extension
 
     public static function wildcardFormControlElement(\rex_extension_point $ep)
     {
-        if (! \rex::getUser()->getComplexPerm('clang')->hasAll()) {
+        if (!\rex::getUser()->getComplexPerm('clang')->hasAll()) {
             $subject = $ep->getSubject();
             unset($subject['delete']);
             $ep->setSubject($subject);
         }
     }
-
-
 }
