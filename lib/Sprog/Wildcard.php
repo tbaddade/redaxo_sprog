@@ -161,16 +161,17 @@ class Wildcard
                     preg_match_all(self::getRegexp(), $item['subject'], $matchesSubject, PREG_SET_ORDER);
 
                     foreach ($matchesSubject as $match) {
-                        $wildcards[$match[0]]['wildcard'] = str_replace([self::getOpenTag(), self::getCloseTag()], '', $match[0]);
-                        $wildcards[$match[0]]['url'] = \rex_url::backendController(
-                                                            [
-                                                                  'page' => 'content/edit',
-                                                                  'article_id' => $item['id'],
-                                                                  'mode' => 'edit',
-                                                                  'clang' => $item['clang_id'],
-                                                                  'ctype' => $item['ctype_id'],
-                                                            ]
-                                                        );
+                        $cleanWildcard = trim(str_replace([trim(self::getOpenTag()), trim(self::getCloseTag())], '', $match[0]));
+                        $wildcards[$cleanWildcard]['wildcard'] = $cleanWildcard;
+                        $wildcards[$cleanWildcard]['url'] = \rex_url::backendController(
+                            [
+                                  'page' => 'content/edit',
+                                  'article_id' => $item['id'],
+                                  'mode' => 'edit',
+                                  'clang' => $item['clang_id'],
+                                  'ctype' => $item['ctype_id'],
+                            ]
+                        );
                     }
                 }
             }
@@ -179,7 +180,7 @@ class Wildcard
             if (count($wildcards)) {
                 $sql = \rex_sql::factory();
                 $sql_query = '
-                                SELECT  CONCAT("' . self::getOpenTag() . '", wildcard, "' . self::getCloseTag() . '") AS wildcard
+                                SELECT  wildcard
                                 FROM    ' . \rex::getTable('sprog_wildcard') . '
                                 WHERE   clang_id = "' . \rex_clang::getStartId() . '"';
 
