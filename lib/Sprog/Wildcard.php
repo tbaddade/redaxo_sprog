@@ -51,7 +51,7 @@ class Wildcard
             $clang_id = \rex_clang::getCurrentId();
         }
 
-        $clangBase = \rex_config::get('clang_base');
+        $clangBase = \rex_config::get('sprog', 'clang_base');
         if (isset($clangBase[$clang_id])) {
             $clang_id = $clangBase[$clang_id];
         }
@@ -82,7 +82,7 @@ class Wildcard
             $clang_id = \rex_clang::getCurrentId();
         }
 
-        $clangBase = \rex_config::get('clang_base');
+        $clangBase = \rex_config::get('sprog', 'clang_base');
         if (isset($clangBase[$clang_id])) {
             $clang_id = $clangBase[$clang_id];
         }
