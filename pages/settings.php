@@ -37,7 +37,7 @@ if ($func == 'update') {
 $panelElements = '';
 $formElements = [];
 $n = [];
-$n['header'] = '<div class="row"><div class="col-md-5">';
+$n['header'] = '<div class="row"><div class="col-md-6">';
 $n['footer'] = '</div></div>';
 $n['label'] = '<label for="wildcard-open-tag">' . $this->i18n('settings_wildcard_open_close_tag') . '</label>';
 $n['field'] = '
@@ -99,7 +99,7 @@ if (count($clangAll) >= 2) {
         $select->addArrayOptions($clangOptions);
 
         $n = [];
-        $n['header'] = '<div class="col-md-5">';
+        $n['header'] = '<div class="col-md-6">';
         $n['footer'] = '</div>';
         $n['label'] = '<label>' . $clang->getName() . '</label>';
         $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
