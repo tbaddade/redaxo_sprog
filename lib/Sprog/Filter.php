@@ -14,17 +14,19 @@ namespace Sprog;
 abstract class Filter
 {
     /**
-     * Provide the commands of the search.
+     * Returns the name of the filter.
      *
-     * @return array
+     * @return string
      */
     abstract function name();
 
     /**
      * Execute the filter
      *
-     * @param  Command $command
-     * @return Result
+     * @param  string $value
+     * @param  string $arguments
+     *
+     * @return string
      */
-    abstract function fire(Command $command);
+    abstract function fire($value, $arguments);
 }

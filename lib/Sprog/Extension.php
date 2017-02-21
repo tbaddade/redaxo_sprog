@@ -15,7 +15,7 @@ class Extension
 {
     public static function replaceWildcards(\rex_extension_point $ep)
     {
-        $ep->setSubject(Wildcard::parse($ep->getSubject()));
+        $ep->setSubject(Wildcard::parse($ep->getSubject(), null, $ep->getParams()));
     }
 
     public static function articleUpdated(\rex_extension_point $ep)

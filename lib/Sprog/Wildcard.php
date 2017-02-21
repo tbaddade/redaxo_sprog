@@ -25,7 +25,7 @@ class Wildcard
 
     public static function getRegexp($value = '.*?')
     {
-        return '@' . preg_quote(trim(self::getOpenTag())) . '\s*' . $value . '\s*' . preg_quote(trim(self::getCloseTag())) . '@';
+        return '@(?<complete>' . preg_quote(trim(self::getOpenTag())) . '\s*(?<wildcard>' . $value . ')\s*((\|(?<filter>\s*[a-z]+)\(?(?<arguments>.*?)?\)?))?\s*' . preg_quote(trim(self::getCloseTag())) . ')@';
     }
 
     public static function isClangSwitchMode()
@@ -69,12 +69,18 @@ class Wildcard
      *
      * @param string $content
      * @param int    $clang_id
+     * @param array  $params
      *
      * @return string
      */
-    public static function parse($content, $clang_id = null)
+    public static function parse($content, $clang_id = null, $params = [])
     {
         if (trim($content) == '') {
+            return $content;
+        }
+
+        preg_match_all(self::getRegexp(), $content, $matches, PREG_SET_ORDER);
+        if (count($matches) < 1) {
             return $content;
         }
 
@@ -88,18 +94,36 @@ class Wildcard
         }
 
         $sql = \rex_sql::factory();
-        $sql->setQuery('SELECT `wildcard`, `replace` FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id = :clang_id', ['clang_id' => $clang_id]);
-
-        $search = [];
-        $replace = [];
-        $rows = $sql->getRows();
-
-        for ($i = 1; $i <= $rows; $i++, $sql->next()) {
-            $search[] = self::getRegexp($sql->getValue('wildcard'));
-            $replace[] = self::replace($sql->getValue('wildcard'), $sql->getValue('replace'));
+        $items = $sql->getArray('SELECT `wildcard`, `replace` FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id = :clang_id', ['clang_id' => $clang_id]);
+        if (count($items) < 1) {
+            return $content;
         }
 
-        return preg_replace($search, $replace, $content);
+        $wildcards = [];
+        foreach ($items as $item) {
+            $wildcards[$item['wildcard']] = $item['replace'];
+        }
+
+        $filters = $params['filters'];
+        $search = [];
+        $replace = [];
+        foreach ($matches as $match) {
+            $value = $match['wildcard'];
+            if (isset($wildcards[$match['wildcard']])) {
+                $value = $wildcards[$match['wildcard']];
+            }
+            if (isset($match['filter']) && isset($filters[trim($match['filter'])])) {
+                $filter = $filters[trim($match['filter'])];
+                $arguments = isset($match['arguments']) ? $match['arguments'] : '';
+                $value = $filter->fire($value, $arguments);
+            } else {
+                $value = self::replace($match['wildcard'], $value);
+            }
+
+            $search[] = $match['complete'];
+            $replace[] = $value;
+        }
+        return str_replace($search, $replace, $content);
     }
 
     /**
