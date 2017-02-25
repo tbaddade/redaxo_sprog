@@ -47,3 +47,69 @@ sprog_wildcard_replace = Replacement
 sprog_wildcard_without_tag = Note placeholder without opening / closing tag
 
 sprog_search = Search
+
+sprog_import = Import
+sprog_import_csv_upload = Import CSV
+sprog_upload = upload
+sprog_import_file_label = CSV file
+sprog_import_overwrite_wildcards = Overwrite existing placeholders
+sprog_import_process = Imported placeholders:
+sprog_import_lang_not_exists = {0} not found!
+sprog_import_lang_importing = {0} found
+sprog_import_wildcard_added = {0} has been added
+sprog_import_wildcard_updated = {0} has been updated
+sprog_import_wildcard_deleted = {0} has been deleted
+
+sprog_export = Export
+sprog_cleanup = Clean up
+
+
+sprog_copy_content = Copy contents
+sprog_copy_structure_content = Copy article contents
+sprog_copy_metadata = Copy metadata
+
+sprog_copy_clang_from = from language
+sprog_copy_clang_to = to language
+sprog_copy_delete_before = Delete content beforehand?
+
+sprog_copy_name = Article name
+sprog_copy_catname = Category name
+sprog_copy_priority = Article priority
+sprog_copy_catpriority = Category priority
+sprog_copy_status = Status
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Copy/synchronise metadata
+sprog_copy_structure_metadata_articles = Articles
+sprog_copy_structure_metadata_categories = Categories
+sprog_copy_structure_metadata_fields = Choose fields
+sprog_copy_structure_metadata_structure = Structure
+
+
+
+sprog_copy_button_start = Let's do this!
+sprog_copy_button_success = Coo, thanks!
+sprog_copy_button_cancel = Cancel
+sprog_copy_button_again = Try again
+
+
+sprog_copy_time_elapsed = Time passed
+sprog_copy_error_title = Holy guacamolé, something went tits up!
+sprog_copy_error_text = <p>An error occurred while copying article contents. Details of what happened can be reviewed on the error page. Suggestions to improve the quality of this addon are greatly appreciated, if you encounter errors please create an issue on <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a>. Thanks a bunch!
+sprog_copy_error_link = Link to error page
+
+
+sprog_copy_structure_content_title = Copied articles...
+sprog_copy_structure_content_progress = Articel <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Done: article contents have been copied
+sprog_copy_structure_content_finished_text = <p>The contents for <strong><span class="sprog-copy__target__finished-articles-num">article</span> have been copied. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_content_nothing_title = No contents?
+sprog_copy_structure_content_nothing_text = <p>I'm sorry, but there are is no content to copy.</p>
+
+sprog_copy_structure_metadata_title = Copied/synchronised articels...
+sprog_copy_structure_metadata_progress = Article <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Done: Metadata has been copied/synchronized
+sprog_copy_structure_metadata_finished_text = <p>Metadata for <strong><span class="sprog-copy__target__finished-articles-num">articles</span> have been copied/synchronised. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_metadata_nothing_title = No metadata?
+sprog_copy_structure_metadata_nothing_text = <p>I'm sorry, but there is no metadata to copy/synchronise.</p>
+
