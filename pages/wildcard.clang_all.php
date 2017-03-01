@@ -174,28 +174,39 @@ if (count($entries)) {
 
         // Edit form
         if ($func == 'edit' && $wildcard_id == $entry_id) {
+            $colSpan = count($entry);
             $td = '';
             if (rex::getUser()->isAdmin()) {
-                $td .= '<td data-title="' . $this->i18n('wildcard') . '"><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" /></td>';
+                $td .= '<td colspan="' . $colSpan .'" data-title="' . $this->i18n('wildcard') . '"><div class="input-group"><span class="input-group-addon">' . Wildcard::getOpenTag() . '</span><input class="form-control" type="text" name="wildcard_name" value="' . htmlspecialchars(($edit_wildcard_save ? $wildcard_name : $entry_wildcard)) . '" /><span class="input-group-addon">' . Wildcard::getCloseTag() . '</span></div></td>';
             } else {
-                $td .= '<td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>';
+                $td .= '<td colspan="' . $colSpan .'" data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>';
             }
+            $edit_rows = '';
             foreach ($entry as $lang_name => $replace) {
                 $clang_id = (int) trim($lang_name, 'id');
-                $td .= '<td data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . htmlspecialchars($replace) . '</textarea></td>';
+                //$td .= '<td data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . htmlspecialchars($replace) . '</textarea></td>';
+                $edit_rows .= '
+                        <tr style="background-color: rgba(224, 245, 238, 0.4);">
+                            <td class="rex-table-icon"></td>
+                            <td class="rex-table-id"></td>
+                            <th>' . rex_clang::get($clang_id)->getName() . '</th>
+                            <td colspan="' . $colSpan .'" data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="8">' . htmlspecialchars($replace) . '</textarea></td>
+                            <td class="rex-table-action" colspan="2"></td>
+                        </tr>';
             }
             $content .= '
                         <tr class="mark" id="wildcard-' . $entry_id . '">
                             <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                             <td class="rex-table-id" data-title="' . $this->i18n('id') . '">' . $entry_id . '</td>
+                            <th>' . $this->i18n('wildcard') . '</th>
                             ' . $td . '
                             <td class="rex-table-action" colspan="2"><button class="btn btn-save" type="submit" name="edit_wildcard_save"' . rex::getAccesskey($this->i18n('update'), 'save') . ' value="1">' .  $this->i18n('update') . '</button></td>
-                        </tr>';
+                        </tr>' . $edit_rows;
         } else {
             $td = '';
             foreach ($entry as $lang_name => $replace) {
                 $clang_id = (int) trim($lang_name, 'id');
-                $td .= '<td data-title="' . rex_clang::get($clang_id)->getName(). '">' . $replace . '</td>';
+                $td .= '<td data-title="' . rex_clang::get($clang_id)->getName(). '">' . htmlspecialchars($replace) . '</td>';
             }
 
             $content .= '
