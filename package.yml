@@ -32,13 +32,6 @@ page:
         settings:
             title: 'translate:settings'
             perm: admin[]
-        artefacts:
-            title: 'translate:artefacts'
-            perm: admin[]
-            subpages:
-                import: { title: 'translate:import' }
-                export: { title: 'translate:export' }
-                cleanup: { title: 'translate:cleanup' }
 
 
 pages:
