@@ -185,9 +185,9 @@ class Wildcard
                     preg_match_all(self::getRegexp(), $item['subject'], $matchesSubject, PREG_SET_ORDER);
 
                     foreach ($matchesSubject as $match) {
-                        $cleanWildcard = trim(str_replace([trim(self::getOpenTag()), trim(self::getCloseTag())], '', $match[0]));
-                        $wildcards[$cleanWildcard]['wildcard'] = $cleanWildcard;
-                        $wildcards[$cleanWildcard]['url'] = \rex_url::backendController(
+                        $wildcard = $match['wildcard'];
+                        $wildcards[$wildcard]['wildcard'] = $wildcard;
+                        $wildcards[$wildcard]['url'] = \rex_url::backendController(
                             [
                                   'page' => 'content/edit',
                                   'article_id' => $item['id'],
@@ -203,13 +203,13 @@ class Wildcard
             // Alle bereits angelegten Platzhalter entfernen
             if (count($wildcards)) {
                 $sql = \rex_sql::factory();
-                $sql_query = '
-                                SELECT  wildcard
-                                FROM    ' . \rex::getTable('sprog_wildcard') . '
-                                WHERE   clang_id = "' . \rex_clang::getStartId() . '"';
-
                 $sql->setDebug(false);
-                $sql->setQuery($sql_query);
+                $sql->setQuery('
+                    SELECT  wildcard
+                    FROM    ' . \rex::getTable('sprog_wildcard') . '
+                    WHERE   clang_id = :clang_id',
+                    ['clang_id' => \rex_clang::getStartId()]
+                );
 
                 if ($sql->getRows() >= 1) {
                     $items = $sql->getArray();
