@@ -25,6 +25,28 @@ $clang_id = (int) str_replace('clang', '', rex_be_controller::getCurrentPagePart
 $error = '';
 $success = '';
 
+if (!function_exists('sprogStyleTd')) {
+    function sprogStyleTd($params, $value = '', $class = '') {
+        $pid = rex_request('pid', 'int');
+        $list = $params['list'];
+
+        $style = $pid == $list->getValue('pid') ? ' style="background-color: #e0f5ee"' : '';
+        $value = $value != '' ? $value : $params['value'];
+        $value = $params['field'] == 'replace' ? htmlspecialchars($value) : $value;
+        return '<td' . $class . $style . '>' . $value . '</td>';
+    }
+}
+if (!function_exists('sprogStyleTdEdit')) {
+    function sprogStyleTdEdit($params) {
+        return sprogStyleTd($params, $params['list']->getColumnLink('edit', '<i class="rex-icon rex-icon-edit"></i> ' . \rex_i18n::msg('edit')), ' class="rex-table-action"');
+    }
+}
+if (!function_exists('sprogStyleTdDelete')) {
+    function sprogStyleTdDelete($params) {
+        return sprogStyleTd($params, $params['list']->getColumnLink('delete', '<i class="rex-icon rex-icon-delete"></i> ' . \rex_i18n::msg('delete')), ' class="rex-table-action"');
+    }
+}
+
 // Wenn der Platzhalter vom Admin geändert wird, muss dieser in den anderen Sprachen synchronisiert werden
 if (rex::getUser()->isAdmin() && count(rex_clang::getAll()) >= 2) {
     \rex_extension::register('REX_FORM_SAVED', function (rex_extension_point $ep) use ($pid, $clang_id) {
@@ -68,31 +90,42 @@ if ($func == '') {
 
     $tdIcon = '<i class="rex-icon rex-icon-refresh"></i>';
     $thIcon = rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . $list->getUrl(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a>' : '';
-    $list->addColumn($thIcon, $tdIcon, 0, ['<th class="rex-table-icon">###VALUE###</th>', '<td class="rex-table-icon">###VALUE###</td>']);
+
+    $list->addColumn($thIcon, $tdIcon, 0, ['<th class="rex-table-icon">###VALUE###</th>', '###VALUE###']);
     $list->setColumnParams($thIcon, ['func' => 'edit', 'pid' => '###pid###']);
+    $list->setColumnFormat($thIcon, 'custom', 'sprogStyleTd');
 
     $list->removeColumn('pid');
 
     $list->setColumnLabel('id', $this->i18n('id'));
-    $list->setColumnLayout('id', ['<th class="rex-table-id">###VALUE###</th>', '<td class="rex-table-id">###VALUE###</td>']);
+    $list->setColumnLayout('id', ['<th class="rex-table-id">###VALUE###</th>', '###VALUE###']);
+    $list->setColumnFormat('id', 'custom', 'sprogStyleTd');
 
     $list->setColumnLabel('wildcard', $this->i18n('wildcard'));
+    $list->setColumnLayout('wildcard', ['<th>###VALUE###</th>', '###VALUE###']);
+    $list->setColumnFormat('wildcard', 'custom', 'sprogStyleTd');
+
     $list->setColumnLabel('replace', $this->i18n('wildcard_replace'));
+    $list->setColumnLayout('replace', ['<th>###VALUE###</th>', '###VALUE###']);
+    $list->setColumnFormat('replace', 'custom', 'sprogStyleTd');
 
     $list->addColumn('edit', '<i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('edit'));
     $list->setColumnLabel('edit', $this->i18n('function'));
-    $list->setColumnLayout('edit', ['<th class="rex-table-action" colspan="2">###VALUE###</th>', '<td class="rex-table-action">###VALUE###</td>']);
+    $list->setColumnLayout('edit', ['<th class="rex-table-action" colspan="2">###VALUE###</th>', '###VALUE###']);
     $list->setColumnParams('edit', ['func' => 'edit', 'pid' => '###pid###']);
+    $list->setColumnFormat('edit', 'custom', 'sprogStyleTdEdit');
 
     if (rex::getUser()->isAdmin()) {
         $list->addColumn('delete', '<i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'));
         $list->setColumnLabel('delete', $this->i18n('function'));
-        $list->setColumnLayout('delete', ['', '<td class="rex-table-action">###VALUE###</td>']);
+        $list->setColumnLayout('delete', ['', '###VALUE###']);
         $list->setColumnParams('delete', ['func' => 'delete', 'wildcard_id' => '###id###']);
         $list->addLinkAttribute('delete', 'data-confirm', $this->i18n('delete') . ' ?');
+        $list->setColumnFormat('delete', 'custom', 'sprogStyleTdDelete');
     } else {
         $list->addColumn('delete', '');
         $list->setColumnLayout('delete', ['', '<td class="rex-table-action"></td>']);
+        $list->setColumnFormat('delete', 'custom', 'sprogStyleTd');
     }
 
 
