@@ -37,7 +37,7 @@ if ($func == 'update') {
 $panelElements = '';
 $formElements = [];
 $n = [];
-$n['header'] = '<div class="row"><div class="col-md-6">';
+$n['header'] = '<div class="row"><div class="col-lg-8">';
 $n['footer'] = '</div></div>';
 $n['label'] = '<label for="wildcard-open-tag">' . $this->i18n('settings_wildcard_open_close_tag') . '</label>';
 $n['field'] = '
