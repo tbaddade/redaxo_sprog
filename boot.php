@@ -115,16 +115,6 @@ if (!rex::isBackend()) {
 }
 
 if (rex::isBackend() && rex::getUser()) {
-    if ($this->getConfig('sync_structure_category_name_to_article_name')) {
-        // Bug #607
-        // https://github.com/redaxo/redaxo/issues/607
-        // CAT_UPDATED wird nicht ausgelöst, wenn `pjax = true`
-        $structureAddon = rex_addon::get('structure');
-        $structurePropertyPage = $structureAddon->getProperty('page');
-        $structurePropertyPage['pjax'] = false;
-        $structureAddon->setProperty('page', $structurePropertyPage);
-    }
-
     /*
     |--------------------------------------------------------------------------
     | ART_STATUS / ART_UPDATED / ART_META_UPDATED
