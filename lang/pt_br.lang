@@ -1,0 +1,115 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Função
+sprog_function_add = Adicionar
+sprog_function_edit = Editar
+sprog_no_results = Sem resultados
+
+
+sprog_settings = Configurações
+sprog_settings_title = Título
+sprog_settings_clang_base = Idioma de origem
+sprog_settings_config_saved = As configurações foram salvas.
+sprog_settings_wildcard_clang_switch = Mostrar idiomas como uma navegação
+sprog_settings_wildcard_close_tag = Dia do encerramento
+sprog_settings_wildcard_open_tag = Dia da abertura
+sprog_settings_synchronization = Sincronização
+
+sprog_settings_sync_metainfo = Meta informações
+sprog_settings_sync_metainfo_art = Produto
+sprog_settings_sync_metainfo_cat = Categorias
+sprog_settings_sync_metainfo_med = Mídia
+sprog_settings_sync_metainfo_note = Seleciona as informações meta que permanecem em sincronia entre as línguas
+sprog_settings_sync_metainfo_not_found = Nenhuma metainformação encontrada
+
+sprog_settings_sync_structure = Estrutura
+sprog_settings_sync_structure_article_name_to_category_name = Sincronizar nome de categoria com nome de artigo do mesmo idioma
+sprog_settings_sync_structure_category_name_to_article_name = Sincronizar nome de produto com nome de categoria do mesmo idioma
+sprog_settings_sync_structure_status = Sincronizar o status (online / offline) entre os idiomas
+sprog_settings_sync_structure_template = Sincronizar template entre os idiomas
+
+sprog_settings_wildcard_open_close_tag = dia de abertura/encerramento
+
+
+
+sprog_wildcard = coringa
+sprog_wildcard_title = Título do coringa
+sprog_wildcard_add = Adicionar coringa
+sprog_wildcard_added = Coringa foi adicionado
+sprog_wildcard_caption = Lista de coringas
+sprog_wildcard_caption_missing = Lista de coringas ainda não substituídos dentro do {0}
+sprog_wildcard_edit = Editar coringa
+sprog_wildcard_edited = Coringa foi editado
+sprog_wildcard_error_no_wildcard = Por favor, dê um nome ao coringa
+sprog_wildcard_go_to_the_article = Para o produto
+sprog_wildcard_replace = Substituição
+sprog_wildcard_without_tag = Espaço reservado sem dia de abertura/encerramento
+
+sprog_search = Buscar
+
+sprog_import = Importar
+sprog_import_csv_upload = Importar CSV
+sprog_upload = Upload
+sprog_import_file_label = Arquivo CSV
+sprog_import_overwrite_wildcards = Substituir coringas existentes
+sprog_import_process = Coringas importados:
+sprog_import_lang_not_exists = {0} não encontrado!
+sprog_import_lang_importing = {0} encontrado
+sprog_import_wildcard_added = {0} foi adicionado
+sprog_import_wildcard_updated = {0} foi atualizado
+sprog_import_wildcard_deleted = {0} foi deletado
+
+sprog_export = Exportar
+sprog_cleanup = Limpar
+
+
+sprog_copy_content = Copiar conteúdo
+sprog_copy_structure_content = Copiar conteúdo dos produtos
+sprog_copy_metadata = Copiar metadata
+
+sprog_copy_clang_from = Do idioma
+sprog_copy_clang_to = Para o idioma
+sprog_copy_delete_before = Deletar conteúdo previamente?
+
+sprog_copy_name = Nome do produto
+sprog_copy_catname = Nome da categoria
+sprog_copy_priority = Prioridade do produto
+sprog_copy_catpriority = Prioridade da categoria
+sprog_copy_status = Status
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Copiar/sincronizar metadados
+sprog_copy_structure_metadata_articles = Artigos
+sprog_copy_structure_metadata_categories = Categorias
+sprog_copy_structure_metadata_fields = Escolher campos
+sprog_copy_structure_metadata_structure = Estrutura
+
+
+
+sprog_copy_button_start = Vamos fazer isso!
+sprog_copy_button_success = Legal, obrigado!
+sprog_copy_button_cancel = Cancelar
+sprog_copy_button_again = Tentar de novo
+
+
+sprog_copy_time_elapsed = Tempo esgotado
+sprog_copy_error_title = Puts, alguma coisa deu errado!
+sprog_copy_error_text = <p>Ocorreu um erro ao copiar o conteúdo do artigo. Detalhes do que aconteceu podem ser revistos na página de erro. Sugestões para melhorar a qualidade deste addon são muito apreciadas, se você encontrar erros, crie um problema em <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a>. Obrigado!
+sprog_copy_error_link = Link para a página de erro
+
+
+sprog_copy_structure_content_title = Artigos copiados...
+sprog_copy_structure_content_progress = Artigo <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Pronto: os conteúdos dos artigos foram copiados.
+sprog_copy_structure_content_finished_text = <p>Os conteúdos foram <strong><span class="sprog-copy__target__finished-articles-num">article</span> copiados. Isto levou aproximadamente <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_content_nothing_title = Nenhum conteúdo?
+sprog_copy_structure_content_nothing_text = <p>Desculpa, mas não há nenhum conteúdo a ser copiado.<p>
+
+sprog_copy_structure_metadata_title = Artigos copiados/sincronizados...
+sprog_copy_structure_metadata_progress = Artigo <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Feito: Metadados foram copiados/sincronizados
+sprog_copy_structure_metadata_finished_text = <p>Metadados para <strong><span class="sprog-copy__target__finished-articles-num">articles</span> foram copiados/sincronizados. Isto levou aproximadamente <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
+sprog_copy_structure_metadata_nothing_title = Nenhum metadado?
+sprog_copy_structure_metadata_nothing_text = <p>Desculpe, mas não há metadados a serem copiados/sincronizados.<p>
+
