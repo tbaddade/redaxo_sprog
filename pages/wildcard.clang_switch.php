@@ -48,7 +48,7 @@ if (!function_exists('sprogStyleTdDelete')) {
 }
 
 // Wenn der Platzhalter vom Admin geändert wird, muss dieser in den anderen Sprachen synchronisiert werden
-if (rex::getUser()->isAdmin() && count(rex_clang::getAll()) >= 2) {
+if (rex::getUser()->getComplexPerm('clang')->hasAll() && count(rex_clang::getAll()) >= 2) {
     \rex_extension::register('REX_FORM_SAVED', function (rex_extension_point $ep) use ($pid, $clang_id) {
         $form = $ep->getParam('form');
         if ($form->isEditMode()) {
@@ -67,7 +67,7 @@ if (rex::getUser()->isAdmin() && count(rex_clang::getAll()) >= 2) {
 }
 
 // ----- delete wildcard
-if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->isAdmin()) {
+if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
     $deleteWildcard = rex_sql::factory();
     $deleteWildcard->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE id=?', [$wildcard_id]);
     $success = $this->i18n('wildcard_deleted');
@@ -115,7 +115,7 @@ if ($func == '') {
     $list->setColumnParams('edit', ['func' => 'edit', 'pid' => '###pid###']);
     $list->setColumnFormat('edit', 'custom', 'sprogStyleTdEdit');
 
-    if (rex::getUser()->isAdmin()) {
+    if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
         $list->addColumn('delete', '<i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'));
         $list->setColumnLabel('delete', $this->i18n('function'));
         $list->setColumnLayout('delete', ['', '###VALUE###']);
@@ -149,7 +149,7 @@ if ($func == '') {
     $form->setLanguageSupport('id', 'clang_id');
     $form->setEditMode($func == 'edit');
 
-    if (rex::getUser()->isAdmin()) {
+    if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
         $field = $form->addTextField('wildcard', rex_request('wildcard_name', 'string', null));
         $field->setNotice($this->i18n('wildcard_without_tag'));
     } else {
@@ -168,6 +168,14 @@ if ($func == '') {
     $fragment->setVar('title', $title);
     $fragment->setVar('body', $content, false);
     $content = $fragment->parse('core/page/section.php');
+}
+
+if ($success != '') {
+    $message .= rex_view::success($success);
+}
+
+if ($error != '') {
+    $message .= rex_view::error($error);
 }
 
 echo $message;

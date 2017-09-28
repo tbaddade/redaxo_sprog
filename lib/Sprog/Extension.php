@@ -107,10 +107,8 @@ class Extension
 
     public static function wildcardFormControlElement(\rex_extension_point $ep)
     {
-        if (!\rex::getUser()->getComplexPerm('clang')->hasAll()) {
-            $subject = $ep->getSubject();
-            unset($subject['delete']);
-            $ep->setSubject($subject);
-        }
+        $subject = $ep->getSubject();
+        unset($subject['delete']);
+        $ep->setSubject($subject);
     }
 }
