@@ -39,6 +39,7 @@ sprog_wildcard_add = Add placeholder
 sprog_wildcard_added = Placeholder has been added
 sprog_wildcard_caption = List of placeholders
 sprog_wildcard_caption_missing = List of not yet replaced placeholders within the {0}
+sprog_wildcard_deleted = Placeholder has been deleted
 sprog_wildcard_edit = Edit placeholder
 sprog_wildcard_edited = PLaceholder has been edited
 sprog_wildcard_error_no_wildcard = Please enter a placeholder name

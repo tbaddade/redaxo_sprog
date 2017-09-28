@@ -39,6 +39,7 @@ sprog_wildcard_add = Adicionar coringa
 sprog_wildcard_added = Coringa foi adicionado
 sprog_wildcard_caption = Lista de coringas
 sprog_wildcard_caption_missing = Lista de coringas ainda não substituídos dentro do {0}
+sprog_wildcard_deleted = Coringa foi deletado
 sprog_wildcard_edit = Editar coringa
 sprog_wildcard_edited = Coringa foi editado
 sprog_wildcard_error_no_wildcard = Por favor, dê um nome ao coringa
