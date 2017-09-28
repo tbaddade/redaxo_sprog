@@ -16,7 +16,7 @@ filter:
 page:
     title: 'translate:sprog'
     perm: sprog[]
-    pjax: false
+    pjax: true
     icon: rex-icon rex-icon-language
     subpages:
         wildcard:
