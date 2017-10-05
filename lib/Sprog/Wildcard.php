@@ -108,7 +108,7 @@ class Wildcard
         $search = [];
         $replace = [];
         foreach ($matches as $match) {
-            $value = $match['wildcard'];
+            $value = $match['complete'];
             if (isset($wildcards[$match['wildcard']])) {
                 $value = $wildcards[$match['wildcard']];
             }
