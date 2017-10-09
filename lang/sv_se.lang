@@ -1,0 +1,116 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Funktion
+sprog_function_add = Tillfoga
+sprog_function_edit = Redigera
+sprog_no_results = Inga resultat
+
+
+sprog_settings = Konfiguration
+sprog_settings_title = Konfiguration
+sprog_settings_clang_base = Språkbasis
+sprog_settings_config_saved = Konfigurationen har sparats
+sprog_settings_wildcard_clang_switch = Visa språkalternativ som undermeny
+sprog_settings_wildcard_close_tag = Avslutande tagg
+sprog_settings_wildcard_open_tag = Öppnande tagg
+sprog_settings_synchronization = Synchronisierung
+
+sprog_settings_sync_metainfo = Meta info
+sprog_settings_sync_metainfo_art = Artikel
+sprog_settings_sync_metainfo_cat = Kategorier
+sprog_settings_sync_metainfo_med = Media
+sprog_settings_sync_metainfo_note = Välj metainfo som stannar synkron mellan språk.
+sprog_settings_sync_metainfo_not_found = Inga metainfon hittades
+
+sprog_settings_sync_structure = Struktur
+sprog_settings_sync_structure_article_name_to_category_name = Synkronisera kategorinamn med artikelnamn inom samma språk
+sprog_settings_sync_structure_category_name_to_article_name = Synkronisera artikelnamn med kategorinamn inom samma språk
+sprog_settings_sync_structure_status = Synkronisera status (online / offline) mellan språk
+sprog_settings_sync_structure_template = Synkronisera mallar mellan språk
+
+sprog_settings_wildcard_open_close_tag = Öppnande / stängande tagg
+
+
+
+sprog_wildcard = Platshållare
+sprog_wildcard_title = Platshållar titel
+sprog_wildcard_add = Tillfoga platshållare
+sprog_wildcard_added = Platshållare har tillfogats
+sprog_wildcard_caption = Lista av alla platshållare
+sprog_wildcard_caption_missing = Lista över ej ersatta platshållare inom {0}
+sprog_wildcard_deleted = Platshållare raderades
+sprog_wildcard_edit = Redigera platshållare
+sprog_wildcard_edited = Platshållaren har redigerats
+sprog_wildcard_error_no_wildcard = Var god ange ett namne till platshållaren
+sprog_wildcard_go_to_the_article = Till artikeln
+sprog_wildcard_replace = Ersättning
+sprog_wildcard_without_tag = Skriva platshållaren utan öppnande / stängande tagg
+
+sprog_search = Sök
+
+sprog_import = Importera
+sprog_import_csv_upload = Importera CSV
+sprog_upload = Ladda upp
+sprog_import_file_label = CSV fil
+sprog_import_overwrite_wildcards = Skriv över befintliga platshållare
+sprog_import_process = Importerade platshållare:
+sprog_import_lang_not_exists = {0} hittades inte!
+sprog_import_lang_importing = {0} hittades
+sprog_import_wildcard_added = {0} tillfogades!
+sprog_import_wildcard_updated = {0} har uppgraderas!
+sprog_import_wildcard_deleted = {0} raderades!
+
+sprog_export = Exportera
+sprog_cleanup = Rensa
+
+
+sprog_copy_content = Kopiera innehåll
+sprog_copy_structure_content = Kopiera artikelinnehåll
+sprog_copy_metadata = Kopiera metadata
+
+sprog_copy_clang_from = från språk
+sprog_copy_clang_to = till språk
+sprog_copy_delete_before = Radera innehållet på förhand?
+
+sprog_copy_name = Artikelnamn
+sprog_copy_catname = Kategorinamn
+sprog_copy_priority = Artikelprioritet
+sprog_copy_catpriority = Kategoriprioritet
+sprog_copy_status = Status
+sprog_copy_template_id = Mall
+
+sprog_copy_structure_metadata = Kopiera/synkronisera metadata
+sprog_copy_structure_metadata_articles = Artikel
+sprog_copy_structure_metadata_categories = Kategorier
+sprog_copy_structure_metadata_fields = Välj fält
+sprog_copy_structure_metadata_structure = Struktur
+
+
+
+sprog_copy_button_start = Kör!
+sprog_copy_button_success = Bra, tack!
+sprog_copy_button_cancel = Avbryt
+sprog_copy_button_again = Försök igen
+
+
+sprog_copy_time_elapsed = Tiden som gick
+sprog_copy_error_title = J ... a, något gick sned!
+sprog_copy_error_text = <p>Ett fel uppstod när du kopierade artikelinnehållet. Detaljer om vad som hände kan ses på felsidan. Förslag på att förbättra kvalitén på det här tillägget uppskattas mycket, om du stöter på fel kan du anmäla det på <a href="https://github.com/tbaddade/redaxo_sprog/issues"> Github </a>. Tack så mycket!
+sprog_copy_error_link = Länk till felsidan
+
+
+sprog_copy_structure_content_title = Kopierade artiklar ...
+sprog_copy_structure_content_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> från <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Klart: Artikelinnehåll kopierades
+sprog_copy_structure_content_finished_text = <p> Innehållet från <strong> <span class="språk-copy__target__finished-articles-num"> artikeln </span> har kopierats. Detta tog ungefär <strong class="sprog-copy__target__finished-time-num"> </strong>.</p>
+sprog_copy_structure_content_nothing_title = Inga innehåll?
+sprog_copy_structure_content_nothing_text = <p> Jag är ledsen, men det finns inget innehåll att kopiera. </p>
+
+sprog_copy_structure_metadata_title = Kopierade / synkroniserade artiklar ...
+sprog_copy_structure_metadata_progress = Artikel <span class="språk-copy__target__progress-from"> 1 </ span> av <span class="språk-copy__target__progress-to"> ... </span>
+sprog_copy_structure_metadata_finished_title = Klart: Metadata har kopierats / synkroniserats
+sprog_copy_structure_metadata_finished_text = <p>Metadata för <strong><span class="språk-copy__target__finished-articles-num">artiklar </span> har kopierats / synkroniserats. Detta tog ungefär <strong class="sprog-copy__target__finished-time-num"> </strong>. </p>
+sprog_copy_structure_metadata_nothing_title = Inga metadata?
+sprog_copy_structure_metadata_nothing_text = <p>Jag är ledsen, men det finns inga metadata att kopiera / synkronisera. </p>
+
