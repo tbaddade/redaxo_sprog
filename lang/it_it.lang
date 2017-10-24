@@ -1,0 +1,116 @@
+sprog = Sprog
+sprog_title = Sprog
+
+sprog_function = Funzione
+sprog_function_add = aggiungi
+sprog_function_edit = modifica
+sprog_no_results = Nessun risultato
+
+
+sprog_settings = Configurazione
+sprog_settings_title = Configurazione
+sprog_settings_clang_base = Lingua di base
+sprog_settings_config_saved = Configurazione salvata.
+sprog_settings_wildcard_clang_switch = Mostra lingue nella sotto-navigazione
+sprog_settings_wildcard_close_tag = Tag di chiusura
+sprog_settings_wildcard_open_tag = Tag di apertura
+sprog_settings_synchronization = Sincronizzazione
+
+sprog_settings_sync_metainfo = Meta Info
+sprog_settings_sync_metainfo_art = Articolo
+sprog_settings_sync_metainfo_cat = Categorie
+sprog_settings_sync_metainfo_med = Media
+sprog_settings_sync_metainfo_note = Seleziona le meta info che rimangono sincronizzate tra le lingue
+sprog_settings_sync_metainfo_not_found = Non sono state trovate meta info
+
+sprog_settings_sync_structure = Struttura
+sprog_settings_sync_structure_article_name_to_category_name = Sincronizza nomi categorie con nomi articolo all'interno della stessa lingua
+sprog_settings_sync_structure_category_name_to_article_name = Sincronizza nomi articolo con nomi categorie all'interno della stessa lingua
+sprog_settings_sync_structure_status = Sincronizza lo stato (online/offline) tra le lingue
+sprog_settings_sync_structure_template = Sincronizzare il template tra le lingue
+
+sprog_settings_wildcard_open_close_tag = Tag di apertura / chiusura
+
+
+
+sprog_wildcard = Segnaposto
+sprog_wildcard_title = Segnaposto
+sprog_wildcard_add = Aggiungi segnaposto
+sprog_wildcard_added = Segnaposto aggiunto
+sprog_wildcard_caption = Elenco di segnaposto
+sprog_wildcard_caption_missing = Elenco di segnaposto non sostituiti entro {0}
+sprog_wildcard_deleted = Segnaposto eliminato
+sprog_wildcard_edit = Modifica segnaposto
+sprog_wildcard_edited = Segnaposto modificato
+sprog_wildcard_error_no_wildcard = Prego specificare un segnaposto
+sprog_wildcard_go_to_the_article = Articolo
+sprog_wildcard_replace = Sostituzione
+sprog_wildcard_without_tag = Nota il segnaposto senza tag di apertura / chiusura
+
+sprog_search = Cerca
+
+sprog_import = Importa
+sprog_import_csv_upload = Importa CSV
+sprog_upload = carica
+sprog_import_file_label = File CSV
+sprog_import_overwrite_wildcards = Sovrascrivi segnaposto esistenti
+sprog_import_process = Importa segnaposto:
+sprog_import_lang_not_exists = {0} non è stato trovato!
+sprog_import_lang_importing = {0} trovato!
+sprog_import_wildcard_added = {0} aggiunto
+sprog_import_wildcard_updated = {0} aggiornato
+sprog_import_wildcard_deleted = {0} eliminato
+
+sprog_export = Esporta
+sprog_cleanup = Pulisci
+
+
+sprog_copy_content = Copia contenuti
+sprog_copy_structure_content = Copia contenuti articoli
+sprog_copy_metadata = Copia metadati
+
+sprog_copy_clang_from = dalla lingua
+sprog_copy_clang_to = alla lingua
+sprog_copy_delete_before = Elimina i contenuti prima?
+
+sprog_copy_name = Nome articolo
+sprog_copy_catname = Nome categoria
+sprog_copy_priority = Priorità articolo
+sprog_copy_catpriority = Priorità categoria
+sprog_copy_status = Stato
+sprog_copy_template_id = Template
+
+sprog_copy_structure_metadata = Copia/sincronizza metadati
+sprog_copy_structure_metadata_articles = Articolo
+sprog_copy_structure_metadata_categories = Categoria
+sprog_copy_structure_metadata_fields = Seleziona campi
+sprog_copy_structure_metadata_structure = Struttura
+
+
+
+sprog_copy_button_start = Partiamo!
+sprog_copy_button_success = Perfetto, grazie!
+sprog_copy_button_cancel = Annulla
+sprog_copy_button_again = Riprova
+
+
+sprog_copy_time_elapsed = Tempo trascorso
+sprog_copy_error_title = Caspita, qualcosa è andato storto!
+sprog_copy_error_text = <p>Si è verificato un errore durante la copia del contenuto dell'articolo. I dettagli possono essere trovati nella pagina di errore. Apprezziamo qualunque aiuto per migliorare la qualità dell'addon segnalando un bug su <a href="https://github.com/tbaddade/redaxo_sprog/issues"> Github </a>. Grazie mille!</p>
+sprog_copy_error_link = Link alla pagina di errore
+
+
+sprog_copy_structure_content_title = Articoli copiati ...
+sprog_copy_structure_content_progress = Articolo <span class="sprog-copy__target__progress-from">1</span> di <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_content_finished_title = Completato: contenuti articoli sono stati copiati
+sprog_copy_structure_content_finished_text = <p>I contenuti sono stati copiati in <strong> <span class = "sprog-copy__target__finished-articles-num"> articoli </ span>. Tempo di elaborazione: <strong class = "sprog-copy__target__finished-time-num"> </ strong></p>
+sprog_copy_structure_content_nothing_title = Nessun contenuto?
+sprog_copy_structure_content_nothing_text = <p>Purtroppo non sono presenti contenuti da copiare</p>
+
+sprog_copy_structure_metadata_title = Articoli copiati/sincronizzati...
+sprog_copy_structure_metadata_progress = Articolo <span class="sprog-copy__target__progress-from">1</span> di <span class="sprog-copy__target__progress-to">…</span>
+sprog_copy_structure_metadata_finished_title = Fatto: i metadati sono stati copiati/sincronizzati
+sprog_copy_structure_metadata_finished_text = <p>I metadati sono stati copiati/sincronizzati per <strong> <span class = "sprog-copy__target__finished-articles-num"> articoli </ span>. Tempo di elaborazione: <strong class = "sprog-copy__target__finished-time-num"></ strong>.</p>
+sprog_copy_structure_metadata_nothing_title = Nessun metadato?
+sprog_copy_structure_metadata_nothing_text = <p>Purtroppo non sono presenti metadati da copiare/sincronizzare.</p>
+
