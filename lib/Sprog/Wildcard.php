@@ -69,11 +69,10 @@ class Wildcard
      *
      * @param string $content
      * @param int    $clang_id
-     * @param array  $params
      *
      * @return string
      */
-    public static function parse($content, $clang_id = null, $params = [])
+    public static function parse($content, $clang_id = null)
     {
         if (trim($content) == '') {
             return $content;
@@ -104,7 +103,7 @@ class Wildcard
             $wildcards[$item['wildcard']] = $item['replace'];
         }
 
-        $filters = $params['filters'];
+        $filters = \rex::getProperty('SPROG_FILTER', []);
         $search = [];
         $replace = [];
         foreach ($matches as $match) {

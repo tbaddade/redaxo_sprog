@@ -108,10 +108,11 @@ if (count($filters) > 0) {
         $registeredFilters[$instance->name()] = $instance;
     }
 }
+\rex::setProperty('SPROG_FILTER', $registeredFilters);
 
 
 if (!rex::isBackend()) {
-    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL, ['filters' => $registeredFilters]);
+    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
 }
 
 if (rex::isBackend() && rex::getUser()) {
