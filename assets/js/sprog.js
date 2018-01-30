@@ -472,6 +472,7 @@
          */
         var Sprog = function (config) {
             debug.info('new Sprog');
+            // debug.info(config.generatorUrl);
 
             // prepare config
             this.config = new Config(config.itemsJSON, config.generatorUrl);
@@ -605,7 +606,7 @@
 
             new Sprog({
                 'itemsJSON': sprogItems,
-                'generatorUrl': window.location.origin + window.location.pathname + '?page=' + sprogGeneratePage,
+                'generatorUrl': window.location.origin + window.location.pathname + '?page=' + sprogGeneratePage + '&' + sprogCsrfToken,
                 'templates': [
                     'content_task', 'content_info',
                     'stopwatch', 'progressbar',

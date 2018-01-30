@@ -12,6 +12,9 @@
 
 use \Sprog\Wildcard;
 
+
+$csrfToken = rex_csrf_token::factory('sprog-clang-switch');
+
 $content = '';
 $message = '';
 
@@ -67,7 +70,9 @@ if (rex::getUser()->getComplexPerm('clang')->hasAll() && count(rex_clang::getAll
 }
 
 // ----- delete wildcard
-if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
+if ($func == 'delete' && !$csrfToken->isValid()) {
+    $error = rex_i18n::msg('csrf_token_invalid');
+} elseif ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
     $deleteWildcard = rex_sql::factory();
     $deleteWildcard->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE id=?', [$wildcard_id]);
     $success = $this->i18n('wildcard_deleted');
@@ -119,7 +124,7 @@ if ($func == '') {
         $list->addColumn('delete', '<i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'));
         $list->setColumnLabel('delete', $this->i18n('function'));
         $list->setColumnLayout('delete', ['', '###VALUE###']);
-        $list->setColumnParams('delete', ['func' => 'delete', 'wildcard_id' => '###id###']);
+        $list->setColumnParams('delete', ['func' => 'delete', 'wildcard_id' => '###id###'] + $csrfToken->getUrlParams());
         $list->addLinkAttribute('delete', 'data-confirm', $this->i18n('delete') . ' ?');
         $list->setColumnFormat('delete', 'custom', 'sprogStyleTdDelete');
     } else {

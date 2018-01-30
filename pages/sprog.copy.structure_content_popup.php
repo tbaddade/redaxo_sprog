@@ -4,7 +4,14 @@
 
 use Sprog\Copy\StructureContent;
 
+$csrfToken = \rex_csrf_token::factory('sprog-copy-content');
+
 $params = rex_request('params', 'array', []);
+if (!$csrfToken->isValid()) {
+    echo \rex_view::error(\rex_i18n::msg('csrf_token_invalid'));
+    return;
+}
+
 if (isset($params['deleteBefore']) && $params['deleteBefore'] == 1) {
     $sql = \rex_sql::factory();
     $sql->setQuery('DELETE FROM ' . \rex::getTable('article_slice') . ' WHERE `clang_id` = :clang_id', ['clang_id' => $params['clangTo']]);
@@ -33,6 +40,7 @@ echo '
 <script>
     var sprogItems = ' . json_encode(StructureContent::prepareItems()) . ';
     var sprogGeneratePage = "sprog.copy.structure_content_generate";
+    var sprogCsrfToken = "' . \rex_string::buildQuery($csrfToken->getUrlParams()) . '";
 </script>';
 ?>
 

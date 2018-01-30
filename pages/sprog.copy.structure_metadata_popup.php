@@ -4,6 +4,13 @@
 
 use Sprog\Copy\StructureMetadata;
 
+$csrfToken = \rex_csrf_token::factory('sprog-copy-metadata');
+
+if (!$csrfToken->isValid()) {
+    echo \rex_view::error(\rex_i18n::msg('csrf_token_invalid'));
+    return;
+}
+
 $body = '
     <h3 class="sprog-copy__target__title"></h3>
     <hr>
@@ -27,6 +34,7 @@ echo '
 <script>
     var sprogItems = ' . json_encode(StructureMetadata::prepareItems()) . '; 
     var sprogGeneratePage = "sprog.copy.structure_metadata_generate";
+    var sprogCsrfToken = "' . \rex_string::buildQuery($csrfToken->getUrlParams()) . '";
 </script>';
 ?>
 

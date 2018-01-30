@@ -9,6 +9,9 @@
  * file that was distributed with this source code.
  */
 
+
+$csrfToken = \rex_csrf_token::factory('sprog-copy-content');
+
 $sections = '';
 
 $func = rex_request('func', 'string');
@@ -76,7 +79,7 @@ if ($func == '') {
 
     $formElements = [];
     $n = [];
-    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="' . rex_url::backendPage('sprog.copy.structure_content_popup') . '">' . $this->i18n('sprog_copy_button_start') . '</a>';
+    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="' . rex_url::backendPage('sprog.copy.structure_content_popup', $csrfToken->getUrlParams()) . '">' . $this->i18n('sprog_copy_button_start') . '</a>';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();

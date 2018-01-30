@@ -12,6 +12,9 @@
 
 use \Sprog\Wildcard;
 
+
+$csrfToken = rex_csrf_token::factory('sprog-clang-all');
+
 $content = '';
 $message = '';
 
@@ -39,7 +42,9 @@ foreach ($clangAll as $clang) {
 }
 
 // ----- delete wildcard
-if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
+if ($func == 'delete' && !$csrfToken->isValid()) {
+    $error = rex_i18n::msg('csrf_token_invalid');
+} elseif ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
     $deleteWildcard = rex_sql::factory();
     $deleteWildcard->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE id=?', [$wildcard_id]);
     $success = $this->i18n('wildcard_deleted');
@@ -49,7 +54,9 @@ if ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('cla
 }
 
 // ----- add wildcard
-if ($add_wildcard_save || $edit_wildcard_save) {
+if (($add_wildcard_save || $edit_wildcard_save) && !$csrfToken->isValid()) {
+    $error = rex_i18n::msg('csrf_token_invalid');
+} elseif ($add_wildcard_save || $edit_wildcard_save) {
     if (($wildcard_name == '' && $add_wildcard_save) || (rex::getUser()->getComplexPerm('clang')->hasAll() && $wildcard_name == '' && $edit_wildcard_save)) {
         $error = $this->i18n('wildcard_enter_wildcard');
         $func = $add_wildcard_save ? 'add' : 'edit';
@@ -217,7 +224,7 @@ if (count($entries)) {
                             <td data-title="' . $this->i18n('wildcard') . '">' . $entry_wildcard . '</td>
                             ' . $td . '
                             <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]) . '#wildcard-' . $entry_id . '"><i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('function_edit') . '</a></td>
-                            <td class="rex-table-action">' . (rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id]) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'). '</a>' : '') . '</td>
+                            <td class="rex-table-action">' . (rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id] + $csrfToken->getUrlParams()) . '" data-confirm="' . $this->i18n('delete') . ' ?"><i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'). '</a>' : '') . '</td>
                         </tr>';
         }
     }
@@ -243,6 +250,7 @@ if ($func == 'add' || $func == 'edit') {
         <form action="' . rex_url::currentBackendPage() . '" method="post">
             <fieldset>
                 <input type="hidden" name="wildcard_id" value="' . $wildcard_id . '" />
+                ' . $csrfToken->getHiddenField() . '
                 ' . $content . '
             </fieldset>
         </form>

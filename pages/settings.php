@@ -11,11 +11,16 @@
 
 namespace Sprog;
 
+
+$csrfToken = \rex_csrf_token::factory('sprog-settings');
+
 $sections = '';
 
 $func = rex_request('func', 'string');
 
-if ($func == 'update') {
+if ($func == 'update' && !$csrfToken->isValid()) {
+    echo \rex_view::error(\rex_i18n::msg('csrf_token_invalid'));
+} elseif ($func == 'update') {
     // clang_switch und clang_base wird in der boot.php neu gesetzt
 
     $this->setConfig(rex_post('settings', [
@@ -67,6 +72,7 @@ $panelElements .= $fragment->parse('core/form/checkbox.php');
 $panelBody = '
     <fieldset>
         <input type="hidden" name="func" value="update" />
+        ' . $csrfToken->getHiddenField() . '
         ' . $panelElements . '
     </fieldset>';
 
