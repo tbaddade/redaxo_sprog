@@ -3,6 +3,9 @@ version: '1.0.0'
 author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
 
+requires:
+    redaxo: '^5.5'
+
 filter:
     - Sprog\Filter\Format
     - Sprog\Filter\Limit
