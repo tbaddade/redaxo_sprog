@@ -108,7 +108,7 @@ class Extension
     public static function wildcardFormControlElement(\rex_extension_point $ep)
     {
         $subject = $ep->getSubject();
-        unset($subject['delete']);
+        $subject['delete'] = '';
         $ep->setSubject($subject);
     }
 }
