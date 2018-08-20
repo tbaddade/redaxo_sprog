@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-use \Sprog\Wildcard;
+use Sprog\Wildcard;
 
 class_alias('\Sprog\Wildcard', 'Wildcard');
 
@@ -19,8 +19,6 @@ rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 // increase to speed up (reduces number of requests but extends script time)
 // (hint: enable debug mode in sprog.js to report execution times)
 $this->setConfig('chunkSizeArticles', 4);
-
-
 
 /**
  * Replaced some wildcards in given text.
@@ -41,7 +39,7 @@ function sprogcard($wildcard, $clang_id = null)
  */
 function sprogfield($field, $separator = '_')
 {
-    return $field . $separator . rex_clang::getCurrentId();
+    return $field.$separator.rex_clang::getCurrentId();
 }
 /**
  * Returns the value by given an array and field.
@@ -54,7 +52,7 @@ function sprogvalue(array $array, $field, $fallback_clang_id = 0, $separator = '
         return $array[$modifiedField];
     }
 
-    $modifiedField = $field . $separator . $fallback_clang_id;
+    $modifiedField = $field.$separator.$fallback_clang_id;
     if (isset($array[$modifiedField])) {
         return $array[$modifiedField];
     }
@@ -96,8 +94,6 @@ function sprogarray(array $array, array $fields, $fallback_clang_id = 0, $separa
     return $array;
 }
 
-
-
 $filters = $this->getProperty('filter');
 $filters = \rex_extension::registerPoint(new \rex_extension_point('SPROG_FILTER', $filters));
 
@@ -109,7 +105,6 @@ if (count($filters) > 0) {
     }
 }
 \rex::setProperty('SPROG_FILTER', $registeredFilters);
-
 
 if (!rex::isBackend()) {
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
@@ -186,7 +181,7 @@ if (rex::isBackend() && rex::getUser()) {
                 }
                 foreach ($clangAll as $id => $clang) {
                     if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
-                        $page->addSubpage((new rex_be_page('clang' . $id, $clang->getName()))
+                        $page->addSubpage((new rex_be_page('clang'.$id, $clang->getName()))
                             ->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'))
                             ->setIsActive($id == $clang_id)
                         );
@@ -209,7 +204,6 @@ if (rex::isBackend() && rex::getUser()) {
         $ep->setSubject($subject);
     });
 
-
     /*
     |--------------------------------------------------------------------------
     | Stylesheets and Javascripts
@@ -217,10 +211,10 @@ if (rex::isBackend() && rex::getUser()) {
     */
     if (rex_be_controller::getCurrentPagePart(1) == 'sprog.copy.structure_content_popup' ||
         rex_be_controller::getCurrentPagePart(1) == 'sprog.copy.structure_metadata_popup') {
-        rex_view::addJsFile($this->getAssetsUrl('js/handlebars.min.js?v=' . $this->getVersion()));
-        rex_view::addJsFile($this->getAssetsUrl('js/timer.jquery.min.js?v=' . $this->getVersion()));
+        rex_view::addJsFile($this->getAssetsUrl('js/handlebars.min.js?v='.$this->getVersion()));
+        rex_view::addJsFile($this->getAssetsUrl('js/timer.jquery.min.js?v='.$this->getVersion()));
     }
 
-    rex_view::addCssFile($this->getAssetsUrl('css/sprog.css?v=' . $this->getVersion()));
-    rex_view::addJsFile($this->getAssetsUrl('js/sprog.js?v=' . $this->getVersion()));
+    rex_view::addCssFile($this->getAssetsUrl('css/sprog.css?v='.$this->getVersion()));
+    rex_view::addJsFile($this->getAssetsUrl('js/sprog.js?v='.$this->getVersion()));
 }

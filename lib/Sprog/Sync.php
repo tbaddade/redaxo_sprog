@@ -118,7 +118,7 @@ class Sync
                 // ----- Update Category Metainfo
                 \rex_sql::factory()
                     ->setTable(\rex::getTable('article'))
-                    ->setWhere('id = :id AND clang_id ' . ($toClangId > 0 ? '=' : '!=') . ' :clang', ['id' => $id, 'clang' => ($toClangId > 0 ? $toClangId : $clangId)])
+                    ->setWhere('id = :id AND clang_id '.($toClangId > 0 ? '=' : '!=').' :clang', ['id' => $id, 'clang' => ($toClangId > 0 ? $toClangId : $clangId)])
                     ->setValues($saveFields)
                     ->addGlobalUpdateFields()
                     ->update();

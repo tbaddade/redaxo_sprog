@@ -4,7 +4,6 @@ namespace Sprog\Copy;
 
 class StructureContent extends Copy
 {
-
     /**
      * Prepare all cache items.
      *
@@ -17,7 +16,6 @@ class StructureContent extends Copy
         ];
     }
 
-
     /**
      * Get all pages being online.
      *
@@ -28,7 +26,7 @@ class StructureContent extends Copy
         $articles = [];
         if (\rex_addon::get('structure')->isAvailable()) {
             $sql = \rex_sql::factory();
-            $items = $sql->getArray('SELECT `id` FROM ' . \rex::getTable('article') . ' GROUP BY `id`');
+            $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');
 
             foreach ($items as $item) {
                 $articles[] = $item['id'];
@@ -36,7 +34,6 @@ class StructureContent extends Copy
         }
         return $articles;
     }
-
 
     /**
      * Get all pages and languages as chunked array including 'count' and 'items'.
@@ -59,15 +56,14 @@ class StructureContent extends Copy
     }
 
     /**
-     *
      * @param array $items
      * @param array $params
+     *
      * @return array
      */
     public static function fire(array $items, array $params)
     {
         if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
-
             foreach ($items as $item) {
                 self::copyContent($item[0], $item[0], $params['clangFrom'], $params['clangTo']);
 
@@ -84,10 +80,6 @@ class StructureContent extends Copy
         }
         return $items;
     }
-
-
-
-
 
     /**
      * Kopiert die Inhalte eines Artikels in einen anderen Artikel.
@@ -108,10 +100,9 @@ class StructureContent extends Copy
 
         $gc = \rex_sql::factory();
         $gc->setQuery(
-            'SELECT * FROM ' . \rex::getTable('article_slice') . ' WHERE `article_id` = :from_id AND `clang_id` = :from_clang AND `revision` = :revision',
+            'SELECT * FROM '.\rex::getTable('article_slice').' WHERE `article_id` = :from_id AND `clang_id` = :from_clang AND `revision` = :revision',
             ['from_id' => $from_id, 'from_clang' => $from_clang, 'revision' => $revision]
         );
-
 
         if ($gc->getRows() > 0) {
             \rex_extension::registerPoint(new \rex_extension_point('ART_SLICES_COPY', '', [
@@ -126,11 +117,11 @@ class StructureContent extends Copy
 
             $cols = \rex_sql::factory();
             //$cols->setDebug();
-            $cols->setQuery('SHOW COLUMNS FROM ' . \rex::getTablePrefix() . 'article_slice');
+            $cols->setQuery('SHOW COLUMNS FROM '.\rex::getTablePrefix().'article_slice');
 
             $max = \rex_sql::factory();
             $max->setQuery(
-                'SELECT MAX(`priority`) as max FROM ' . \rex::getTable('article_slice') . ' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
+                'SELECT MAX(`priority`) as max FROM '.\rex::getTable('article_slice').' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
                 ['to_id' => $to_id, 'to_clang' => $to_clang, 'revision' => $revision]
             );
             $maxPriority = ($max->getRows() == 1) ? $max->getValue('max') : 0;
@@ -145,7 +136,7 @@ class StructureContent extends Copy
                     } elseif ($colname == 'article_id') {
                         $value = $to_id;
                     } elseif ($colname == 'priority') {
-                        $value = $maxPriority + (int)$slice->getValue($colname);
+                        $value = $maxPriority + (int) $slice->getValue($colname);
                     } else {
                         $value = $slice->getValue($colname);
                     }
@@ -162,7 +153,7 @@ class StructureContent extends Copy
 
                 $ins->addGlobalUpdateFields($user);
                 $ins->addGlobalCreateFields($user);
-                $ins->setTable(\rex::getTablePrefix() . 'article_slice');
+                $ins->setTable(\rex::getTablePrefix().'article_slice');
                 $ins->insert();
             }
 
@@ -171,7 +162,7 @@ class StructureContent extends Copy
                 \rex_sql_util::organizePriorities(
                     \rex::getTable('article_slice'),
                     'priority',
-                    'article_id=' . $to_id . ' AND clang_id=' . $to_clang . ' AND ctype_id=' . $ctype . ' AND revision=' . $revision,
+                    'article_id='.$to_id.' AND clang_id='.$to_clang.' AND ctype_id='.$ctype.' AND revision='.$revision,
                     'priority, updatedate'
                 );
             }

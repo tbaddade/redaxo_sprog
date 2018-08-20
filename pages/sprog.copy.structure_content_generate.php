@@ -11,7 +11,6 @@
 
 use Sprog\Copy\StructureContent;
 
-
 // generate page cache
 $articles = \rex_get('articles', 'string');
 $params = \rex_get('params', 'array');

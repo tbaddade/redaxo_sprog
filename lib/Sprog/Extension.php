@@ -44,7 +44,6 @@ class Extension
         }
     }
 
-
     public static function categoryUpdated(\rex_extension_point $ep)
     {
         $addon = \rex_addon::get('sprog');
@@ -77,7 +76,7 @@ class Extension
     public static function clangAdded(\rex_extension_point $ep)
     {
         $firstLang = \rex_sql::factory();
-        $firstLang->setQuery('SELECT * FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [\rex_clang::getStartId()]);
+        $firstLang->setQuery('SELECT * FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [\rex_clang::getStartId()]);
         $fields = $firstLang->getFieldnames();
 
         $newLang = \rex_sql::factory();
@@ -102,7 +101,7 @@ class Extension
     public static function clangDeleted(\rex_extension_point $ep)
     {
         $deleteLang = \rex_sql::factory();
-        $deleteLang->setQuery('DELETE FROM ' . \rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
+        $deleteLang->setQuery('DELETE FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
     }
 
     public static function wildcardFormControlElement(\rex_extension_point $ep)

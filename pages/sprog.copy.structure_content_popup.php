@@ -14,7 +14,7 @@ if (!$csrfToken->isValid()) {
 
 if (isset($params['deleteBefore']) && $params['deleteBefore'] == 1) {
     $sql = \rex_sql::factory();
-    $sql->setQuery('DELETE FROM ' . \rex::getTable('article_slice') . ' WHERE `clang_id` = :clang_id', ['clang_id' => $params['clangTo']]);
+    $sql->setQuery('DELETE FROM '.\rex::getTable('article_slice').' WHERE `clang_id` = :clang_id', ['clang_id' => $params['clangTo']]);
 }
 
 $body = '
@@ -38,9 +38,9 @@ echo $fragment->parse('core/page/section.php');
 
 echo '
 <script>
-    var sprogItems = ' . json_encode(StructureContent::prepareItems()) . ';
+    var sprogItems = '.json_encode(StructureContent::prepareItems()).';
     var sprogGeneratePage = "sprog.copy.structure_content_generate";
-    var sprogCsrfToken = "' . \rex_string::buildQuery($csrfToken->getUrlParams()) . '";
+    var sprogCsrfToken = "'.\rex_string::buildQuery($csrfToken->getUrlParams()).'";
 </script>';
 ?>
 

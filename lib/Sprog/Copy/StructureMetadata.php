@@ -6,7 +6,6 @@ use Sprog\Sync;
 
 class StructureMetadata extends Copy
 {
-
     /**
      * Prepare all cache items.
      *
@@ -19,7 +18,6 @@ class StructureMetadata extends Copy
         ];
     }
 
-
     /**
      * Get all pages being online.
      *
@@ -30,7 +28,7 @@ class StructureMetadata extends Copy
         $articles = [];
         if (\rex_addon::get('structure')->isAvailable()) {
             $sql = \rex_sql::factory();
-            $items = $sql->getArray('SELECT `id` FROM ' . \rex::getTable('article') . ' GROUP BY `id`');
+            $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');
 
             foreach ($items as $item) {
                 $articles[] = $item['id'];
@@ -38,7 +36,6 @@ class StructureMetadata extends Copy
         }
         return $articles;
     }
-
 
     /**
      * Get all pages and languages as chunked array including 'count' and 'items'.
@@ -61,19 +58,18 @@ class StructureMetadata extends Copy
     }
 
     /**
-     *
      * @param array $items
      * @param array $params
+     *
      * @return array
      */
     public static function fire(array $items, array $params)
     {
         if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
-
             foreach ($items as $item) {
                 $syncParams = [
                     'id' => $item[0],
-                    'clang' => $params['clangFrom']
+                    'clang' => $params['clangFrom'],
                 ];
                 $syncFields = explode(',', $params['fields']);
                 Sync::articleMetainfo($syncParams, $syncFields, $params['clangTo']);

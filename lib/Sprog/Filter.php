@@ -18,15 +18,15 @@ abstract class Filter
      *
      * @return string
      */
-    abstract function name();
+    abstract public function name();
 
     /**
-     * Execute the filter
+     * Execute the filter.
      *
-     * @param  string $value
-     * @param  string $arguments
+     * @param string $value
+     * @param string $arguments
      *
      * @return string
      */
-    abstract function fire($value, $arguments);
+    abstract public function fire($value, $arguments);
 }

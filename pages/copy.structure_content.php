@@ -9,7 +9,6 @@
  * file that was distributed with this source code.
  */
 
-
 $csrfToken = \rex_csrf_token::factory('sprog-copy-content');
 
 $sections = '';
@@ -21,7 +20,6 @@ $deleteBefore = rex_request('sprog_copy_structure_content_delete_before', 'bool'
 
 if ($func == 'copy') {
     if ($clangFrom == $clangTo) {
-
     }
     //echo \rex_view::success($this->i18n('settings_config_saved'));
 }
@@ -46,8 +44,8 @@ if ($func == '') {
     $n = [];
     $n['header'] = '<div class="row"><div class="col-md-6">';
     $n['footer'] = '</div>';
-    $n['label'] = '<label for="sprog-copy-structure-content-clang-from">' . $this->i18n('copy_clang_from') . '</label>';
-    $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+    $n['label'] = '<label for="sprog-copy-structure-content-clang-from">'.$this->i18n('copy_clang_from').'</label>';
+    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
     $formElements[] = $n;
 
     $select = new \rex_select();
@@ -59,8 +57,8 @@ if ($func == '') {
     $n = [];
     $n['header'] = '<div class="col-md-6">';
     $n['footer'] = '</div></div>';
-    $n['label'] = '<label for="sprog-copy-structure-content-clang-to">' . $this->i18n('copy_clang_to') . '</label>';
-    $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+    $n['label'] = '<label for="sprog-copy-structure-content-clang-to">'.$this->i18n('copy_clang_to').'</label>';
+    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -69,8 +67,8 @@ if ($func == '') {
 
     $formElements = [];
     $n = [];
-    $n['label'] = '<label for="sprog-copy-structure-content-delete-before">' . $this->i18n('copy_delete_before') . '</label>';
-    $n['field'] = '<input id="sprog-copy-structure-content-delete-before" data-sprog-param="deleteBefore" name="sprog_copy_structure_content_delete_before" type="checkbox"' . ($deleteBefore ? ' checked="checked"' : '') . ' value="1" />';
+    $n['label'] = '<label for="sprog-copy-structure-content-delete-before">'.$this->i18n('copy_delete_before').'</label>';
+    $n['field'] = '<input id="sprog-copy-structure-content-delete-before" data-sprog-param="deleteBefore" name="sprog_copy_structure_content_delete_before" type="checkbox"'.($deleteBefore ? ' checked="checked"' : '').' value="1" />';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -79,7 +77,7 @@ if ($func == '') {
 
     $formElements = [];
     $n = [];
-    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="' . rex_url::backendPage('sprog.copy.structure_content_popup', $csrfToken->getUrlParams()) . '">' . $this->i18n('sprog_copy_button_start') . '</a>';
+    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="'.rex_url::backendPage('sprog.copy.structure_content_popup', $csrfToken->getUrlParams()).'">'.$this->i18n('sprog_copy_button_start').'</a>';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -89,7 +87,7 @@ if ($func == '') {
     $panelBody = '
         <fieldset>
             <input type="hidden" name="func" value="update" />
-            ' . $panelElements . '
+            '.$panelElements.'
         </fieldset>';
 
     $fragment = new \rex_fragment();
@@ -100,17 +98,11 @@ if ($func == '') {
     $section = $fragment->parse('core/page/section.php');
 
     echo '
-        <form action="' . \rex_url::currentBackendPage() . '" method="post">
-            ' . $section . '
+        <form action="'.\rex_url::currentBackendPage().'" method="post">
+            '.$section.'
         </form>
     ';
-
 }
-
-
-
-
-
 
 // - - - - - - - - - - - - - - - - - - - - - -
 $clangAll = \rex_clang::getAll();
@@ -124,7 +116,7 @@ if (count($clangAll) >= 2) {
     $clangBase = $this->getConfig('clang_base');
     foreach ($clangAll as $clang) {
         $select = new \rex_select();
-        $select->setName('clang_base[' . $clang->getId() . ']');
+        $select->setName('clang_base['.$clang->getId().']');
         if (isset($clangBase[$clang->getId()])) {
             $select->setSelected($clangBase[$clang->getId()]);
         } else {
@@ -135,8 +127,8 @@ if (count($clangAll) >= 2) {
         $n = [];
         $n['header'] = '<div class="col-md-5">';
         $n['footer'] = '</div>';
-        $n['label'] = '<label>' . $clang->getName() . '</label>';
-        $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+        $n['label'] = '<label>'.$clang->getName().'</label>';
+        $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
         $formElements[] = $n;
     }
 
@@ -146,7 +138,7 @@ if (count($clangAll) >= 2) {
 
     $panelBody = '
         <fieldset>
-            <div class="row">' . $panelElements . '</div>
+            <div class="row">'.$panelElements.'</div>
         </fieldset>';
 
     $fragment = new \rex_fragment();
@@ -155,5 +147,3 @@ if (count($clangAll) >= 2) {
     $fragment->setVar('body', $panelBody, false);
     $sections .= $fragment->parse('core/page/section.php');
 }
-
-

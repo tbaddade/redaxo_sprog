@@ -32,9 +32,9 @@ echo $fragment->parse('core/page/section.php');
 
 echo '
 <script>
-    var sprogItems = ' . json_encode(StructureMetadata::prepareItems()) . '; 
+    var sprogItems = '.json_encode(StructureMetadata::prepareItems()).'; 
     var sprogGeneratePage = "sprog.copy.structure_metadata_generate";
-    var sprogCsrfToken = "' . \rex_string::buildQuery($csrfToken->getUrlParams()) . '";
+    var sprogCsrfToken = "'.\rex_string::buildQuery($csrfToken->getUrlParams()).'";
 </script>';
 ?>
 

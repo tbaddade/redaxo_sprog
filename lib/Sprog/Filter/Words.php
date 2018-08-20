@@ -33,13 +33,13 @@ class Words extends Filter
         }
 
         $parts = explode(',', $arguments);
-        $words = (int)$parts[0];
+        $words = (int) $parts[0];
         $end = isset($parts[1]) ? $parts[1] : '';
 
-        preg_match('/^\s*+(?:\S++\s*+){1,' . $words . '}/u', $value, $matches);
+        preg_match('/^\s*+(?:\S++\s*+){1,'.$words.'}/u', $value, $matches);
         if (!isset($matches[0]) || mb_strlen($value) === mb_strlen($matches[0])) {
             return $value;
         }
-        return rtrim($matches[0]) . $end;
+        return rtrim($matches[0]).$end;
     }
 }

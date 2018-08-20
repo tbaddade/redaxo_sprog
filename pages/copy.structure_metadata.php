@@ -9,7 +9,6 @@
  * file that was distributed with this source code.
  */
 
-
 $csrfToken = \rex_csrf_token::factory('sprog-copy-metadata');
 
 $sections = '';
@@ -45,8 +44,8 @@ if ($func == '') {
     $n = [];
     $n['header'] = '<div class="row"><div class="col-md-6">';
     $n['footer'] = '</div>';
-    $n['label'] = '<label for="sprog-copy-clang-from">' . $this->i18n('copy_clang_from') . '</label>';
-    $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+    $n['label'] = '<label for="sprog-copy-clang-from">'.$this->i18n('copy_clang_from').'</label>';
+    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
     $formElements[] = $n;
 
     $select = new \rex_select();
@@ -58,12 +57,11 @@ if ($func == '') {
     $n = [];
     $n['header'] = '<div class="col-md-6">';
     $n['footer'] = '</div></div>';
-    $n['label'] = '<label for="sprog-copy-clang-to">' . $this->i18n('copy_clang_to') . '</label>';
-    $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+    $n['label'] = '<label for="sprog-copy-clang-to">'.$this->i18n('copy_clang_to').'</label>';
+    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
     $formElements[] = $n;
 
-
-    $query = 'SELECT `title`, `name` FROM ' . \rex::getTable('metainfo_field') . ' WHERE `name` LIKE :name AND `type_id` != :type_id ORDER BY name';
+    $query = 'SELECT `title`, `name` FROM '.\rex::getTable('metainfo_field').' WHERE `name` LIKE :name AND `type_id` != :type_id ORDER BY name';
     $catOptions = \rex_sql::factory()->getArray($query, ['name' => 'cat_%', 'type_id' => '12']);
     $artOptions = \rex_sql::factory()->getArray($query, ['name' => 'art_%', 'type_id' => '12']);
 
@@ -77,35 +75,32 @@ if ($func == '') {
 
     $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_structure'));
     foreach (['catname', 'catpriority', 'name', 'priority', 'status', 'template_id'] as $option) {
-        $fieldsSelect->addOption($option . '   |   ' . $this->i18n('copy_' . $option), $option);
+        $fieldsSelect->addOption($option.'   |   '.$this->i18n('copy_'.$option), $option);
     }
     if (count($catOptions)) {
         $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_categories'));
         foreach ($catOptions as $option) {
-            $fieldsSelect->addOption($option['name'] . '   |   ' . \rex_i18n::translate($option['title']) . '', $option['name']);
+            $fieldsSelect->addOption($option['name'].'   |   '.\rex_i18n::translate($option['title']).'', $option['name']);
         }
     }
     if (count($artOptions)) {
         $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_articles'));
         foreach ($artOptions as $option) {
-            $fieldsSelect->addOption($option['name'] . '   |   ' . \rex_i18n::translate($option['title']) . '', $option['name']);
+            $fieldsSelect->addOption($option['name'].'   |   '.\rex_i18n::translate($option['title']).'', $option['name']);
         }
     }
     $n = [];
-    $n['label'] = '<label for="sprog-copy-fields">' . $this->i18n('copy_structure_metadata_fields') . '</label>';
-    $n['field'] = '<div class="rex-select-style">' . $fieldsSelect->get() . '</div>';
+    $n['label'] = '<label for="sprog-copy-fields">'.$this->i18n('copy_structure_metadata_fields').'</label>';
+    $n['field'] = '<div class="rex-select-style">'.$fieldsSelect->get().'</div>';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
     $fragment->setVar('elements', $formElements, false);
     $panelElements .= $fragment->parse('core/form/form.php');
 
-
-
-
     $formElements = [];
     $n = [];
-    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="' . rex_url::backendPage('sprog.copy.structure_metadata_popup', $csrfToken->getUrlParams()) . '">' . $this->i18n('sprog_copy_button_start') . '</a>';
+    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="'.rex_url::backendPage('sprog.copy.structure_metadata_popup', $csrfToken->getUrlParams()).'">'.$this->i18n('sprog_copy_button_start').'</a>';
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -115,7 +110,7 @@ if ($func == '') {
     $panelBody = '
         <fieldset>
             <input type="hidden" name="func" value="update" />
-            ' . $panelElements . '
+            '.$panelElements.'
         </fieldset>';
 
     $fragment = new \rex_fragment();
@@ -126,16 +121,11 @@ if ($func == '') {
     $section = $fragment->parse('core/page/section.php');
 
     echo '
-        <form action="' . \rex_url::currentBackendPage() . '" method="post">
-            ' . $section . '
+        <form action="'.\rex_url::currentBackendPage().'" method="post">
+            '.$section.'
         </form>
     ';
 }
-
-
-
-
-
 
 // - - - - - - - - - - - - - - - - - - - - - -
 $clangAll = \rex_clang::getAll();
@@ -149,7 +139,7 @@ if (count($clangAll) >= 2) {
     $clangBase = $this->getConfig('clang_base');
     foreach ($clangAll as $clang) {
         $select = new \rex_select();
-        $select->setName('clang_base[' . $clang->getId() . ']');
+        $select->setName('clang_base['.$clang->getId().']');
         if (isset($clangBase[$clang->getId()])) {
             $select->setSelected($clangBase[$clang->getId()]);
         } else {
@@ -160,8 +150,8 @@ if (count($clangAll) >= 2) {
         $n = [];
         $n['header'] = '<div class="col-md-5">';
         $n['footer'] = '</div>';
-        $n['label'] = '<label>' . $clang->getName() . '</label>';
-        $n['field'] = '<div class="rex-select-style">' . $select->get() . '</div>';
+        $n['label'] = '<label>'.$clang->getName().'</label>';
+        $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
         $formElements[] = $n;
     }
 
@@ -171,7 +161,7 @@ if (count($clangAll) >= 2) {
 
     $panelBody = '
         <fieldset>
-            <div class="row">' . $panelElements . '</div>
+            <div class="row">'.$panelElements.'</div>
         </fieldset>';
 
     $fragment = new \rex_fragment();

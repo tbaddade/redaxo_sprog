@@ -2,10 +2,8 @@
 
 namespace Sprog\Copy;
 
-
 class Copy
 {
-
     /**
      * Split an array into chunks.
      *
@@ -19,7 +17,6 @@ class Copy
         return array_chunk($items, $chunkSize);
     }
 
-
     /**
      * Clear output (show blank page).
      */
@@ -32,9 +29,10 @@ class Copy
 
     /**
      * Resolve items in query string
-     * query string pattern: v1.v2,v1.v2,…
+     * query string pattern: v1.v2,v1.v2,….
      *
      * @param string $items
+     *
      * @return array
      */
     public static function resolveItems($items)
