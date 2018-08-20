@@ -1,0 +1,116 @@
+sprog = Idioma
+sprog_title = Idioma
+
+sprog_function = Función
+sprog_function_add = añadir
+sprog_function_edit = editar
+sprog_no_results = Sin resultados
+
+
+sprog_settings = Configuración
+sprog_settings_title = Configuración
+sprog_settings_clang_base = Base de idioma
+sprog_settings_config_saved = Configuración guardada
+sprog_settings_wildcard_clang_switch = Mostrar idiomas como subnavegación
+sprog_settings_wildcard_close_tag = Día de cierre
+sprog_settings_wildcard_open_tag = Día de apertura
+sprog_settings_synchronization = Sincronización
+
+sprog_settings_sync_metainfo = Meta información
+sprog_settings_sync_metainfo_art = Artículo
+sprog_settings_sync_metainfo_cat = Categorías
+sprog_settings_sync_metainfo_med = Media
+sprog_settings_sync_metainfo_note = Seleccione la metainformación que se mantiene sincronizada entre idiomas
+sprog_settings_sync_metainfo_not_found = No se encontró meta información
+
+sprog_settings_sync_structure = Estructura
+sprog_settings_sync_structure_article_name_to_category_name = Sincronice el nombre de la categoría con el nombre del producto en el mismo idioma
+sprog_settings_sync_structure_category_name_to_article_name = Sincronizar el nombre del elemento con el nombre de la categoría dentro del mismo idioma
+sprog_settings_sync_structure_status = Sincronizar el estado (en línea/fuera de línea) entre los idiomas
+sprog_settings_sync_structure_template = Sincronizar plantilla entre idiomas
+
+sprog_settings_wildcard_open_close_tag = Día de apertura/cierre
+
+
+
+sprog_wildcard = marcador de posición
+sprog_wildcard_title = marcador de posición
+sprog_wildcard_add = Añadir marcador
+sprog_wildcard_added = Se ha agregado marcador
+sprog_wildcard_caption = Lista de marcadores de posición
+sprog_wildcard_caption_missing = Lista de marcadores reemplazados en el {0}
+sprog_wildcard_deleted = El marcador ha sido eliminado
+sprog_wildcard_edit = Editar marcador de posición
+sprog_wildcard_edited = Marcador ha sido editado
+sprog_wildcard_error_no_wildcard = Por favor, especifique un marcador de posición
+sprog_wildcard_go_to_the_article = Al artículo
+sprog_wildcard_replace = Sustitución
+sprog_wildcard_without_tag = Escribir marcador de posición sin etiqueta de apertura / cierre
+
+sprog_search = Búsqueda
+
+sprog_import = Importación
+sprog_import_csv_upload = Importar CSV
+sprog_upload = Subir
+sprog_import_file_label = Archivo CSV
+sprog_import_overwrite_wildcards = Sobrescribir marcadores de posición existentes
+sprog_import_process = Importar marcadores de posición:
+sprog_import_lang_not_exists = {0} no fue encontrado!
+sprog_import_lang_importing = {0} encontrado
+sprog_import_wildcard_added = {0} fue agregado
+sprog_import_wildcard_updated = {0} ha sido actualizado
+sprog_import_wildcard_deleted = {0} ha sido eliminado
+
+sprog_export = Exportación
+sprog_cleanup = Limpiar
+
+
+sprog_copy_content = Copiar contenido
+sprog_copy_structure_content = Copiar contenido del artículo
+sprog_copy_metadata = Copiar metadatos
+
+sprog_copy_clang_from = del lenguaje
+sprog_copy_clang_to = al idioma
+sprog_copy_delete_before = Eliminar contenido antes?
+
+sprog_copy_name = Nombre del producto
+sprog_copy_catname = Nombre de la categoría
+sprog_copy_priority = Producto prioridad
+sprog_copy_catpriority = Prioridad Categoría
+sprog_copy_status = Estatus
+sprog_copy_template_id = Plantilla
+
+sprog_copy_structure_metadata = Copiar / sincronizar metadatos
+sprog_copy_structure_metadata_articles = Artículo
+sprog_copy_structure_metadata_categories = Categorías
+sprog_copy_structure_metadata_fields = Seleccionar campos
+sprog_copy_structure_metadata_structure = Estructura
+
+
+
+sprog_copy_button_start = Vamos!
+sprog_copy_button_success = Genial, gracias!
+sprog_copy_button_cancel = Cancelar
+sprog_copy_button_again = Intenta de nuevo
+
+
+sprog_copy_time_elapsed = Tiempo transcurrido
+sprog_copy_error_title = Maldición, algo salió mal!
+sprog_copy_error_text = <p>Se produjo un error al copiar el contenido del artículo. Los detalles están en la página de error. Apreciamos cualquier ayuda para mejorar la calidad del complemento por errores en <a href="https://github.com/tbaddade/redaxo_sprog/issues"> se notifica el código de Github. ¡Gracias! </p>
+sprog_copy_error_link = Enlace a la página de error
+
+
+sprog_copy_structure_content_title = Artículos copiados...
+sprog_copy_structure_content_progress = Artículo <span class="sprog-copy__target__progress-from"> 1 </span> de <span class="sprog-copy__target__progress-to"> ... </span>
+sprog_copy_structure_content_finished_title = Hecho: los contenidos del artículo han sido copiados
+sprog_copy_structure_content_finished_text = <p>El contenido se copió para <strong><span class="sprog-copy__target__finished-articles-num"> article </span>. Esto tomó aproximadamente <strong class="sprog-copy__target__finished-time-num"> </strong>. </p>
+sprog_copy_structure_content_nothing_title = Sin contenido?
+sprog_copy_structure_content_nothing_text = <p>Lo siento, pero no hay contenido para copiar. </p>
+
+sprog_copy_structure_metadata_title = Artículos Copiados/Sincronizados ...
+sprog_copy_structure_metadata_progress = Artículo <span class="sprog-copy__target__progress-from"> 1 </span> de <span class="sprog-copy__target__progress-to"> ... </span>
+sprog_copy_structure_metadata_finished_title = Hecho: Metadata ha sido copiada/sincronizada
+sprog_copy_structure_metadata_finished_text = <p>Los metadatos se han copiado/sincronizado para <strong> <span class="sprog-copy__target__finished-articles-num"> article </span>. Esto tomó aproximadamente <strong class="sprog-copy__target__finished-time-num"> </strong>. </p>
+sprog_copy_structure_metadata_nothing_title = Sin metadatos?
+sprog_copy_structure_metadata_nothing_text = <p>Lo siento, pero no hay metadatos de copia/sincronización.</p>
+
