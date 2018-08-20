@@ -104,6 +104,20 @@ class Sync
 
     public static function articleMetainfo($params, $fields, $toClangId = 0)
     {
+        // Check whether field exists in table
+        $sql = \rex_sql::factory()->setQuery('SELECT * FROM '.\rex::getTable('article').' LIMIT 1');
+        $fieldNames = $sql->getFieldnames();
+        foreach ($fields as $index => $field) {
+            if (!in_array($field, $fieldNames)) {
+                unset($fields[$index]);
+            }
+        }
+
+        if (count($fields) < 1) {
+            return;
+        }
+
+
         $id = $params['id'];
         $clangId = $params['clang'];
         $saveFields = \rex_sql::factory()
