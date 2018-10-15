@@ -39,7 +39,7 @@ class Extension
     {
         $addon = \rex_addon::get('sprog');
 
-        if (count($addon->getConfig('sync_metainfo_art'))) {
+        if (count((array)$addon->getConfig('sync_metainfo_art'))) {
             Sync::articleMetainfo($ep->getParams(), $addon->getConfig('sync_metainfo_art'));
         }
     }
