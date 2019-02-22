@@ -2,6 +2,7 @@ package: sprog
 version: '1.1.0'
 author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
+docspage: https://github.com/tbaddade/redaxo_sprog/edit/master/README.md
 
 requires:
     redaxo: '^5.5'
@@ -35,6 +36,10 @@ page:
         settings:
             title: 'translate:settings'
             perm: admin[]
+        docs: 
+            title: 'translate:docs'
+            icon: rex-icon fa-info-circle
+            itemclass: pull-right
 
 
 pages:
