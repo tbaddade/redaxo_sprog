@@ -24,8 +24,8 @@ sprog_settings_sync_metainfo_note = Selektiere die Meta Infos, die zwischen den 
 sprog_settings_sync_metainfo_not_found = Keine Meta Infos gefunden
 
 sprog_settings_sync_structure = Struktur
-sprog_settings_sync_structure_article_name_to_category_name = Kategoriename mit Artikelname innerhalb derselben Sprache synchronisieren
-sprog_settings_sync_structure_category_name_to_article_name = Artikelname mit Kategoriename innerhalb derselben Sprache synchronisieren
+sprog_settings_sync_structure_category_name_to_article_name = Kategoriename gibt den Artikelnamen vor (innerhalb derselben Sprache)
+sprog_settings_sync_structure_article_name_to_category_name = Kategoriename richtet sich nach dem Artikelnamen (innerhalb derselben Sprache)
 sprog_settings_sync_structure_status = Status (Online/Offline) zwischen den Sprachen synchronisieren
 sprog_settings_sync_structure_template = Template zwischen den Sprachen synchronisieren
 
