@@ -1,14 +1,15 @@
-Sprog
-================================================================================
+# Sprog
 
 **AddOn für Sprachen**
 
-## Platzhalter
+## Kurzanleitung
+
+### Platzhalter
  
 - einfaches Erstellen von Platzhaltern und deren Ersetzungen
 - Eine Sprache kann die Ersetzungen einer anderen Sprache verwenden (Sprachbasis)
 
-### Anwendung
+#### Anwendung
 
 Das **Anlegen** des Platzhalters erfolgt **ohne** das öffnende bzw. schließende **Tag**.
 
@@ -177,7 +178,9 @@ foreach ($items as $item) {
 }
 ```
 
-## Optionale Synchronisierung von
+### Weitere Features
+
+#### Optionale Synchronisierung von
 
 - Artikelname mit Kategoriename innerhalb derselben Sprache
 - Kategoriename mit Artikelname innerhalb derselben Sprache
@@ -185,29 +188,28 @@ foreach ($items as $item) {
 - Template zwischen den Sprachen
 
 
-## Inhalte kopieren/synchronisieren
+#### Inhalte kopieren/synchronisieren
  
 - Inhalte können von einer Sprache zur anderen Sprache kopiert werden
 - Metadaten der Artikel/Kategorien können von einer Sprache zur anderen Sprache synchronisiert werden
 
+## Über das Addon
 
-- - - - - - - - - - - - - - - - - - - -
-
-## Bugtracker
+### Bugtracker
 
 Du hast einen Fehler gefunden oder ein nettes Feature parat? [Lege ein Issue an](https://github.com/tbaddade/redaxo_sprog/issues). Bevor du ein neues Issue erstellts, suche bitte ob bereits eines mit deinem Anliegen existiert und lese die [Issue Guidelines (englisch)](https://github.com/necolas/issue-guidelines) von [Nicolas Gallagher](https://github.com/necolas/).
 
 
-## Changelog
+### Changelog
 
 siehe [CHANGELOG.md](https://github.com/tbaddade/redaxo_sprog/blob/master/CHANGELOG.md)
 
-## Lizenz
+### Lizenz
 
 siehe [LICENSE.md](https://github.com/tbaddade/redaxo_sprog/blob/master/LICENSE.md)
 
 
-## Autor
+### Autor
 
 **Thomas Blum**
 
