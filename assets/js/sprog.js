@@ -52,7 +52,7 @@
                 }
             });
             var urlParams = Object.keys(params).map(function(k) {
-                return 'params[' + encodeURIComponent(k) + ']=' + encodeURIComponent(params[k])
+                return encodeURIComponent('params[' + k + ']') + '=' + encodeURIComponent(params[k])
             }).join('&');
 
             var url = $(this).attr('href') + '&' + urlParams;
@@ -360,7 +360,7 @@
                 var chunk = [];
                 var params = this._items[type].params;
                 var urlParams = Object.keys(params).map(function(k) {
-                    return 'params[' + encodeURIComponent(k) + ']=' + encodeURIComponent(params[k])
+                    return encodeURIComponent('params[' + k + ']') + '=' + encodeURIComponent(params[k])
                 }).join('&');
                 if (this._items[type] && this._items[type].items.length) {
                     for (var i = 0, imax = this._items[type].items.length; i < imax; i++) {
