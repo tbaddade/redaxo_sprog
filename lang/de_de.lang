@@ -49,19 +49,28 @@ sprog_wildcard_without_tag = Platzhalter ohne öffnendes/schließendes Tag notie
 
 sprog_search = Suchen
 
+sprog_artefact = Artefakte
+
 sprog_import = Importieren
-sprog_import_csv_upload = CSV importieren
-sprog_upload = hochladen
-sprog_import_file_label = CSV Datei
-sprog_import_overwrite_wildcards = Bestehende Platzhalter überschreiben
-sprog_import_process = Importiere Platzhalter:
-sprog_import_lang_not_exists = {0} wurde nicht gefunden!
-sprog_import_lang_importing = {0} gefunden
-sprog_import_wildcard_added = {0} wurde hinzugefügt
-sprog_import_wildcard_updated = {0} wurde aktualisiert
-sprog_import_wildcard_deleted = {0} wurde gelöscht
+sprog_import_delimiter = Trennzeichen
+sprog_import_delimiter_comma = Komma
+sprog_import_delimiter_semicolon = Semikolon
+sprog_import_delimiter_tab = Tabulator
+sprog_import_description = Hier kann man Platzhalter in Sprog importieren. Bitte beachten, dass nur CSV-Dateien importiert werden können. In der ersten Zeile sollten die Definitionen wie folgt enthalten sein: <code>wildcard</code> | <code>de</code> | <code>en</code>. Hierbei entsprechen <b>de</b> und <b>en</b> die in der Instanz hinterlegten Sprachcodes in der jeweiligen Sprache. Wird ein der Instanz unbekannter Sprachcode gefunden, kann optional die Sprache direkt mit angelegt werden. Weiterhin sollte das Encoding der Importdatei UTF-8 sein.
+sprog_import_file = Datei
+sprog_import_heading = CSV-Datei importieren
+sprog_import_missing_language_add = Sprache der Instanz hinzufügen
+sprog_import_missing_language_ignore = ignorieren
+sprog_import_missing_language_label = Wenn der Sprachcode nicht in der Instanz vorhanden ist, dann
+sprog_import_title = Import
+sprog_import_wildcard_added = {0} Platzhalter wurden hinzugefügt
+sprog_import_wildcard_updated = {0} Platzhalter wurden aktualisiert
 
 sprog_export = Exportieren
+sprog_export_description = Hier kann man alle Platzhalter in allen Sprachen als CSV-Datei herunterladen. Nach dem Bearbeiten kann die CSV-Datei wieder importiert werden.
+sprog_export_heading = CSV-Datei exportieren
+sprog_export_title = Export
+
 sprog_cleanup = Aufräumen
 
 
