@@ -46,6 +46,10 @@ page:
         settings:
             title: 'translate:settings'
             perm: admin[]
+        help:
+            title: 'translate:help'
+            subPath: README.md
+            perm: admin[]
             itemclass: pull-right
 
 
