@@ -49,6 +49,9 @@ sprog_wildcard_without_tag = Note placeholder without opening / closing tag
 
 sprog_search = Search
 
+sprog_help = Help
+
+
 sprog_import = Import
 sprog_import_csv_upload = Import CSV
 sprog_upload = upload

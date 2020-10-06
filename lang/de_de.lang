@@ -6,7 +6,6 @@ sprog_function_add = hinzufügen
 sprog_function_edit = editieren
 sprog_no_results = Keine Ergebnisse
 
-
 sprog_settings = Konfiguration
 sprog_settings_title = Konfiguration
 sprog_settings_clang_base = Sprachbasis
@@ -50,6 +49,9 @@ sprog_wildcard_without_tag = Platzhalter ohne öffnendes/schließendes Tag notie
 sprog_search = Suchen
 
 sprog_artefact = Artefakte
+
+sprog_help = Hilfe
+
 
 sprog_import = Importieren
 sprog_import_delimiter = Trennzeichen
