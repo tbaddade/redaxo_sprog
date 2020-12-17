@@ -102,6 +102,34 @@ if ($func == '') {
             '.$section.'
         </form>
     ';
+?>
+<script>
+	function lang_changer() {
+		var from = document.querySelector("#sprog-copy-structure-content-clang-from");
+		var to = document.querySelector("#sprog-copy-structure-content-clang-to");
+
+		if ( from.value === to.value ) {
+    		for ( var i = 0; i < to.children.length; i++ ) {
+				to.value = "";
+    			if ( to[i].value === from.value ) {
+        			to[i].disabled = true;
+        		}
+    		}
+		}
+		else {
+			for ( var i = 0; i < to.children.length; i++ ) {
+        		to[i].disabled = false;
+    		}
+		}			
+	}
+
+	// Hide on document load
+	$(document).ready(function() { lang_changer(); });
+	// Hide option selection change
+	$("#sprog-copy-structure-content-clang-from").on('change', function(e) { lang_changer(); });
+	$("#sprog-copy-structure-content-clang-to").on('change', function(e) { lang_changer(); });
+</script>
+<?php
 }
 
 // - - - - - - - - - - - - - - - - - - - - - -
