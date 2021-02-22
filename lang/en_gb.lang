@@ -6,7 +6,6 @@ sprog_function_add = add
 sprog_function_edit = edit
 sprog_no_results = No results
 
-
 sprog_settings = Settings
 sprog_settings_title = Configuration title
 sprog_settings_clang_base = Source language
@@ -24,8 +23,8 @@ sprog_settings_sync_metainfo_note = Select the metainfo that stay in sync betwee
 sprog_settings_sync_metainfo_not_found = No metainfo found
 
 sprog_settings_sync_structure = Structure
-sprog_settings_sync_structure_article_name_to_category_name = Category name specifies the start article name (within the same language)
 sprog_settings_sync_structure_category_name_to_article_name = Category name depends on the start article name (within the same language)
+sprog_settings_sync_structure_article_name_to_category_name = Category name specifies the start article name (within the same language)
 sprog_settings_sync_structure_status = Synchronize status (online / offline) between languages
 sprog_settings_sync_structure_template = Synchronize template between languages
 
@@ -49,22 +48,31 @@ sprog_wildcard_without_tag = Note placeholder without opening / closing tag
 
 sprog_search = Search
 
+sprog_artefact = Artifacts
+
 sprog_help = Help
 
 
 sprog_import = Import
-sprog_import_csv_upload = Import CSV
-sprog_upload = upload
-sprog_import_file_label = CSV file
-sprog_import_overwrite_wildcards = Overwrite existing placeholders
-sprog_import_process = Imported placeholders:
-sprog_import_lang_not_exists = {0} not found!
-sprog_import_lang_importing = {0} found
+sprog_import_delimiter = Delimiter
+sprog_import_delimiter_comma = Comma
+sprog_import_delimiter_semicolon = Semicolon
+sprog_import_delimiter_tab = Tab
+sprog_import_description = Placeholders can be imported to Sprog here. Please note that only CSV files can be imported. The first line should contain the definitions as follows: <code>wildcard</code> | <code>de</code> | <code>en</code>. Where <b>de</b> and <b>en</b> reflect the language codes defined in the respective language under system. If a language code is found which isn't available in the system it can be added automatically. The import files encoding should be set to UTF-8.
+sprog_import_file = File
+sprog_import_heading = Import CSV file
+sprog_import_missing_language_add = add missing language to system
+sprog_import_missing_language_ignore = ignore language
+sprog_import_missing_language_label = If an imported language is not available in the system
+sprog_import_title = Import
 sprog_import_wildcard_added = {0} has been added
 sprog_import_wildcard_updated = {0} has been updated
-sprog_import_wildcard_deleted = {0} has been deleted
 
 sprog_export = Export
+sprog_export_description = Download all placeholders in all languages in a CSV file. The edited file can be re-imported.
+sprog_export_heading = Export CSV file
+sprog_export_title = Export
+
 sprog_cleanup = Clean up
 
 
