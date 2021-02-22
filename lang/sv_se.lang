@@ -6,7 +6,6 @@ sprog_function_add = Tillfoga
 sprog_function_edit = Redigera
 sprog_no_results = Inga resultat
 
-
 sprog_settings = Konfiguration
 sprog_settings_title = Konfiguration
 sprog_settings_clang_base = Språkbasis
@@ -24,8 +23,8 @@ sprog_settings_sync_metainfo_note = Välj metainfo som stannar synkron mellan sp
 sprog_settings_sync_metainfo_not_found = Inga metainfon hittades
 
 sprog_settings_sync_structure = Struktur
-sprog_settings_sync_structure_article_name_to_category_name = Synkronisera kategorinamn med artikelnamn inom samma språk
 sprog_settings_sync_structure_category_name_to_article_name = Synkronisera artikelnamn med kategorinamn inom samma språk
+sprog_settings_sync_structure_article_name_to_category_name = Synkronisera kategorinamn med artikelnamn inom samma språk
 sprog_settings_sync_structure_status = Synkronisera status (online / offline) mellan språk
 sprog_settings_sync_structure_template = Synkronisera mallar mellan språk
 
@@ -49,19 +48,31 @@ sprog_wildcard_without_tag = Skriva platshållaren utan öppnande / stängande t
 
 sprog_search = Sök
 
+sprog_artefact = Artefakte
+
+sprog_help = Hjälp
+
+
 sprog_import = Importera
-sprog_import_csv_upload = Importera CSV
-sprog_upload = Ladda upp
-sprog_import_file_label = CSV fil
-sprog_import_overwrite_wildcards = Skriv över befintliga platshållare
-sprog_import_process = Importerade platshållare:
-sprog_import_lang_not_exists = {0} hittades inte!
-sprog_import_lang_importing = {0} hittades
+sprog_import_delimiter = Skiljetecken
+sprog_import_delimiter_comma = Komma
+sprog_import_delimiter_semicolon = Semikolon
+sprog_import_delimiter_tab = Tabulator
+sprog_import_description = Här kan du importera platshållare till Sprog. Observera att endast CSV-filer kan importeras. I den första raden bör definitionerna innehålla följande: <code> wildcard </code> | <code> de </code> | <code> en </code>. Här motsvarar <b> de </b> och <b> en </b> de språkkoder som är lagrade i instansen på respektive språk. Om en språkkod hittas som är okänd för förekomsten kan språket valfritt skapas direkt. Dessutom bör kodningen för importfilen vara UTF-8.
+sprog_import_file = Fil
+sprog_import_heading = Importera CSV-fil
+sprog_import_missing_language_add = Lägg till språk för instansen
+sprog_import_missing_language_ignore = ignorera
+sprog_import_missing_language_label = Om språkkoden inte finns i instansen, då
+sprog_import_title = Import
 sprog_import_wildcard_added = {0} tillfogades!
 sprog_import_wildcard_updated = {0} har uppgraderas!
-sprog_import_wildcard_deleted = {0} raderades!
 
 sprog_export = Exportera
+sprog_export_description = Här kan du ladda ner alla platshållare på alla språk som CSV-filer. Efter redigering kan CSV-filen importeras igen.
+sprog_export_heading = Exportera CSV-filen
+sprog_export_title = Export
+
 sprog_cleanup = Rensa
 
 
