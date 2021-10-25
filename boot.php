@@ -104,6 +104,21 @@ if (rex::isBackend() && rex::getUser()) {
             $page = \rex_be_controller::getPageObject('sprog/wildcard');
 
             if (Wildcard::isClangSwitchMode()) {
+                $hrefParams = [];
+                $pidItems = [];
+                if ('edit' === rex_request('func', 'string') && 0 <= rex_request('pid', 'int', 0)) {
+                    $hrefParams['pid'] = rex_request('pid', 'int', 0);
+                    $hrefParams['func'] = 'edit';
+
+                    $sql = rex_sql::factory();
+                    $tempItems = $sql->getArray('SELECT id FROM '.rex::getTable('sprog_wildcard').' WHERE pid = :pid LIMIT 1', ['pid' => $hrefParams['pid']]);
+                    if (isset($tempItems[0]['id'])) {
+                        $tempItems = $sql->getArray('SELECT pid, clang_id FROM '.rex::getTable('sprog_wildcard').' WHERE id = :id', ['id' => $tempItems[0]['id']]);
+                        foreach ($tempItems as $tempItem) {
+                            $pidItems[$tempItem['clang_id']] = $tempItem['pid'];
+                        }
+                    }
+                }
                 $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
                 $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
                 $clangAll = \rex_clang::getAll();
@@ -116,10 +131,15 @@ if (rex::isBackend() && rex::getUser()) {
                 }
                 foreach ($clangAll as $id => $clang) {
                     if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
-                        $page->addSubpage((new rex_be_page('clang'.$id, $clang->getName()))
-                            ->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'))
-                            ->setIsActive($id == $clang_id)
-                        );
+                        if (isset($pidItems[$id])) {
+                            $hrefParams['pid'] = $pidItems[$id];
+                        }
+                        $bePage = new rex_be_page('clang'.$id, $clang->getName());
+                        $bePage->setHref(\rex_url::backendPage('sprog/wildcard/clang'.$id, $hrefParams));
+                        $bePage->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
+                        $bePage->setIsActive($id == $clang_id);
+
+                        $page->addSubpage($bePage);
                     }
                 }
             } else {
