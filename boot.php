@@ -24,11 +24,7 @@ rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 // (hint: enable debug mode in sprog.js to report execution times)
 $this->setConfig('chunkSizeArticles', 4);
 
-require_once __DIR__ . '/functions/function_sprogarray.php';
-require_once __DIR__ . '/functions/function_sprogcard.php';
-require_once __DIR__ . '/functions/function_sprogdown.php';
-require_once __DIR__ . '/functions/function_sprogfield.php';
-require_once __DIR__ . '/functions/function_sprogvalue.php';
+require_once __DIR__ . '/functions/sprog.php';
 
 $filters = $this->getProperty('filter');
 $filters = \rex_extension::registerPoint(new \rex_extension_point('SPROG_FILTER', $filters));
