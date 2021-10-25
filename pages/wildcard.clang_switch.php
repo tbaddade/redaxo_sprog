@@ -104,7 +104,7 @@ if ($func == '') {
         $sqlWhere = ' AND (`wildcard` LIKE "%'.$search_term.'%" OR `replace` LIKE "%'.$search_term.'%")';
     }
 
-    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' WHERE `clang_id`="'.$clang_id.'"'.$sqlWhere.' ORDER BY `wildcard`', 5);
+    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' WHERE `clang_id`="'.$clang_id.'"'.$sqlWhere.' ORDER BY `wildcard`');
     $list->addParam('search-term', $search_term);
     $list->addTableAttribute('class', 'table-striped table-hover');
 
