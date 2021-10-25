@@ -15,6 +15,9 @@ if (!ini_get("auto_detect_line_endings")) {
 
 use Sprog\Wildcard;
 
+/**
+ * @deprecated deprecated since version 1.3.0, use \Sprog\Wildcard
+ */
 class_alias('\Sprog\Wildcard', 'Wildcard');
 
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);

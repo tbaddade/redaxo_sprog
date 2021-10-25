@@ -1,5 +1,7 @@
 <?php
 
+use Sprog\Wildcard;
+
 /**
  * Returns a modified array.
  *
