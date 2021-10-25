@@ -45,7 +45,7 @@ if ($func == '') {
     $n['header'] = '<div class="row"><div class="col-md-6">';
     $n['footer'] = '</div>';
     $n['label'] = '<label for="sprog-copy-clang-from">'.$this->i18n('copy_clang_from').'</label>';
-    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+    $n['field'] = $select->get();
     $formElements[] = $n;
 
     $select = new \rex_select();
@@ -58,7 +58,7 @@ if ($func == '') {
     $n['header'] = '<div class="col-md-6">';
     $n['footer'] = '</div></div>';
     $n['label'] = '<label for="sprog-copy-clang-to">'.$this->i18n('copy_clang_to').'</label>';
-    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+    $n['field'] = $select->get();
     $formElements[] = $n;
 
     $query = 'SELECT `title`, `name` FROM '.\rex::getTable('metainfo_field').' WHERE `name` LIKE :name AND `type_id` != :type_id ORDER BY name';
@@ -69,6 +69,7 @@ if ($func == '') {
     $fieldsSelect->setId('sprog-copy-fields');
     $fieldsSelect->setName('sprog_copy_fields');
     $fieldsSelect->setAttribute('data-sprog-param', 'fields');
+    $fieldsSelect->setAttribute('class', 'form-control');
     $fieldsSelect->setMultiple();
     $fieldsSelect->setSize(15);
     $fieldsSelect->setSelected($fields);
@@ -91,7 +92,7 @@ if ($func == '') {
     }
     $n = [];
     $n['label'] = '<label for="sprog-copy-fields">'.$this->i18n('copy_structure_metadata_fields').'</label>';
-    $n['field'] = '<div class="rex-select-style">'.$fieldsSelect->get().'</div>';
+    $n['field'] = $fieldsSelect->get();
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -151,7 +152,7 @@ if (count($clangAll) >= 2) {
         $n['header'] = '<div class="col-md-5">';
         $n['footer'] = '</div>';
         $n['label'] = '<label>'.$clang->getName().'</label>';
-        $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+        $n['field'] = $select->get();
         $formElements[] = $n;
     }
 

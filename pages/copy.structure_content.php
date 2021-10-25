@@ -45,7 +45,7 @@ if ($func == '') {
     $n['header'] = '<div class="row"><div class="col-md-6">';
     $n['footer'] = '</div>';
     $n['label'] = '<label for="sprog-copy-structure-content-clang-from">'.$this->i18n('copy_clang_from').'</label>';
-    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+    $n['field'] = $select->get();
     $formElements[] = $n;
 
     $select = new \rex_select();
@@ -58,7 +58,7 @@ if ($func == '') {
     $n['header'] = '<div class="col-md-6">';
     $n['footer'] = '</div></div>';
     $n['label'] = '<label for="sprog-copy-structure-content-clang-to">'.$this->i18n('copy_clang_to').'</label>';
-    $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+    $n['field'] = $select->get();
     $formElements[] = $n;
 
     $fragment = new \rex_fragment();
@@ -104,30 +104,40 @@ if ($func == '') {
     ';
 ?>
 <script>
-	function lang_changer() {
-		var from = document.querySelector("#sprog-copy-structure-content-clang-from");
-		var to = document.querySelector("#sprog-copy-structure-content-clang-to");
+    function lang_changer() {
+        var from = document.querySelector('#sprog-copy-structure-content-clang-from');
+        var to = document.querySelector('#sprog-copy-structure-content-clang-to');
+        var submitButton = document.querySelector('.sprog-copy-button-start');
 
-		if ( from.value === to.value ) {
-    		for ( var i = 0; i < to.children.length; i++ ) {
-				to.value = "";
-    			if ( to[i].value === from.value ) {
-        			to[i].disabled = true;
-        		}
-    		}
-		}
-		else {
-			for ( var i = 0; i < to.children.length; i++ ) {
-        		to[i].disabled = false;
-    		}
-		}			
-	}
+        if (from.value === to.value) {
+            to.value = '';
+        }
+        if ('' === to.value) {
+            submitButton.disabled = true;
+        } else {
+            submitButton.disabled = false;
+        }
 
-	// Hide on document load
-	$(document).ready(function() { lang_changer(); });
-	// Hide option selection change
-	$("#sprog-copy-structure-content-clang-from").on('change', function(e) { lang_changer(); });
-	$("#sprog-copy-structure-content-clang-to").on('change', function(e) { lang_changer(); });
+        for (var i = 0; i < to.children.length; i++) {
+            if (to[i].value === from.value) {
+                to[i].disabled = true;
+            } else {
+                to[i].disabled = false;
+            }
+        }
+    }
+
+    // Hide on document load
+    $(document).ready(function () {
+        lang_changer();
+    });
+    // Hide option selection change
+    $("#sprog-copy-structure-content-clang-from").on('change', function (e) {
+        lang_changer();
+    });
+    $("#sprog-copy-structure-content-clang-to").on('change', function (e) {
+        lang_changer();
+    });
 </script>
 <?php
 }
@@ -156,7 +166,7 @@ if (count($clangAll) >= 2) {
         $n['header'] = '<div class="col-md-5">';
         $n['footer'] = '</div>';
         $n['label'] = '<label>'.$clang->getName().'</label>';
-        $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+        $n['field'] = $select->get();
         $formElements[] = $n;
     }
 
