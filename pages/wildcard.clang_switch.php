@@ -82,8 +82,8 @@ if ($func == 'delete' && !$csrfToken->isValid()) {
     unset($wildcard_id);
 }
 
+$search_term = rex_request('search-term', 'string', '');
 if ($func == '') {
-    $search_term = rex_request('search-term', 'string', '');
     $title = $this->i18n('wildcard_caption');
 
     $sqlWhere = '';
@@ -91,7 +91,8 @@ if ($func == '') {
         $sqlWhere = ' AND (`wildcard` LIKE "%'.$search_term.'%" OR `replace` LIKE "%'.$search_term.'%")';
     }
 
-    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' WHERE `clang_id`="'.$clang_id.'"'.$sqlWhere.' ORDER BY `wildcard`');
+    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' WHERE `clang_id`="'.$clang_id.'"'.$sqlWhere.' ORDER BY `wildcard`', 5);
+    $list->addParam('search-term', $search_term);
     $list->addTableAttribute('class', 'table-striped');
 
     $tdIcon = '<i class="rex-icon rex-icon-refresh"></i>';
@@ -136,7 +137,7 @@ if ($func == '') {
 
     $content .= $list->get();
 
-    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
+    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
 
     $fragment = new rex_fragment();
     $fragment->setVar('title', $title);
@@ -149,8 +150,9 @@ if ($func == '') {
     \rex_extension::register('REX_FORM_CONTROL_FIELDS', '\Sprog\Extension::wildcardFormControlElement');
 
     $form = rex_form::factory(rex::getTable('sprog_wildcard'), '', 'pid = '.$pid);
+    $form->setApplyUrl(rex_url::currentBackendPage(['search-term' => $search_term], false));
     $form->addParam('pid', $pid);
-    $form->setApplyUrl(rex_url::currentBackendPage());
+    $form->addParam('search-term', $search_term);
     $form->setLanguageSupport('id', 'clang_id');
     $form->setEditMode($func == 'edit');
 

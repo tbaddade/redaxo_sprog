@@ -22,7 +22,7 @@ $wildcard_id = rex_request('wildcard_id', 'int');
 $wildcard_name = rex_request('wildcard_name', 'string');
 $wildcard_replaces = rex_request('wildcard_replaces', 'array');
 $func = rex_request('func', 'string');
-$search_term = rex_request('search-term', 'string');
+$search_term = rex_request('search-term', 'string', '');
 
 // -------------- Form Submits
 $add_wildcard_save = rex_post('add_wildcard_save', 'boolean');
@@ -222,8 +222,8 @@ if (count($entries)) {
                             <td class="rex-table-id" data-title="'.$this->i18n('id').'">'.$entry_id.'</td>
                             <td data-title="'.$this->i18n('wildcard').'">'.$entry_wildcard.'</td>
                             '.$td.'
-                            <td class="rex-table-action"><a href="'.rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]).'#wildcard-'.$entry_id.'"><i class="rex-icon rex-icon-edit"></i> '.$this->i18n('function_edit').'</a></td>
-                            <td class="rex-table-action">'.(rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="'.rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id] + $csrfToken->getUrlParams()).'" data-confirm="'.$this->i18n('delete').' ?"><i class="rex-icon rex-icon-delete"></i> '.$this->i18n('delete').'</a>' : '').'</td>
+                            <td class="rex-table-action"><a href="'.rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id, 'search-term' => $search_term]).'#wildcard-'.$entry_id.'"><i class="rex-icon rex-icon-edit"></i> '.$this->i18n('function_edit').'</a></td>
+                            <td class="rex-table-action">'.(rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="'.rex_url::currentBackendPage(['func' => 'delete', 'wildcard_id' => $entry_id, 'search-term' => $search_term] + $csrfToken->getUrlParams()).'" data-confirm="'.$this->i18n('delete').' ?"><i class="rex-icon rex-icon-delete"></i> '.$this->i18n('delete').'</a>' : '').'</td>
                         </tr>';
         }
     }
@@ -235,7 +235,7 @@ $content .= '
 
 echo $message;
 
-$searchControl = '<div class="form-inline"><div class="input-group input-group-xs"><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></div>';
+$searchControl = '<div class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></div>';
 $searchControl = ($func == '') ? '<form action="'.\rex_url::currentBackendPage().'" method="post">'.$searchControl.'</form>' : $searchControl;
 
 $fragment = new rex_fragment();
@@ -246,7 +246,7 @@ $content = $fragment->parse('core/page/section.php');
 
 if ($func == 'add' || $func == 'edit') {
     $content = '
-        <form action="'.rex_url::currentBackendPage().'" method="post">
+        <form action="'.rex_url::currentBackendPage(['search-term' => $search_term]).'" method="post">
             <fieldset>
                 <input type="hidden" name="wildcard_id" value="'.$wildcard_id.'" />
                 '.$csrfToken->getHiddenField().'
