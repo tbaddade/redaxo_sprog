@@ -103,7 +103,7 @@ if (count($clangAll) >= 2) {
         $n['header'] = '<div class="col-md-6">';
         $n['footer'] = '</div>';
         $n['label'] = '<label>'.$clang->getName().'</label>';
-        $n['field'] = '<div class="rex-select-style">'.$select->get().'</div>';
+        $n['field'] = $select->get();
         $formElements[] = $n;
     }
 
@@ -169,6 +169,7 @@ $catSelect = new \rex_select();
 $catSelect->setId('sync-metainfo-cat');
 $catSelect->setName('settings[sync_metainfo_cat][]');
 $catSelect->setMultiple();
+$catSelect->setAttribute('class', 'form-control');
 $catSelect->setAttribute('placeholder', 'Platzhalter');
 $catSelect->setSelected($this->getConfig('sync_metainfo_cat'));
 $catSelect->setSize($sizeSelect);
@@ -186,6 +187,7 @@ $artSelect = new \rex_select();
 $artSelect->setId('sync-metainfo-art');
 $artSelect->setName('settings[sync_metainfo_art][]');
 $artSelect->setMultiple();
+$artSelect->setAttribute('class', 'form-control');
 $artSelect->setSelected($this->getConfig('sync_metainfo_art'));
 $artSelect->setSize($sizeSelect);
 if (count($artOptions)) {
@@ -222,8 +224,6 @@ if (count($medOptions)) {
 $grid = [];
 $formElements = [];
 $n = [];
-$n['before'] = '<div class="rex-select-style">';
-$n['after'] = '</div>';
 $n['label'] = '<label for="sync-metainfo-art">'.$this->i18n('settings_sync_metainfo_art').'</label>';
 $n['field'] = $artSelect->get();
 $n['note'] = \rex_i18n::msg('ctrl');
@@ -236,8 +236,6 @@ $grid[] = $fragment->parse('core/form/form.php');
 $formElements = [];
 $n = [];
 $n['header'] = '';
-$n['before'] = '<div class="rex-select-style">';
-$n['after'] = '</div>';
 $n['label'] = '<label for="sync-metainfo-cat">'.$this->i18n('settings_sync_metainfo_cat').'</label>';
 $n['field'] = $catSelect->get();
 $n['note'] = \rex_i18n::msg('ctrl');
