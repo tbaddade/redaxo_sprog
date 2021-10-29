@@ -1,5 +1,5 @@
 {
     "require": {
-        "league/csv": "^9.6"
+        "symfony/serializer": "^5.3"
     }
 }
