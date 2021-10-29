@@ -10,10 +10,9 @@
  * file that was distributed with this source code.
  */
 
-use League\Csv\Writer;
+use Sprog\Export\CsvExport;
 
 $addon = rex_addon::get('sprog');
-require $addon->getPath('vendor/league/csv/src/functions_include.php');
 
 $csrfToken = \rex_csrf_token::factory('sprog-settings');
 
@@ -38,29 +37,21 @@ if ($func == 'export' && !$csrfToken->isValid()) {
 
     $header = ['wildcard'];
     foreach ($clang_ids as $clang_id => $value) {
-        $header[] = rex_clang::get($clang_id)->getCode();
+        $header[] = ($clang = rex_clang::get($clang_id)) ? $clang->getCode() : $clang_id;
     }
 
-    $records = [];
+    $csv = new CsvExport();
+    $csv->addHeaders($header);
+
     foreach ($data as $wildcard => $clangs) {
         $record = [$wildcard];
         foreach ($clangs as $clang_id => $replace) {
             $record[] = $replace;
         }
-        $records[] = $record;
+        $csv->addItem($record);
     }
 
-    //load the CSV document from a string
-    $csv = Writer::createFromString('');
-
-    //insert the header
-    $csv->insertOne($header);
-
-    //insert all the records
-    $csv->insertAll($records);
-
-    $csv->output('sprog-' . date('Ymd-His') . '.csv');
-    exit();
+    $csv->sendFile('sprog-' . date('Ymd-His') . '.csv');
 }
 
 $formElements = [];
