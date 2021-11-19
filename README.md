@@ -124,6 +124,11 @@ siehe [LICENSE](https://github.com/tbaddade/redaxo_sprog/blob/master/LICENSE)
 
 ## Autor
 
-**Thomas Blum**
+**[Thomas Blum](https://github.com/tbaddade)**
 
-* https://github.com/tbaddade
+
+## Übersetzungen
+
+- English [@ynamite](https://github.com/ynamite)
+- Español [@nandes2062](https://github.com/nandes2062)
+- Svensk [@interweave-media](https://github.com/interweave-media)
