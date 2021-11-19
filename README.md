@@ -29,143 +29,60 @@ Filter werden direkt am Platzhalter im Code notiert und haben Einfluss auf deren
 
 #### Mögliche Filter
 - - - - - - - - - - - - - - - - - - - - 
-- format (sprintf)
-- limit
+
+- format <small>(sprintf)</small>
+- limit  
 - lower
 - markdown
-- raw
+- raw <small>(kein nl2br)</small>
 - title
 - upper
 - words
 
-- - - - - - - - - - - - - - - - - - - -
-#### format (sprintf) 
-- - - - - - - - - - - - - - - - - - - - 
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>%s Affen sitzen auf einem %s</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|format(5, Baum) }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - - 
-#### limit
-- - - - - - - - - - - - - - - - - - - - 
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|limit(5,...) }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 Aff...</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Lower
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|lower }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 affen sitzen auf einem baum</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Markdown
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>**5 Affen sitzen auf einem Baum**</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|markdown }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd><p><strong>5 Affen sitzen auf einem Baum</strong></p></dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Raw (kein nl2br)
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|raw }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Title
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|title }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 Affen Sitzen Auf Einem Baum</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Upper
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|upper }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 AFFEN SITZEN AUF EINEM BAUM</dd>
-</dl>
-
-- - - - - - - - - - - - - - - - - - - -
-#### Words
-- - - - - - - - - - - - - - - - - - - -
-<dl>
-    <dt>Platzhalter</dt>
-    <dd>kinderspiel</dd>
-    <dt>Ersetzung</dt>
-    <dd>5 Affen sitzen auf einem Baum</dd>
-    <dt>Anwendung</dt>
-    <dd><code>{{ kinderspiel|words(4) }}</code></dd>
-    <dt>Ausgabe</dt>
-    <dd>5 Affen sitzen auf</dd>
-</dl>
+| Verwendung | Ersetzung | Ausgabe |
+| ---------- | --------- | ------- |
+| <code>{{&#160;sprog&#124;format(5,&#160;Baum)&#160;}}</code> | `%s Affen sitzen auf einem %s` | `5 Affen sitzen auf einem Baum` |
+| <code>{{&#160;sprog&#124;limit(5,...)&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 Aff...` |
+| <code>{{&#160;sprog&#124;lower&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 affen sitzen auf einem baum` |
+| <code>{{&#160;sprog&#124;markdown&#160;}}</code> | `**5 Affen sitzen auf einem Baum**` | `<p><strong>5 Affen sitzen auf einem Baum</strong></p>` |
+| <code>{{&#160;sprog&#124;raw&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 Affen sitzen auf einem Baum` |
+| <code>{{&#160;sprog&#124;title&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 Affen Sitzen Auf Einem Baum` |
+| <code>{{&#160;sprog&#124;upper&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 AFFEN SITZEN AUF EINEM BAUM` |
+| <code>{{&#160;sprog&#124;words(4)&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 Affen sitzen auf` |
 
 
 ### Helferfunktionen
 
 **Text ersetzen lassen**
 
-    echo sprogdown($text, $clang_id = null)
+```php
+echo sprogdown($text, $clang_id = null);
+```
     
 **Übersetzung eines einzelnen Platzhalters**
 
-    echo sprogcard($wildcard, $clang_id = null)
+```php
+echo sprogcard($wildcard, $clang_id = null);
+```
 
 **Tabellenfeld mit dem Suffix der aktuellen Sprache**
 
-    echo sprogfield($field, $separator = '_')
+```php
+echo sprogfield($field, $separator = '_');
 
+// field
+// about_1,  about_2
+echo sprogfield('about');
+
+
+// oder in Yorm Dataset Class
+public function getAbout()
+{
+    return trim($this->{sprogfield('about')});
+}
 ```
+
+```php
 // normal
 foreach ($items as $item) {
     echo $item->getValue('name_' . rex_clang::getCurrentId());
@@ -191,8 +108,6 @@ foreach ($items as $item) {
 - Metadaten der Artikel/Kategorien können von einer Sprache zur anderen Sprache synchronisiert werden
 
 
-- - - - - - - - - - - - - - - - - - - -
-
 ## Bugtracker
 
 Du hast einen Fehler gefunden oder ein nettes Feature parat? [Lege ein Issue an](https://github.com/tbaddade/redaxo_sprog/issues). Bevor du ein neues Issue erstellts, suche bitte ob bereits eines mit deinem Anliegen existiert und lese die [Issue Guidelines (englisch)](https://github.com/necolas/issue-guidelines) von [Nicolas Gallagher](https://github.com/necolas/).
@@ -204,7 +119,7 @@ siehe [CHANGELOG.md](https://github.com/tbaddade/redaxo_sprog/blob/master/CHANGE
 
 ## Lizenz
 
-siehe [LICENSE.md](https://github.com/tbaddade/redaxo_sprog/blob/master/LICENSE.md)
+siehe [LICENSE](https://github.com/tbaddade/redaxo_sprog/blob/master/LICENSE)
 
 
 ## Autor
