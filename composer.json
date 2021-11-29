@@ -1,5 +1,17 @@
 {
     "require": {
         "symfony/serializer": "^5.3"
+    },
+    "replace": {
+        "symfony/polyfill-ctype": "*",
+        "symfony/polyfill-php80": "*"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "rm -rf vendor/composer && rm -f vendor/autoload.php"
+        ],
+        "post-update-cmd": [
+            "rm -rf vendor/composer && rm -f vendor/autoload.php"
+        ]
     }
 }
