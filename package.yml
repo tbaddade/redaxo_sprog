@@ -4,7 +4,7 @@ author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
 
 requires:
-    redaxo: '^5.5'
+    redaxo: '^5.11'
 
 filter:
     - Sprog\Filter\Format
