@@ -1,3 +1,4 @@
+<?php
 $table = rex_sql_table::get(rex::getTable('sprog_wildcard'));
 $table
     ->ensureColumn(new rex_sql_column('pid', 'int(11) unsigned', false, null, 'auto_increment'))
