@@ -1,13 +1,14 @@
-CREATE TABLE IF NOT EXISTS `%TABLE_PREFIX%sprog_wildcard` (
-    `pid` int(10) unsigned NOT NULL AUTO_INCREMENT,
-    `id` int(10) unsigned NOT NULL,
-    `clang_id` int(10) unsigned NOT NULL,
-    `wildcard` varchar(255) DEFAULT NULL,
-    `replace` text,
-    `createuser` varchar(255) NOT NULL,
-    `updateuser` varchar(255) NOT NULL,
-    `createdate` datetime NOT NULL,
-    `updatedate` datetime NOT NULL,
-    `revision` int(10) unsigned NOT NULL,
-    PRIMARY KEY (`pid`)
-) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+$table = rex_sql_table::get(rex::getTable('sprog_wildcard'));
+$table
+    ->ensureColumn(new rex_sql_column('pid', 'int(11) unsigned', false, null, 'auto_increment'))
+    ->setPrimaryKey('pid')
+    ->ensureColumn(new rex_sql_column('id', 'int(11)'))
+    ->ensureColumn(new rex_sql_column('clang_id', 'int(11)'))
+    ->ensureColumn(new rex_sql_column('wildcard', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('replace', 'text'))
+    ->ensureColumn(new rex_sql_column('createuser', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('updateuser', 'varchar(255)'))
+    ->ensureColumn(new rex_sql_column('createdate', 'datetime'))
+    ->ensureColumn(new rex_sql_column('updatedate', 'datetime'))
+    ->ensureColumn(new rex_sql_column('revision', 'int(11)'))
+    ->ensure();
