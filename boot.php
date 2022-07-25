@@ -154,9 +154,11 @@ if (rex::isBackend() && rex::getUser()) {
     |--------------------------------------------------------------------------
     */
     rex_extension::register('PAGE_BODY_ATTR', function (\rex_extension_point $ep) {
-        $subject = $ep->getSubject();
-        $subject['class'][] = 'rex-page-sprog-copy-popup';
-        $ep->setSubject($subject);
+        if (false !== strpos(\rex_be_controller::getCurrentPage(),'sprog'))  {
+            $subject = $ep->getSubject();
+            $subject['class'][] = 'rex-page-sprog-copy-popup';
+            $ep->setSubject($subject);
+        }
     });
 
     /*
