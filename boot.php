@@ -9,10 +9,6 @@
  * file that was distributed with this source code.
  */
 
-if (!ini_get("auto_detect_line_endings")) {
-    ini_set("auto_detect_line_endings", '1');
-}
-
 use Sprog\Wildcard;
 
 /**
@@ -119,7 +115,7 @@ if (rex::isBackend() && rex::getUser()) {
                         }
                     }
                 }
-                $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3));
+                $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
                 $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
                 $clangAll = \rex_clang::getAll();
                 $clangBase = $this->getConfig('clang_base');
