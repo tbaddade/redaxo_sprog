@@ -16,6 +16,7 @@ use Sprog\Wildcard;
  */
 class_alias('\Sprog\Wildcard', 'Wildcard');
 
+rex_perm::register('sprog[abbreviation]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 
 // number of articles to generate per single request
@@ -38,6 +39,7 @@ if (count($filters) > 0) {
 \rex::setProperty('SPROG_FILTER', $registeredFilters);
 
 if (!rex::isBackend()) {
+    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
 }
 
@@ -92,6 +94,21 @@ if (rex::isBackend() && rex::getUser()) {
                 if ($func == 'update') {
                     \rex_config::set('sprog', 'wildcard_clang_switch', rex_request('clang_switch', 'bool'));
                     \rex_config::set('sprog', 'clang_base', rex_request('clang_base', 'array'));
+                }
+            }
+        }
+
+
+        if (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('sprog[abbreviation]')) {
+            $page = \rex_be_controller::getPageObject('sprog/abbreviation');
+            $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
+
+            foreach (rex_clang::getAll() as $id => $clang) {
+                if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
+                    $bePage = new rex_be_page('clang'.$id, $clang->getName());
+                    $bePage->setSubPath(rex_path::addon('sprog', 'pages/abbreviation.php'));
+                    $bePage->setIsActive($id == $clang_id);
+                    $page->addSubpage($bePage);
                 }
             }
         }

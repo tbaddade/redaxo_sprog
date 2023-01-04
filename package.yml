@@ -24,6 +24,9 @@ page:
     subpages:
         wildcard:
             title: 'translate:wildcard'
+        abbreviation:
+            title: 'translate:abbreviation'
+            perm: sprog[abbreviation]
         copy:
             title: 'translate:copy_content'
             perm: admin[]

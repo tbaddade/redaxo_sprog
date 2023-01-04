@@ -125,3 +125,14 @@ sprog_copy_structure_metadata_finished_text = <p>Die Metadaten wurden für <stro
 sprog_copy_structure_metadata_nothing_title = Keine Metadaten?
 sprog_copy_structure_metadata_nothing_text = <p>Tut mir leid, aber es gibt keine Metadaten zum kopieren/synchronisieren.</p>
 
+
+sprog_abbreviation = Abkürzung
+sprog_abbreviations = Abkürzungen
+sprog_abbreviation_added = Abkürzung wurde hinzugefügt
+sprog_abbreviation_caption = Liste der Abkürzungen
+sprog_abbreviation_deleted = Abkürzung wurde gelöscht
+sprog_abbreviation_edited = Abkürzung wurde gespeichert
+sprog_abbreviation_long_form = Langform
+sprog_abbreviation_error_delete = Abkürzung konnte nicht gelöscht werden
+sprog_abbreviation_error_exists = Die Abkürzung wurde nicht angelegt. Wahrscheinlich existiert diese schon.
+sprog_abbreviation_error_is_empty = Bitte die Eingabe prüfen!
