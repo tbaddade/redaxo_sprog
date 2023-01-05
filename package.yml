@@ -25,7 +25,7 @@ page:
         wildcard:
             title: 'translate:wildcard'
         abbreviation:
-            title: 'translate:abbreviation'
+            title: 'translate:abbreviations'
             perm: sprog[abbreviation]
         copy:
             title: 'translate:copy_content'
