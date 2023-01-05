@@ -39,8 +39,8 @@ if (count($filters) > 0) {
 \rex::setProperty('SPROG_FILTER', $registeredFilters);
 
 if (!rex::isBackend()) {
-    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
+    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
 }
 
 if (rex::isBackend() && rex::getUser()) {
