@@ -6,6 +6,9 @@ sprog_function_add = hinzufügen
 sprog_function_edit = editieren
 sprog_no_results = Keine Ergebnisse
 
+sprog_activated = aktiv
+sprog_deactivated = deaktiviert
+
 sprog_settings = Konfiguration
 sprog_settings_title = Konfiguration
 sprog_settings_clang_base = Sprachbasis
@@ -136,3 +139,6 @@ sprog_abbreviation_long_form = Langform
 sprog_abbreviation_error_delete = Abkürzung konnte nicht gelöscht werden
 sprog_abbreviation_error_exists = Die Abkürzung wurde nicht angelegt. Wahrscheinlich existiert diese schon.
 sprog_abbreviation_error_is_empty = Bitte die Eingabe prüfen!
+sprog_abbreviation_error_status_updated = Der Status konnte nicht angepasst werden.
+sprog_abbreviation_status = Status
+sprog_abbreviation_status_updated = Der Status wurde aktualisiert

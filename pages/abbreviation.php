@@ -24,7 +24,7 @@ $save = rex_post('abbreviation_save', 'boolean');
 $error = '';
 $success = '';
 
-if (('delete' === $func || $save) && !$csrfToken->isValid()) {
+if (('delete' === $func || 'status' === $func || $save) && !$csrfToken->isValid()) {
     $error = $addon->i18n('csrf_token_invalid');
 } elseif ('delete' === $func && $id > 0) {
     $sql = rex_sql::factory();
@@ -40,6 +40,20 @@ if (('delete' === $func || $save) && !$csrfToken->isValid()) {
 
     $func = '';
     unset($id);
+} elseif ('status' === $func && $id > 0) {
+    $status = (rex_request('status', 'int') + 1) % 2;
+    $sql = rex_sql::factory();
+    $sql->setTable(rex::getTable('sprog_abbreviation'));
+    $sql->setWhere(['id' => $id]);
+    $sql->setValue('status', $status);
+    $sql->addGlobalUpdateFields();
+    try {
+        $sql->update();
+        $success = $addon->i18n('abbreviation_status_updated');
+    } catch (rex_sql_exception $e) {
+        $error = $addon->i18n('abbreviation_error_status_updated');
+    }
+
 } elseif ($save && ('' === $abbreviation || '' === $text)) {
     $error = $addon->i18n('abbreviation_error_is_empty');
 } elseif ($save) {
@@ -48,7 +62,6 @@ if (('delete' === $func || $save) && !$csrfToken->isValid()) {
     $sql->setValue('clang_id', $clangId);
     $sql->setValue('abbreviation', $abbreviation);
     $sql->setValue('text', $text);
-    $sql->setValue('status', '1');
     $sql->addGlobalUpdateFields();
 
     try {
@@ -57,6 +70,7 @@ if (('delete' === $func || $save) && !$csrfToken->isValid()) {
             $sql->update();
             $success = $addon->i18n('abbreviation_edited');
         } else {
+            $sql->setValue('status', 1);
             $sql->addGlobalCreateFields();
             $sql->insert();
             $success = $addon->i18n('abbreviation_added');
@@ -76,7 +90,7 @@ if ('' !== $error) {
 }
 
 $sql = rex_sql::factory();
-$sql->setQuery('SELECT DISTINCT `id`, `abbreviation`, `text`
+$sql->setQuery('SELECT DISTINCT `id`, `abbreviation`, `text`, `status`
                 FROM '.rex::getTable('sprog_abbreviation').' 
                 WHERE `clang_id` = :clangId
                 ORDER BY `abbreviation`', ['clangId' => $clangId]);
@@ -90,6 +104,7 @@ if ('add' === $func) {
             <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
             <td><input class="form-control" type="text" name="abbreviation" value="'.rex_escape($abbreviation).'" /></td>
             <td><input class="form-control" type="text" name="text" value="'.rex_escape($text).'" /></td>
+            <td class="rex-table-action"></td>
             <td class="rex-table-action" colspan="2">
                 <button class="btn btn-save" type="submit" name="abbreviation_save" value="1">'.$addon->i18n('add').'</button>
             </td>
@@ -104,6 +119,7 @@ foreach ($items as $item) {
                 <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                 <td><input class="form-control" type="text" name="abbreviation" value="'.rex_escape($item['abbreviation']).'" /></td>
                 <td><input class="form-control" type="text" name="text" value="'.rex_escape($item['text']).'" /></td>
+                <td class="rex-table-action"></td>
                 <td class="rex-table-action" colspan="2">
                     <button class="btn btn-save" type="submit" name="abbreviation_save" value="1">'.$addon->i18n('update').'</button>
                 </td>
@@ -114,6 +130,11 @@ foreach ($items as $item) {
                 <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                 <td>'.$item['abbreviation'].'</td>
                 <td>'.$item['text'].'</td>
+                <td class="rex-table-action">
+                    <a href="'.rex_url::currentBackendPage(['func' => 'status', 'id' => $item['id'], 'status' => $item['status']] + $csrfToken->getUrlParams()).'#abbreviation-'.$item['id'].'">
+                        '.(1 == $item['status'] ? '<span class="rex-online"><i class="rex-icon rex-icon-active-true"></i> '.$addon->i18n('activated').'</span>' : '<span class="rex-offline"><i class="rex-icon rex-icon-active-false"></i> '.$addon->i18n('deactivated').'</span>').'
+                    </a>
+                </td>
                 <td class="rex-table-action">
                     <a href="'.rex_url::currentBackendPage(['func' => 'edit', 'id' => $item['id']]).'#abbreviation-'.$item['id'].'">
                         <i class="rex-icon rex-icon-edit"></i> '.$addon->i18n('function_edit').'
@@ -136,6 +157,7 @@ $content = '
                     <th class="rex-table-icon"><a href="'.rex_url::currentBackendPage(['func' => 'add']).'#abbreviation-add"><i class="rex-icon rex-icon-add-article"></i></a></th>
                     <th>'.$addon->i18n('abbreviation').'</th>
                     <th>'.$addon->i18n('abbreviation_long_form').'</th>
+                    <th>'.$addon->i18n('abbreviation_status').'</th>
                     <th class="rex-table-action" colspan="2">'.$addon->i18n('function').'</th>
                 </tr>
             </thead>
