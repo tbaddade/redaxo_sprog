@@ -77,3 +77,7 @@ pages:
         main: true
         hasLayout: false
         hidden: true
+
+default_config:
+    wildcard_open_tag: '{{ '
+    wildcard_close_tag: ' }}'
