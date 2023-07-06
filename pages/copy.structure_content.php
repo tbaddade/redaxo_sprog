@@ -103,7 +103,7 @@ if ($func == '') {
         </form>
     ';
 ?>
-<script>
+<script nonce="<?= rex_response::getNonce() ?>">
     function lang_changer() {
         var from = document.querySelector('#sprog-copy-structure-content-clang-from');
         var to = document.querySelector('#sprog-copy-structure-content-clang-to');
