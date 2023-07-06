@@ -4,3 +4,27 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
+
+.table-striped > tbody > tr.sprog-mark-edit,
+.sprog-mark-edit,
+.sprog-mark-highlight {
+    background-color: #e0f5ee;
+}
+
+.sprog-search-input {
+    height: 24px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.sprog-text-finished {
+    color: #3bb594;
+}
+.sprog-text-error {
+    color: #d9534f;
+}
+.sprog-progressbar [role="progressbar"] {
+    width: 0;
+}

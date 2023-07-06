@@ -192,7 +192,7 @@ if (count($entries)) {
                 $clang_id = (int) trim($lang_name, 'id');
                 //$td .= '<td data-title="' . rex_clang::get($clang_id)->getName() . '"><textarea class="form-control" name="wildcard_replaces[' . $clang_id . ']" rows="6">' . htmlspecialchars($replace) . '</textarea></td>';
                 $edit_rows .= '
-                        <tr style="background-color: rgba(224, 245, 238, 0.4);">
+                        <tr class="sprog-mark-edit">
                             <td class="rex-table-icon"></td>
                             <td class="rex-table-id"></td>
                             <th>'.rex_clang::get($clang_id)->getName().'</th>
@@ -235,7 +235,7 @@ $content .= '
 
 echo $message;
 
-$searchControl = '<div class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></div>';
+$searchControl = '<div class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control sprog-search-input" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></div>';
 $searchControl = ($func == '') ? '<form action="'.\rex_url::currentBackendPage().'" method="post">'.$searchControl.'</form>' : $searchControl;
 
 $fragment = new rex_fragment();

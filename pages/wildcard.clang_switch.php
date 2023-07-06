@@ -32,8 +32,9 @@ if (!function_exists('sprogStyleTd')) {
         $pid = rex_request('pid', 'int');
         $list = $params['list'];
         $class = '';
-
-        $style = $pid == $list->getValue('pid') ? ' style="background-color: #e0f5ee"' : '';
+        if ($pid == $list->getValue('pid')) {
+            $classes[] = 'sprog-mark-highlight';
+        }
         $value = $value != '' ? $value : $params['value'];
         $value = $params['field'] == 'replace' ? htmlspecialchars($value) : $value;
         if (isset($params['params']['classes'])) {
@@ -42,7 +43,7 @@ if (!function_exists('sprogStyleTd')) {
         if (count($classes)) {
             $class = ' class="'.implode(' ', $classes).'"';
         }
-        return '<td'.$class.$style.'>'.$value.'</td>';
+        return '<td'.$class.'>'.$value.'</td>';
     }
 }
 if (!function_exists('sprogStyleTdPid')) {
@@ -150,7 +151,7 @@ if ($func == '') {
 
     $content .= $list->get();
 
-    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control" style="height: 24px; padding-top: 3px; padding-bottom: 3px; font-size: 12px; line-height: 1;" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
+    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control sprog-search-input" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
 
     $fragment = new rex_fragment();
     $fragment->setVar('title', $title);
