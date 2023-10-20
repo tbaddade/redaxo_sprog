@@ -218,7 +218,7 @@ if (count($entries)) {
             $class = (rex_request('wildcard_id', 'int') == $entry_id) ? ' class="mark"' : '';
             $content .= '
                         <tr'.$class.' id="wildcard-'.$entry_id.'">
-                            <td class="rex-table-icon"><a href="'.rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id]).'#wildcard-'.$entry_id.'"><i class="rex-icon rex-icon-refresh"></i></a></td>
+                            <td class="rex-table-icon"><a href="'.rex_url::currentBackendPage(['func' => 'edit', 'wildcard_id' => $entry_id, 'search-term' => $search_term]).'#wildcard-'.$entry_id.'"><i class="rex-icon rex-icon-refresh"></i></a></td>
                             <td class="rex-table-id" data-title="'.$this->i18n('id').'">'.$entry_id.'</td>
                             <td data-title="'.$this->i18n('wildcard').'">'.$entry_wildcard.'</td>
                             '.$td.'
