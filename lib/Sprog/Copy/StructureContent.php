@@ -7,27 +7,57 @@ class StructureContent extends Copy
     /**
      * Prepare all cache items.
      *
+     * @param int $startingArticleId
+     * 
      * @return array
      */
-    public static function prepareItems()
+    public static function prepareItems($startingArticleId = null)
     {
         return [
-            'articles' => self::getChunkedArray(),
+            'articles' => self::getChunkedArray($startingArticleId),
         ];
     }
 
     /**
      * Get all pages being online.
+     * 
+     * @param int $startingArticleId
      *
      * @return array
      */
-    public static function getArticleIds()
+    public static function getArticleIds($startingArticleId = null)
     {
         $articles = [];
         if (\rex_addon::get('structure')->isAvailable()) {
             $sql = \rex_sql::factory();
-            $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');
-
+            
+            if($startingArticleId == null) {
+                $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');	
+            } else {
+                $tableArticle = \rex::getTable('article');
+                
+                $clang_id = \rex_clang::getStartId();
+                $query = <<<EOM
+                    WITH RECURSIVE articles(id, name, parent_id) as (
+                        SELECT a.id, a.name, a.parent_id
+                            FROM $tableArticle a
+                            WHERE a.id = :article_id AND a.clang_id = :clang_id
+                        UNION ALL
+                        SELECT a.id, a.name, a.parent_id
+                            FROM $tableArticle a
+                            INNER JOIN articles cte
+                                ON a.parent_id = cte.id
+                            WHERE a.clang_id = :clang_id
+                    )
+                    SELECT id FROM articles        	
+EOM;
+                
+                $items = $sql->getArray($query, [
+                    'clang_id' => $clang_id,
+                    'article_id' => $startingArticleId
+                ]);
+            }
+            
             foreach ($items as $item) {
                 $articles[] = $item['id'];
             }
@@ -37,12 +67,14 @@ class StructureContent extends Copy
 
     /**
      * Get all pages and languages as chunked array including 'count' and 'items'.
+     * 
+     * @param int $startingArticleId
      *
      * @return array
      */
-    public static function getChunkedArray()
+    public static function getChunkedArray($startingArticleId = null)
     {
-        $articles = self::getArticleIds();
+        $articles = self::getArticleIds($startingArticleId);
 
         $items = [];
         if (count($articles) > 0 && \rex_clang::count() > 0) {

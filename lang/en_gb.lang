@@ -83,6 +83,7 @@ sprog_copy_metadata = Copy metadata
 sprog_copy_clang_from = from language
 sprog_copy_clang_to = to language
 sprog_copy_delete_before = Delete content beforehand?
+sprog_copy_starting_article = Starting with article id
 
 sprog_copy_name = Article name
 sprog_copy_catname = Category name

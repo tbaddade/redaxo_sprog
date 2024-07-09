@@ -12,9 +12,53 @@ if (!$csrfToken->isValid()) {
     return;
 }
 
-if (isset($params['deleteBefore']) && $params['deleteBefore'] == 1) {
+$startingArticleId = null;
+if(isset($params['startingArticleId']) && !empty($params['startingArticleId'])) {
+    $startingArticleId = $params['startingArticleId'];
+}
+
+if (isset($params['deleteBefore']) && $params['deleteBefore'] == 1 && $startingArticleId == null) {	
     $sql = \rex_sql::factory();
     $sql->setQuery('DELETE FROM '.\rex::getTable('article_slice').' WHERE `clang_id` = :clang_id', ['clang_id' => $params['clangTo']]);
+}
+
+if (isset($params['deleteBefore']) && $params['deleteBefore'] == 1 && $startingArticleId != null) {	
+    $sql = \rex_sql::factory();
+    
+    $tableArticle = \rex::getTable('article');
+    $tableArticleSlice = \rex::getTable('article_slice');
+    $query = <<<EOM
+        WITH RECURSIVE articles(id, name, parent_id) as (
+            SELECT a.id, a.name, a.parent_id
+                FROM $tableArticle a
+                WHERE a.id = :article_id AND a.clang_id = :clang_id
+            UNION ALL
+            SELECT a.id, a.name, a.parent_id
+                FROM $tableArticle a
+                INNER JOIN articles cte
+                    ON a.parent_id = cte.id
+                WHERE a.clang_id = :clang_id
+        )
+        SELECT id FROM articles
+EOM;
+
+    $items = $sql->getArray($query, [
+        'clang_id' => $params['clangTo'],
+        'article_id' => $startingArticleId
+    ]);
+              
+    foreach($items as $item) {
+        $query = <<<EOM
+            DELETE FROM $tableArticleSlice
+                WHERE article_id = :article
+                    AND clang_id = :clang_id	
+EOM;
+                                   
+        $sql->setQuery($query, [
+            'clang_id' => $params['clangTo'],
+            'article' => $item["id"]
+        ]);	
+    }
 }
 
 $body = '
@@ -38,7 +82,7 @@ echo $fragment->parse('core/page/section.php');
 
 echo '
 <script nonce="'.rex_response::getNonce().'">
-    var sprogItems = '.json_encode(StructureContent::prepareItems()).';
+    var sprogItems = '.json_encode(StructureContent::prepareItems($startingArticleId)).';
     var sprogGeneratePage = "sprog.copy.structure_content_generate";
     var sprogCsrfToken = "'.\rex_string::buildQuery($csrfToken->getUrlParams()).'";
 </script>';

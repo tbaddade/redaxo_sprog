@@ -77,6 +77,16 @@ if ($func == '') {
 
     $formElements = [];
     $n = [];
+    $n['label'] = '<label for="sprog-copy-structure-content-article-id">'.$this->i18n('sprog_copy_starting_article').'</label>';
+    $n['field'] = '<input id="sprog-copy-structure-content-article-id" class="form-control" type="text" data-sprog-param="startingArticleId" name="sprog_copy_structure_content_starting_article_id" value="" />';
+    $formElements[] = $n;
+    
+    $fragment = new \rex_fragment();
+    $fragment->setVar('elements', $formElements, false);
+    $panelElements .= $fragment->parse('core/form/form.php');
+    
+    $formElements = [];
+    $n = [];
     $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="'.rex_url::backendPage('sprog.copy.structure_content_popup', $csrfToken->getUrlParams()).'">'.$this->i18n('sprog_copy_button_start').'</a>';
     $formElements[] = $n;
 
