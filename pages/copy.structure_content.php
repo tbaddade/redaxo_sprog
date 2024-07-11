@@ -77,8 +77,13 @@ if ($func == '') {
 
     $formElements = [];
     $n = [];
+    $n['header'] = '<div class="row"><div class="col-md-6">';
+    $n['footer'] = '</div></div>';
     $n['label'] = '<label for="sprog-copy-structure-content-article-id">'.$this->i18n('sprog_copy_starting_article').'</label>';
-    $n['field'] = '<input id="sprog-copy-structure-content-article-id" class="form-control" type="text" data-sprog-param="startingArticleId" name="sprog_copy_structure_content_starting_article_id" value="" />';
+    $n['field'] =
+        '<div data-sprog-param="startingArticleId" data-sprog-param-reference-attribute="name" data-sprog-param-reference-value="sprog_copy_structure_content_starting_article_id">
+            ' . rex_var_link::getWidget(1, 'sprog_copy_structure_content_starting_article_id', rex_request('sprog_copy_structure_content_starting_article_id', 'int'), []) .
+        '</div>';
     $formElements[] = $n;
     
     $fragment = new \rex_fragment();

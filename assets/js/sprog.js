@@ -45,10 +45,14 @@
 
             var params = [];
             $('[data-sprog-param]').each(function() {
-                if($(this).is(':checkbox')) {
-                    params[$(this).attr('data-sprog-param')] = $(this).is(':checked') ? 1 : 0;
+                let $this = $(this);
+                if ($this.attr('data-sprog-param-reference-attribute') !== undefined && $this.attr('data-sprog-param-reference-value') !== undefined) {
+                    $this = $('[' + $this.attr('data-sprog-param-reference-attribute') + '="' + $this.attr('data-sprog-param-reference-value') + '"]');
+                }
+                if($this.is(':checkbox')) {
+                    params[$(this).attr('data-sprog-param')] = $this.is(':checked') ? 1 : 0;
                 } else {
-                    params[$(this).attr('data-sprog-param')] = $(this).val();
+                    params[$(this).attr('data-sprog-param')] = $this.val();
                 }
             });
             var urlParams = Object.keys(params).map(function(k) {
