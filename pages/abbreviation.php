@@ -126,7 +126,7 @@ foreach ($items as $item) {
             </tr>';
     } else {
         $tableRows[] =
-            '<tr class="mark" id="abbreviation-'.$item['id'].'">
+            '<tr id="abbreviation-'.$item['id'].'">
                 <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
                 <td>'.$item['abbreviation'].'</td>
                 <td>'.$item['text'].'</td>
