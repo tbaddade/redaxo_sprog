@@ -53,7 +53,7 @@ page:
             title: 'translate:help'
             subPath: README.md
             perm: admin[]
-            itemclass: pull-right
+            itemClass: pull-right
 
 
 pages:
