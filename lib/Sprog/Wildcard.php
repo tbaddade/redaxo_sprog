@@ -11,6 +11,10 @@
 
 namespace Sprog;
 
+use rex;
+use rex_clang;
+use rex_sql;
+
 class Wildcard
 {
     public static function getOpenTag()
@@ -263,5 +267,33 @@ class Wildcard
     protected static function replace($wildcard, $replace)
     {
         return nl2br($replace);
+    }
+
+    public static function  checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary(): void
+    {
+        $sql = rex_sql::factory();
+        $records = $sql->getArray('SELECT * FROM ' . rex::getTable('sprog_wildcard') . ' ORDER BY id, clang_id');
+
+        $items = [];
+        foreach ($records as $record) {
+            $items[$record['id']][$record['clang_id']] = $record;
+        }
+
+        foreach ($items as $id => $clangRecords) {
+            foreach (rex_clang::getAllIds() as $clangId) {
+                if (!isset($clangRecords[$clangId])) {
+                    $firstClangRecord = $clangRecords[array_key_first($clangRecords)];
+
+                    $sqlNewRecord = rex_sql::factory();
+                    $sqlNewRecord->setTable(rex::getTable('sprog_wildcard'));
+                    $sqlNewRecord->setValue('id', $firstClangRecord['id']);
+                    $sqlNewRecord->setValue('clang_id', $clangId);
+                    $sqlNewRecord->setValue('wildcard', $firstClangRecord['wildcard']);
+                    $sqlNewRecord->addGlobalCreateFields();
+                    $sqlNewRecord->addGlobalUpdateFields();
+                    $sqlNewRecord->insert();
+                }
+            }
+        }
     }
 }

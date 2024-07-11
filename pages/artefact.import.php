@@ -124,6 +124,8 @@ if ($func == 'import-csv' && !$csrfToken->isValid()) {
 
         $messages[] = rex_view::success(rex_i18n::msg('sprog_import_wildcard_added', $countInserts));
         $messages[] = rex_view::success(rex_i18n::msg('sprog_import_wildcard_updated', $countUpdates));
+
+        Wildcard::checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary();
     }
 }
 
