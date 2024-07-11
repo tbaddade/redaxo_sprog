@@ -86,6 +86,7 @@ sprog_copy_metadata = Metadaten kopieren
 sprog_copy_clang_from = von der Sprache
 sprog_copy_clang_to = zur Sprache
 sprog_copy_delete_before = Inhalte vorher löschen?
+sprog_copy_starting_article = Beginnend von Artikel ID     
 
 sprog_copy_name = Artikelname
 sprog_copy_catname = Kategoriename
