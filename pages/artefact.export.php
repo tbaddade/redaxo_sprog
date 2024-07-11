@@ -45,8 +45,12 @@ if ($func == 'export' && !$csrfToken->isValid()) {
 
     foreach ($data as $wildcard => $clangs) {
         $record = [$wildcard];
-        foreach ($clangs as $clang_id => $replace) {
-            $record[] = $replace;
+        foreach ($clang_ids as $clang_id => $empty) {
+            if (isset($clangs[$clang_id])) {
+                $record[] = $clangs[$clang_id]; // replace value
+            } else {
+                $record[] = ''; // empty replace value for missing clang_id record
+            }
         }
         $csv->addItem($record);
     }
