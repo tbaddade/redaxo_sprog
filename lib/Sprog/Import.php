@@ -14,12 +14,12 @@ use sprog\Wildcard;
 
 class Import
 {
-    private $addon;
-    private $delimiter;
-    private $missingLanguage;
-    private $logger;
+    private rex_addon $addon;
+    private string $delimiter;
+    private string $missingLanguage;
+    private rex_logger $logger;
 
-    public function __construct($delimiter = ';', $missingLanguage = '')
+    public function __construct(string $delimiter = ';', string $missingLanguage = '')
     {
         $this->addon = rex_addon::get('sprog');
         $this->delimiter = $delimiter;
@@ -27,7 +27,7 @@ class Import
         $this->logger = rex_logger::factory();
     }
 
-    public function importCsv($source, $isFile = true)
+    public function importCsv(string $source, bool $isFile = true): bool
     {
         if ($isFile) {
             if (!file_exists($source)) {
@@ -75,7 +75,7 @@ class Import
         return $this->processRecords($records);
     }
 
-    private function processRecords($records)
+    private function processRecords(array $records): bool
     {
         $countInserts = 0;
         $countUpdates = 0;
@@ -116,9 +116,7 @@ class Import
         return true;
     }
 
-
-
-    private function getClangsExists()
+    private function getClangsExists(): array
     {
         $clangsExists = [];
         foreach (rex_clang::getAll() as $clang) {
@@ -127,7 +125,7 @@ class Import
         return $clangsExists;
     }
 
-    private function addNewLanguage($code)
+    private function addNewLanguage(string $code): int
     {
         $priority = rex_clang::count() + 1;
         rex_clang_service::addCLang($code, $code, $priority);
@@ -135,7 +133,7 @@ class Import
         return $clangs[array_key_last($clangs)];
     }
 
-    private function getExistingWildcards()
+    private function getExistingWildcards(): array
     {
         $sql = rex_sql::factory();
         $items = $sql->getArray('SELECT id, clang_id, wildcard FROM ' . rex::getTable('sprog_wildcard'));
@@ -146,7 +144,7 @@ class Import
         return $wildcards;
     }
 
-    private function processRecord($record, $clangsExists, &$wildcards)
+    private function processRecord(array $record, array $clangsExists, array &$wildcards): array
     {
         $inserts = 0;
         $updates = 0;
