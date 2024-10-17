@@ -1,6 +1,6 @@
 package: sprog
-version: '1.5.1'
-author: Thomas Blum
+version: '1.6.0'
+author: Thomas Blum, Robert Rupf
 supportpage: www.redaxo.org/de/forum/
 
 requires:
@@ -27,6 +27,9 @@ page:
         abbreviation:
             title: 'translate:abbreviations'
             perm: sprog[abbreviation]
+        foreignword:
+            title: 'translate:foreignwords'
+            perm: sprog[foreignword]
         copy:
             title: 'translate:copy_content'
             perm: admin[]
