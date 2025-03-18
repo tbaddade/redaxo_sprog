@@ -35,16 +35,24 @@ class Foreignword
         if (!isset($body[1][0])) {
             return $content;
         }
-        $bodyReplace = $body[1][0];
 
         $sql = \rex_sql::factory();
         $sql->setQuery('SELECT `foreignword`, `lang` FROM '.\rex::getTable('sprog_foreignword').' WHERE `clang_id` = :clangId AND `status` = 1', ['clangId' => $clangId]);
         $items = $sql->getArray();
 
-        foreach ($items as $item) {
-            $bodyReplace = preg_replace_callback('|(?!<[^<>]*?)(?<![?.&])\b'.$item['foreignword'].'\b(?!:)(?![^<>]*?>)|msU', function ($matches) use ($item) {
+        $bodyReplace = '';
+        foreach (preg_split('~(<script[^>]*>.*?</script>)~ism', $body[1][0], -1, PREG_SPLIT_DELIM_CAPTURE) as $part) {
+
+            if (str_starts_with($part, '<script')) {
+                $bodyReplace .= $part;
+                continue;
+            }
+
+            foreach ($items as $item) {
+                $bodyReplace .= preg_replace_callback('|(?!<[^<>]*?)(?<![?.&])\b' . $item['foreignword'] . '\b(?!:)(?![^<>]*?>)|msU', function ($matches) use ($item) {
                     return sprintf('<span lang="%s">%s</span>', rex_escape($item['lang']), $matches[0]);
-            }, $bodyReplace);
+                }, $part);
+            }
         }
 
         return str_replace($body[1][0], $bodyReplace, $content);
