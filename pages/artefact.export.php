@@ -23,7 +23,7 @@ if ($func == 'export' && !$csrfToken->isValid()) {
 } elseif ($func == 'export') {
     rex_response::cleanOutputBuffers();
     $sql = rex_sql::factory();
-    $items = $sql->getArray('SELECT `id`, `clang_id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' ORDER BY `wildcard`');
+    $items = $sql->getArray('SELECT `id`, `clang_id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' ORDER BY `wildcard`, `clang_id`');
 
     $rows = [];
     $data = [];
