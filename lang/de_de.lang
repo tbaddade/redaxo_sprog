@@ -67,9 +67,8 @@ sprog_import_heading = CSV-Datei importieren
 sprog_import_missing_language_add = Sprache der Instanz hinzufügen
 sprog_import_missing_language_ignore = ignorieren
 sprog_import_missing_language_label = Wenn der Sprachcode nicht in der Instanz vorhanden ist, dann
-sprog_import_title = Import
-sprog_import_wildcard_added = {0} Platzhalter wurden hinzugefügt
-sprog_import_wildcard_updated = {0} Platzhalter wurden aktualisiert
+sprog_import_success = Der Import war erfolgreich. Details siehe System-Logdateien
+sprog_import_failed = Der Import ist fehlgeschlagen. Details siehe System-Logdateien
 
 sprog_export = Exportieren
 sprog_export_description = Hier kann man alle Platzhalter in allen Sprachen als CSV-Datei herunterladen. Nach dem Bearbeiten kann die CSV-Datei wieder importiert werden.
