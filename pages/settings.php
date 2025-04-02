@@ -4,6 +4,7 @@
  * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
+ * @author (c) Robert Rupf <robert.rupf@maumha.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -32,6 +33,7 @@ if ($func == 'update' && !$csrfToken->isValid()) {
         ['sync_metainfo_cat', 'array'],
         ['sync_metainfo_art', 'array'],
         //['sync_metainfo_med', 'array'],
+        ['foreignword_languages', 'string'],
     ]));
 
     echo \rex_view::success($this->i18n('settings_config_saved'));
@@ -265,12 +267,50 @@ $panelElements .= $fragment->parse('core/page/grid.php');
 
 $panelElements .= '</fieldset>';
 
+
+
 $fragment = new \rex_fragment();
 $fragment->setVar('class', 'edit', false);
 $fragment->setVar('title', $this->i18n('settings_synchronization'), false);
 $fragment->setVar('body', $panelElements, false);
 $sections .= $fragment->parse('core/page/section.php');
 
+// - - - - - - - - - - - - - - - - - - - - - - Foreingword
+$panelElements = '';
+$formElements = [];
+$n = [];
+$n['header'] = '<div class="row"><div class="col-lg-8">';
+$n['footer'] = '</div></div>';
+$n['label'] = '<label for="foreignword-languages">'.$this->i18n('settings_foreignword_languages').'</label>';
+$n['field'] = '
+    <div class="input-group">
+        <input class="form-control" type="text" id="foreignword-languages" name="settings[foreignword_languages]" value="'.htmlspecialchars(implode(', ', Foreignword::getLanguages())).'" placeholder="'.$this->i18n('settings_foreignword_languages').'" />
+    </div>';
+$n['note'] = \rex_i18n::rawMsg('settings_foreignword_languages_note');
+$formElements[] = $n;
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$grid[] = $fragment->parse('core/form/form.php');
+
+$fragment = new \rex_fragment();
+$fragment->setVar('elements', $formElements, false);
+$panelElements .= $fragment->parse('core/form/form.php');
+
+$panelBody = '
+    <fieldset>
+        <input type="hidden" name="func" value="update" />
+        '.$csrfToken->getHiddenField().'
+        '.$panelElements.'
+    </fieldset>';
+
+$fragment = new \rex_fragment();
+$fragment->setVar('class', 'edit', false);
+$fragment->setVar('title', $this->i18n('foreignwords'), false);
+$fragment->setVar('body', $panelBody, false);
+$sections .= $fragment->parse('core/page/section.php');
+
+// - - - - - - - - - - - - - - - - - - - - - - Footer
 $formElements = [];
 $n = [];
 $n['field'] = '<a class="btn btn-abort" href="'.\rex_url::currentBackendPage().'">'.\rex_i18n::msg('form_abort').'</a>';

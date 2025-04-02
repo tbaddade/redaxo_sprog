@@ -33,6 +33,8 @@ sprog_settings_sync_structure_template = Template zwischen den Sprachen synchron
 
 sprog_settings_wildcard_open_close_tag = öffnendes/schließendes Tag
 
+settings_foreignword_languages = Sprachen für Fremdwörter
+settings_foreignword_languages_note = Bitte die Sprachen für die Fremdwörter kommasepariert eintragen, siehe <a href="https://de.wikipedia.org/wiki/Liste_der_ISO-639-Sprachcodes">https://de.wikipedia.org/wiki/Liste_der_ISO-639-Sprachcodes</a>.
 
 
 sprog_wildcard = Platzhalter
@@ -86,7 +88,7 @@ sprog_copy_metadata = Metadaten kopieren
 sprog_copy_clang_from = von der Sprache
 sprog_copy_clang_to = zur Sprache
 sprog_copy_delete_before = Inhalte vorher löschen?
-sprog_copy_starting_article = Beginnend von Artikel ID     
+sprog_copy_starting_article = Beginnend von Artikel ID
 
 sprog_copy_name = Artikelname
 sprog_copy_catname = Kategoriename
@@ -143,3 +145,17 @@ sprog_abbreviation_error_is_empty = Bitte die Eingabe prüfen!
 sprog_abbreviation_error_status_updated = Der Status konnte nicht angepasst werden.
 sprog_abbreviation_status = Status
 sprog_abbreviation_status_updated = Der Status wurde aktualisiert
+
+sprog_foreignword = Fremdwort
+sprog_foreignwords = Fremdwörter
+sprog_foreignword_added = Fremdwort wurde hinzugefügt
+sprog_foreignword_caption = Liste der Fremdwörter
+sprog_foreignword_deleted = Fremdwort wurde gelöscht
+sprog_foreignword_edited = Fremdwort wurde gespeichert
+sprog_foreignword_error_delete = Fremdwort konnte nicht gelöscht werden
+sprog_foreignword_error_exists = Das Fremdwort wurde nicht angelegt. Wahrscheinlich existiert dieses schon.
+sprog_foreignword_error_is_empty = Bitte die Eingabe prüfen!
+sprog_foreignword_error_status_updated = Der Status konnte nicht angepasst werden.
+sprog_foreignword_status = Status
+sprog_foreignword_status_updated = Der Status wurde aktualisiert
+foreignword_lang = Sprache

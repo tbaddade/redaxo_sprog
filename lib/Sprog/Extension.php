@@ -4,6 +4,7 @@
  * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
+ * @author (c) Robert Rupf <robert.rupf@maumha.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -11,13 +12,15 @@
 
 namespace Sprog;
 
-use Sprog\Abbreviation;
-
 class Extension
 {
     public static function replaceAbbreviations(\rex_extension_point $ep): void
     {
         $ep->setSubject(Abbreviation::parse($ep->getSubject(), null));
+    }
+    public static function replaceForeignwords(\rex_extension_point $ep): void
+    {
+        $ep->setSubject(Foreignword::parse($ep->getSubject(), null));
     }
 
     public static function replaceWildcards(\rex_extension_point $ep): void

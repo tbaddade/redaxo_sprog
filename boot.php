@@ -4,6 +4,7 @@
  * This file is part of the Sprog package.
  *
  * @author (c) Thomas Blum <thomas@addoff.de>
+ * @author (c) Robert Rupf <robert.rupf@maumha.de>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -41,6 +42,7 @@ if (count($filters) > 0) {
 if (!rex::isBackend()) {
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
+    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceForeignwords', rex_extension::NORMAL);
 }
 
 if (rex::isBackend() && rex::getUser()) {
@@ -107,6 +109,20 @@ if (rex::isBackend() && rex::getUser()) {
                 if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
                     $bePage = new rex_be_page('clang'.$id, $clang->getName());
                     $bePage->setSubPath(rex_path::addon('sprog', 'pages/abbreviation.php'));
+                    $bePage->setIsActive($id == $clang_id);
+                    $page->addSubpage($bePage);
+                }
+            }
+        }
+
+        if (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('sprog[foreignword]')) {
+            $page = \rex_be_controller::getPageObject('sprog/foreignword');
+            $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
+
+            foreach (rex_clang::getAll() as $id => $clang) {
+                if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
+                    $bePage = new rex_be_page('clang'.$id, $clang->getName());
+                    $bePage->setSubPath(rex_path::addon('sprog', 'pages/foreignword.php'));
                     $bePage->setIsActive($id == $clang_id);
                     $page->addSubpage($bePage);
                 }
