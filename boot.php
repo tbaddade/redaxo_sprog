@@ -118,6 +118,10 @@ if (rex::isBackend() && rex::getUser()) {
 
             if (Wildcard::isClangSwitchMode()) {
                 $hrefParams = [];
+                $search_term = rex_request('search-term', 'string', '');
+                if ($search_term != '') {
+                    $hrefParams['search-term'] = $search_term;
+                }
                 $pidItems = [];
                 if ('edit' === rex_request('func', 'string') && 0 <= rex_request('pid', 'int', 0)) {
                     $hrefParams['pid'] = rex_request('pid', 'int', 0);
