@@ -30,6 +30,8 @@ sprog_settings_sync_structure_template = Synchronize template between languages
 
 sprog_settings_wildcard_open_close_tag = opening / closing tag
 
+settings_foreignword_languages = Languages for foreign words
+settings_foreignword_languages_note = Please enter the languages for the foreign words separated by a comma, see <a href="https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes">https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes</a>.
 
 
 sprog_wildcard = Placeholder
@@ -126,3 +128,16 @@ sprog_copy_structure_metadata_finished_text = <p>Metadata for <strong><span clas
 sprog_copy_structure_metadata_nothing_title = No metadata?
 sprog_copy_structure_metadata_nothing_text = <p>I'm sorry, but there is no metadata to copy/synchronise.</p>
 
+sprog_foreignword = Foreign word
+sprog_foreignwords = Foreign words
+sprog_foreignword_added = Foreign word has been added
+sprog_foreignword_caption = List of foreign words
+sprog_foreignword_deleted = Foreign word has been deleted
+sprog_foreignword_edited = Foreign word has been edited
+sprog_foreignword_error_delete = Foreign word could not be deleted
+sprog_foreignword_error_exists = The foreign word already exists
+sprog_foreignword_error_is_empty = Please enter a foreign word
+sprog_foreignword_error_status_updated = The status has been updated
+sprog_foreignword_status = Status
+sprog_foreignword_status_updated = Status has been updated
+foreignword_lang = Language
