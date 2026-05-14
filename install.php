@@ -1,25 +1,26 @@
 <?php
-$table = rex_sql_table::get(rex::getTable('sprog_wildcard'));
-$table
-    ->ensureColumn(new rex_sql_column('pid', 'int(11) unsigned', false, null, 'AUTO_INCREMENT'))
-    ->setPrimaryKey('pid')
-    ->ensureColumn(new rex_sql_column('id', 'int(11)'))
-    ->ensureColumn(new rex_sql_column('clang_id', 'int(11)'))
-    ->ensureColumn(new rex_sql_column('wildcard', 'varchar(255)'))
-    ->ensureColumn(new rex_sql_column('replace', 'text'))
-    ->ensureGlobalColumns()
-    ->ensureColumn(new rex_sql_column('revision', 'int(11)'))
-    ->ensure();
 
-$table = rex_sql_table::get(rex::getTable('sprog_abbreviation'));
-$table
-    ->ensureColumn(new rex_sql_column('id', 'int(11) unsigned', false, null, 'AUTO_INCREMENT'))
-    ->setPrimaryKey('id')
-    ->ensureColumn(new rex_sql_column('clang_id', 'int(11)'))
-    ->ensureColumn(new rex_sql_column('abbreviation', 'varchar(255)'))
-    ->ensureColumn(new rex_sql_column('text', 'text'))
-    ->ensureColumn(new rex_sql_column('status', 'tinyint(1)'))
-    ->ensureGlobalColumns()
-    ->ensureColumn(new rex_sql_column('revision', 'int(11)'))
-    ->ensureIndex(new rex_sql_index('find_abbreviations', ['clang_id', 'abbreviation'], rex_sql_index::UNIQUE))
-    ->ensure();
+declare(strict_types=1);
+
+/*
+ * Sprog Schema-Setup.
+ *
+ * Beide Schritte sind idempotent und basieren auf der rex_sql_table-API,
+ * die nur fehlende Spalten / Indizes anlegt.
+ *
+ *   V1Schema::ensure()  → sprog_wildcard, sprog_abbreviation, sprog_foreignword
+ *                         Bestandstabellen, bleiben während der gesamten
+ *                         v2.x-Reihe unverändert in Betrieb.
+ *
+ *   V2Schema::ensure()  → sprog_unit, sprog_translation, sprog_glossary,
+ *                         sprog_tm, sprog_activity.
+ *                         Neu in v2; werden parallel zu v1 betrieben, bis
+ *                         v3 die v1-Tabellen abkündigt.
+ *
+ * Die DDL liegt zentral in den beiden Klassen, sodass auch andere Aufrufer
+ * (Console-Command, Auto-Setup, Test-Bootstrap) sie ohne Skript-Include
+ * verwenden können.
+ */
+
+\Sprog\Schema\V1Schema::ensure();
+\Sprog\Schema\V2Schema::ensure();

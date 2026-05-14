@@ -25,7 +25,7 @@ interface DenormalizableInterface
      * Denormalizes the object back from an array of scalars|arrays.
      *
      * It is important to understand that the denormalize() call should denormalize
-     * recursively all child objects of the implementor.
+     * recursively all child objects of the implementer.
      *
      * @param DenormalizerInterface       $denormalizer The denormalizer is given so that you
      *                                                  can use it to denormalize objects contained within this object
@@ -34,5 +34,5 @@ interface DenormalizableInterface
      *                                                  differently based on different input formats
      * @param array                       $context      Options for denormalizing
      */
-    public function denormalize(DenormalizerInterface $denormalizer, $data, string $format = null, array $context = []);
+    public function denormalize(DenormalizerInterface $denormalizer, array|string|int|float|bool $data, ?string $format = null, array $context = []): void;
 }

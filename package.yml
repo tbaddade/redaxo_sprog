@@ -1,10 +1,11 @@
 package: sprog
-version: '1.5.1'
+version: '2.0.0-dev'
 author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
 
 requires:
-    redaxo: '^5.11'
+    redaxo: '^5.21'
+    php: '^8.4'
 
 filter:
     - Sprog\Filter\Format
@@ -22,6 +23,19 @@ page:
     pjax: true
     icon: rex-icon rex-icon-language
     subpages:
+        dashboard:
+            title: 'translate:sprog_dashboard_subpage'
+        inbox:
+            title: 'translate:sprog_inbox_subpage'
+        editor:
+            title: 'translate:sprog_editor_subpage'
+            hidden: true
+        create:
+            title: 'translate:sprog_create_subpage'
+            hidden: true
+        glossary:
+            title: 'translate:sprog_glossary_subpage'
+            perm: admin[]
         wildcard:
             title: 'translate:wildcard'
         abbreviation:
@@ -46,9 +60,19 @@ page:
                     title: 'translate:export'
 #                cleanup:
 #                    title: 'translate:cleanup'
+        migration:
+            title: 'translate:sprog_migration_subpage'
+            perm: admin[]
         settings:
             title: 'translate:settings'
             perm: admin[]
+            subpages:
+                general:
+                    title: 'translate:sprog_settings_general_subpage'
+                    subPath: pages/settings.php
+                mt:
+                    title: 'translate:sprog_settings_mt_subpage'
+                    subPath: pages/settings.mt.php
         help:
             title: 'translate:help'
             subPath: README.md

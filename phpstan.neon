@@ -1,0 +1,25 @@
+parameters:
+    # Konzept zielt auf Level 8. Bis REDAXO-Stubs (z.B. via rexstan) eingebunden
+    # sind, läuft die Analyse mit reduziertem Level — sonst überwiegen
+    # false-positives für rex_*-Klassen, die per scanDirectories aufgelöst werden.
+    level: 5
+
+    phpVersion: 80400
+
+    paths:
+        - lib
+
+    excludePaths:
+        - vendor/*
+
+    # REDAXO-Core liegt in der üblichen Verzeichnisstruktur zwei Ebenen
+    # über der Addon-Wurzel. Bei abweichendem Setup bitte hier anpassen.
+    # structure-Addon wird ebenfalls gescannt, weil Sync.php und Copy/*
+    # rex_article_cache / rex_article_content referenzieren.
+    scanDirectories:
+        - ../../core
+        - ../structure
+
+    # Compat-Layer-Bridges legen wir absichtlich locker aus, weil sie
+    # dynamisch v1-Klassen aliasen — die kennt PHPStan nicht.
+    treatPhpDocTypesAsCertain: false

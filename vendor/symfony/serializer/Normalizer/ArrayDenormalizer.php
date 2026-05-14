@@ -11,12 +11,15 @@
 
 namespace Symfony\Component\Serializer\Normalizer;
 
+use Symfony\Component\PropertyInfo\Type as LegacyType;
 use Symfony\Component\Serializer\Exception\BadMethodCallException;
 use Symfony\Component\Serializer\Exception\InvalidArgumentException;
 use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
-use Symfony\Component\Serializer\Serializer;
-use Symfony\Component\Serializer\SerializerAwareInterface;
-use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\Type\BuiltinType;
+use Symfony\Component\TypeInfo\Type\CollectionType;
+use Symfony\Component\TypeInfo\Type\UnionType;
+use Symfony\Component\TypeInfo\TypeIdentifier;
 
 /**
  * Denormalizes arrays of objects.
@@ -25,22 +28,25 @@ use Symfony\Component\Serializer\SerializerInterface;
  *
  * @final
  */
-class ArrayDenormalizer implements ContextAwareDenormalizerInterface, DenormalizerAwareInterface, SerializerAwareInterface, CacheableSupportsMethodInterface
+class ArrayDenormalizer implements DenormalizerInterface, DenormalizerAwareInterface
 {
     use DenormalizerAwareTrait;
 
+    public function getSupportedTypes(?string $format): array
+    {
+        return ['object' => null, '*' => false];
+    }
+
     /**
-     * {@inheritdoc}
-     *
      * @throws NotNormalizableValueException
      */
-    public function denormalize($data, string $type, string $format = null, array $context = []): array
+    public function denormalize(mixed $data, string $type, ?string $format = null, array $context = []): array
     {
-        if (null === $this->denormalizer) {
+        if (!isset($this->denormalizer)) {
             throw new BadMethodCallException('Please set a denormalizer before calling denormalize()!');
         }
         if (!\is_array($data)) {
-            throw new InvalidArgumentException('Data expected to be an array, '.get_debug_type($data).' given.');
+            throw NotNormalizableValueException::createForUnexpectedDataType(\sprintf('Data expected to be "%s", "%s" given.', $type, get_debug_type($data)), $data, ['array'], $context['deserialization_path'] ?? null);
         }
         if (!str_ends_with($type, '[]')) {
             throw new InvalidArgumentException('Unsupported class: '.$type);
@@ -48,25 +54,53 @@ class ArrayDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
 
         $type = substr($type, 0, -2);
 
-        $builtinType = isset($context['key_type']) ? $context['key_type']->getBuiltinType() : null;
-        foreach ($data as $key => $value) {
-            if (null !== $builtinType && !('is_'.$builtinType)($key)) {
-                throw new NotNormalizableValueException(sprintf('The type of the key "%s" must be "%s" ("%s" given).', $key, $builtinType, get_debug_type($key)));
+        $typeIdentifiers = [];
+        if (null !== $keyType = ($context['key_type'] ?? null)) {
+            if ($keyType instanceof Type) {
+                // BC layer for type-info < 7.2
+                if (method_exists(Type::class, 'getBaseType')) {
+                    $typeIdentifiers = array_map(static fn (Type $t): string => $t->getBaseType()->getTypeIdentifier()->value, $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType]);
+                } else {
+                    /** @var list<BuiltinType<TypeIdentifier::INT>|BuiltinType<TypeIdentifier::STRING>> */
+                    $keyTypes = $keyType instanceof UnionType ? $keyType->getTypes() : [$keyType];
+
+                    $typeIdentifiers = array_map(static fn (BuiltinType $t): string => $t->getTypeIdentifier()->value, $keyTypes);
+                }
+            } else {
+                $typeIdentifiers = array_map(static fn (LegacyType $t): string => $t->getBuiltinType(), \is_array($keyType) ? $keyType : [$keyType]);
+            }
+        }
+
+        $valueType = $context['value_type'] ?? null;
+        if ($valueType instanceof CollectionType) {
+            $context['key_type'] = $valueType->getCollectionKeyType();
+            $context['value_type'] = $valueType->getCollectionValueType();
+        } elseif ($valueType instanceof LegacyType && $valueType->isCollection()) {
+            if ($collectionKeyTypes = $valueType->getCollectionKeyTypes()) {
+                $context['key_type'] = \count($collectionKeyTypes) > 1 ? $collectionKeyTypes : $collectionKeyTypes[0];
             }
 
-            $data[$key] = $this->denormalizer->denormalize($value, $type, $format, $context);
+            if ($collectionValueTypes = $valueType->getCollectionValueTypes()) {
+                $context['value_type'] = $collectionValueTypes[0];
+            }
+        }
+
+        foreach ($data as $key => $value) {
+            $subContext = $context;
+            $subContext['deserialization_path'] = ($context['deserialization_path'] ?? false) ? \sprintf('%s[%s]', $context['deserialization_path'], $key) : "[$key]";
+
+            $this->validateKeyType($typeIdentifiers, $key, $subContext['deserialization_path']);
+
+            $data[$key] = $this->denormalizer->denormalize($value, $type, $format, $subContext);
         }
 
         return $data;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function supportsDenormalization($data, string $type, string $format = null, array $context = []): bool
+    public function supportsDenormalization(mixed $data, string $type, ?string $format = null, array $context = []): bool
     {
-        if (null === $this->denormalizer) {
-            throw new BadMethodCallException(sprintf('The nested denormalizer needs to be set to allow "%s()" to be used.', __METHOD__));
+        if (!isset($this->denormalizer)) {
+            throw new BadMethodCallException(\sprintf('The nested denormalizer needs to be set to allow "%s()" to be used.', __METHOD__));
         }
 
         return str_ends_with($type, '[]')
@@ -74,28 +108,20 @@ class ArrayDenormalizer implements ContextAwareDenormalizerInterface, Denormaliz
     }
 
     /**
-     * {@inheritdoc}
-     *
-     * @deprecated call setDenormalizer() instead
+     * @param list<string> $typeIdentifiers
      */
-    public function setSerializer(SerializerInterface $serializer)
+    private function validateKeyType(array $typeIdentifiers, mixed $key, string $path): void
     {
-        if (!$serializer instanceof DenormalizerInterface) {
-            throw new InvalidArgumentException('Expected a serializer that also implements DenormalizerInterface.');
+        if (!$typeIdentifiers) {
+            return;
         }
 
-        if (Serializer::class !== debug_backtrace()[1]['class'] ?? null) {
-            trigger_deprecation('symfony/serializer', '5.3', 'Calling "%s" is deprecated. Please call setDenormalizer() instead.');
+        foreach ($typeIdentifiers as $typeIdentifier) {
+            if (('is_'.$typeIdentifier)($key)) {
+                return;
+            }
         }
 
-        $this->setDenormalizer($serializer);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function hasCacheableSupportsMethod(): bool
-    {
-        return $this->denormalizer instanceof CacheableSupportsMethodInterface && $this->denormalizer->hasCacheableSupportsMethod();
+        throw NotNormalizableValueException::createForUnexpectedDataType(\sprintf('The type of the key "%s" must be "%s" ("%s" given).', $key, implode('", "', $typeIdentifiers), get_debug_type($key)), $key, $typeIdentifiers, $path, true);
     }
 }

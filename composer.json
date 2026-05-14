@@ -1,17 +1,19 @@
 {
+    "name": "tbaddade/sprog",
+    "description": "REDAXO-AddOn für mehrsprachige Inhalte: Wildcards, Übersetzungen, Glossar, TM, MT.",
+    "type": "redaxo-addon",
+    "license": "MIT",
     "require": {
-        "symfony/serializer": "^5.3"
+        "php": "^8.4",
+        "symfony/serializer": "^7.0"
     },
-    "replace": {
-        "symfony/polyfill-ctype": "*",
-        "symfony/polyfill-php80": "*"
+    "require-dev": {
+        "phpstan/phpstan": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.65"
     },
     "scripts": {
-        "post-install-cmd": [
-            "rm -rf vendor/composer && rm -f vendor/autoload.php"
-        ],
-        "post-update-cmd": [
-            "rm -rf vendor/composer && rm -f vendor/autoload.php"
-        ]
+        "lint": "php-cs-fixer fix --dry-run --diff",
+        "fix": "php-cs-fixer fix",
+        "analyse": "phpstan analyse --memory-limit=1G"
     }
 }

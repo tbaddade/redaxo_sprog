@@ -11,6 +11,10 @@
 
 namespace Symfony\Component\Serializer;
 
+use Symfony\Component\Serializer\Exception\ExceptionInterface;
+use Symfony\Component\Serializer\Exception\NotNormalizableValueException;
+use Symfony\Component\Serializer\Exception\UnexpectedValueException;
+
 /**
  * @author Jordi Boggiano <j.boggiano@seld.be>
  */
@@ -19,20 +23,30 @@ interface SerializerInterface
     /**
      * Serializes data in the appropriate format.
      *
-     * @param mixed  $data    Any data
-     * @param string $format  Format name
-     * @param array  $context Options normalizers/encoders have access to
+     * @param array<string, mixed> $context Options normalizers/encoders have access to
      *
-     * @return string
+     * @throws NotNormalizableValueException Occurs when a value cannot be normalized
+     * @throws UnexpectedValueException      Occurs when a value cannot be encoded
+     * @throws ExceptionInterface            Occurs for all the other cases of serialization-related errors
      */
-    public function serialize($data, string $format, array $context = []);
+    public function serialize(mixed $data, string $format, array $context = []): string;
 
     /**
      * Deserializes data into the given type.
      *
-     * @param mixed $data
+     * @template TObject of object
+     * @template TType of string|class-string<TObject>
      *
-     * @return mixed
+     * @param TType                $type
+     * @param array<string, mixed> $context
+     *
+     * @phpstan-return ($type is class-string<TObject> ? TObject : mixed)
+     *
+     * @psalm-return (TType is class-string<TObject> ? TObject : mixed)
+     *
+     * @throws NotNormalizableValueException Occurs when a value cannot be denormalized
+     * @throws UnexpectedValueException      Occurs when a value cannot be decoded
+     * @throws ExceptionInterface            Occurs for all the other cases of serialization-related errors
      */
-    public function deserialize($data, string $type, string $format, array $context = []);
+    public function deserialize(mixed $data, string $type, string $format, array $context = []): mixed;
 }

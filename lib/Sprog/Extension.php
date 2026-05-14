@@ -25,6 +25,11 @@ class Extension
         $ep->setSubject(Wildcard::parse($ep->getSubject(), null));
     }
 
+    public static function replaceForeignwords(\rex_extension_point $ep): void
+    {
+        $ep->setSubject(Foreignword::parse($ep->getSubject(), null));
+    }
+
     public static function articleUpdated(\rex_extension_point $ep)
     {
         $addon = \rex_addon::get('sprog');

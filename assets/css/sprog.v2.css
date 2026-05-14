@@ -1,0 +1,3829 @@
+/*
+ * sprog v2 — Backend-Styles
+ *
+ * Bewusst getrennt von sprog.css (v1, Bootstrap-3-lastig). Hier nur
+ * Block-Klassen mit Präfix "sprog-…" — keine Kollision mit REDAXO-Core-
+ * oder Bootstrap-Klassen. Theme über Custom Properties; Dark-Mode
+ * automatisch via prefers-color-scheme.
+ */
+
+.sprog-migration {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+    --sprog-color-success: #16a34a;
+    --sprog-color-warning: #d97706;
+    --sprog-color-danger:  #dc2626;
+
+    --sprog-radius:   0.8rem;
+    --sprog-radius-pill: 999px;
+    --sprog-spacing:  1.6rem;
+    --sprog-shadow:   0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.5);
+    max-width: 1200px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-migration *,
+.sprog-migration *::before,
+.sprog-migration *::after {
+    box-sizing: border-box;
+}
+
+.sprog-migration--intro {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.sprog-migration--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-migration--lead {
+    margin: 0;
+    max-width: 65ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-migration--lead code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-migration--empty {
+    margin: 0;
+    padding: var(--sprog-spacing);
+    border: 1px dashed var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+.sprog-migration--list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--sprog-spacing);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sprog-migration--item {
+    display: grid;
+    gap: 1.36rem;
+    padding: 2rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sprog-migration--item.is-running {
+    border-color: var(--sprog-color-accent);
+    box-shadow: var(--sprog-shadow),
+                0 0 0 3px color-mix(in srgb, var(--sprog-color-accent) 18%, transparent);
+}
+
+.sprog-migration--item.is-completed {
+    border-color: color-mix(in srgb, var(--sprog-color-success) 60%, var(--sprog-color-border));
+}
+
+.sprog-migration--item.has-error {
+    border-color: var(--sprog-color-danger);
+}
+
+.sprog-migration--item-head {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    justify-content: space-between;
+}
+
+.sprog-migration--item-title {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-transform: capitalize;
+}
+
+.sprog-migration--badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.32rem 0.96rem;
+    font-size: 1.248rem;
+    font-weight: 500;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    color: var(--sprog-color-muted);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+.sprog-migration--item.is-running .sprog-migration--badge {
+    background: color-mix(in srgb, var(--sprog-color-accent) 16%, transparent);
+    color: var(--sprog-color-accent);
+}
+
+.sprog-migration--item.is-completed .sprog-migration--badge {
+    background: color-mix(in srgb, var(--sprog-color-success) 16%, transparent);
+    color: var(--sprog-color-success);
+}
+
+.sprog-migration--item.has-error .sprog-migration--badge {
+    background: color-mix(in srgb, var(--sprog-color-danger) 16%, transparent);
+    color: var(--sprog-color-danger);
+}
+
+.sprog-migration--progress {
+    display: grid;
+    gap: 0.56rem;
+}
+
+.sprog-migration--bar {
+    inline-size: 100%;
+    block-size: 0.88rem;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    border-radius: var(--sprog-radius-pill);
+    overflow: hidden;
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+}
+
+.sprog-migration--bar::-webkit-progress-bar {
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-migration--bar::-webkit-progress-value {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+    transition: inline-size 0.3s ease;
+}
+
+.sprog-migration--bar::-moz-progress-bar {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-migration--item.is-completed .sprog-migration--bar::-webkit-progress-value,
+.sprog-migration--item.is-completed .sprog-migration--bar::-moz-progress-bar {
+    background: var(--sprog-color-success);
+}
+
+.sprog-migration--counter {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.36rem;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-migration--error {
+    margin: 0;
+    padding: 0.88rem 1.2rem;
+    background: color-mix(in srgb, var(--sprog-color-danger) 8%, transparent);
+    border-left: 3px solid var(--sprog-color-danger);
+    border-radius: 0.4rem;
+    font-size: 1.408rem;
+    color: var(--sprog-color-danger);
+    overflow-wrap: anywhere;
+}
+
+.sprog-migration--actions {
+    display: flex;
+    gap: 0.8rem;
+    justify-content: flex-end;
+}
+
+.sprog-migration--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.72rem 1.6rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-migration--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-migration--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-migration--button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.sprog-migration--button--primary {
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-migration--button--primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+}
+
+.sprog-migration--button--ghost {
+    background: transparent;
+    border-style: dashed;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-migration--button--ghost:hover:not(:disabled) {
+    color: var(--sprog-color-danger);
+    border-color: var(--sprog-color-danger);
+    background: color-mix(in srgb, var(--sprog-color-danger) 6%, transparent);
+}
+
+.sprog-migration--reset {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-top: var(--sprog-spacing);
+    padding-top: var(--sprog-spacing);
+    border-top: 1px solid var(--sprog-color-border);
+    flex-wrap: wrap;
+}
+
+.sprog-migration--hint {
+    color: var(--sprog-color-muted);
+    font-size: 1.36rem;
+    line-height: 1.4;
+    max-width: 50ch;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-migration {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+        --sprog-color-success: #34d399;
+        --sprog-color-warning: #fbbf24;
+        --sprog-color-danger:  #f87171;
+        --sprog-shadow:        0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-migration--button--primary {
+        color: #0b0f19;
+    }
+}
+
+/*
+ * sprog-dashboard
+ * Coverage-Übersicht pro Sprache × Namespace.
+ */
+
+.sprog-dashboard {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+
+    --sprog-status-missing:      #94a3b8;
+    --sprog-status-draft:        #f59e0b;
+    --sprog-status-translated:   #3b82f6;
+    --sprog-status-needs_review: #d97706;
+    --sprog-status-revise:       #a855f7;
+    --sprog-status-approved:     #10b981;
+    --sprog-status-stale:        #ef4444;
+
+    --sprog-radius:      0.8rem;
+    --sprog-radius-pill: 999px;
+    --sprog-spacing:     1.6rem;
+    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.5);
+    max-width: 1400px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-dashboard *,
+.sprog-dashboard *::before,
+.sprog-dashboard *::after {
+    box-sizing: border-box;
+}
+
+.sprog-dashboard--intro {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.sprog-dashboard--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-dashboard--lead {
+    margin: 0;
+    max-width: 70ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-dashboard--lead code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-dashboard--empty {
+    display: grid;
+    gap: 1.2rem;
+    padding: calc(var(--sprog-spacing) * 1.5);
+    border: 1px dashed var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+.sprog-dashboard--empty h2 {
+    margin: 0;
+    font-size: 1.76rem;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-dashboard--empty p {
+    margin: 0;
+    max-width: 50ch;
+    margin-inline: auto;
+}
+
+.sprog-dashboard--cta {
+    align-self: center;
+    margin-top: 0.8rem;
+    padding: 0.8rem 1.92rem;
+    border-radius: 0.64rem;
+    background: var(--sprog-color-accent);
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.15s;
+}
+
+.sprog-dashboard--cta:hover,
+.sprog-dashboard--cta:focus-visible {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    color: #fff;
+}
+
+.sprog-dashboard--clang {
+    display: grid;
+    gap: var(--sprog-spacing);
+    padding: 2rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-dashboard--clang-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1.6rem;
+    flex-wrap: wrap;
+}
+
+.sprog-dashboard--clang-title {
+    margin: 0;
+    font-size: 1.84rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.96rem;
+}
+
+.sprog-dashboard--clang-code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.75em;
+    padding: 0.15em 0.5em;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 15%, transparent);
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sprog-dashboard--clang-percent {
+    font-variant-numeric: tabular-nums;
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--sprog-color-accent);
+}
+
+.sprog-dashboard--clang-percent[data-percent="100"] {
+    color: var(--sprog-status-approved);
+}
+
+.sprog-dashboard--no-stats {
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-style: italic;
+}
+
+.sprog-dashboard--namespaces {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--sprog-spacing);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sprog-dashboard--ns-item {
+    display: grid;
+    gap: 1.04rem;
+    padding: 1.6rem;
+    background: var(--sprog-color-surface);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+}
+
+.sprog-dashboard--ns-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.8rem;
+}
+
+.sprog-dashboard--ns-title {
+    margin: 0;
+    font-size: 1.52rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.sprog-dashboard--ns-percent {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.52rem;
+    font-weight: 600;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-dashboard--bar {
+    inline-size: 100%;
+    block-size: 0.72rem;
+    -webkit-appearance: none;
+    appearance: none;
+    border: 0;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    overflow: hidden;
+}
+
+.sprog-dashboard--bar::-webkit-progress-bar {
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-dashboard--bar::-webkit-progress-value {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+    transition: inline-size 0.4s ease;
+}
+
+.sprog-dashboard--bar::-moz-progress-bar {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-dashboard--ns-total {
+    margin: 0;
+    font-size: 1.312rem;
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-dashboard--status-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.56rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sprog-dashboard--status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.56rem;
+    padding: 0.24rem 0.88rem;
+    font-size: 1.248rem;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-status-color, var(--sprog-color-muted)) 14%, transparent);
+    color: var(--sprog-status-color, var(--sprog-color-muted));
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-dashboard--status-count {
+    font-weight: 600;
+}
+
+.sprog-dashboard--status-label {
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+.sprog-dashboard--status--missing       { --sprog-status-color: var(--sprog-status-missing); }
+.sprog-dashboard--status--draft         { --sprog-status-color: var(--sprog-status-draft); }
+.sprog-dashboard--status--translated    { --sprog-status-color: var(--sprog-status-translated); }
+.sprog-dashboard--status--needs_review  { --sprog-status-color: var(--sprog-status-needs_review); }
+.sprog-dashboard--status--revise        { --sprog-status-color: var(--sprog-status-revise); }
+.sprog-dashboard--status--approved      { --sprog-status-color: var(--sprog-status-approved); }
+.sprog-dashboard--status--stale         { --sprog-status-color: var(--sprog-status-stale); }
+
+@media (prefers-color-scheme: dark) {
+    .sprog-dashboard {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+
+        --sprog-status-missing:      #6b7280;
+        --sprog-status-draft:        #fbbf24;
+        --sprog-status-translated:   #60a5fa;
+        --sprog-status-needs_review: #f59e0b;
+        --sprog-status-revise:       #c084fc;
+        --sprog-status-approved:     #34d399;
+        --sprog-status-stale:        #f87171;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+}
+
+/*
+ * sprog-status — wiederverwendbare Status-Pille
+ *
+ * Erwartet, dass der umgebende Block die --sprog-status-*-Tokens definiert
+ * (siehe .sprog-inbox / .sprog-dashboard). Block-Klasse: .sprog-status,
+ * Modifier: .sprog-status--<status-value>.
+ */
+
+.sprog-status {
+    --sprog-status-color: var(--sprog-color-muted, #6b7280);
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.48rem;
+    padding: 0.24rem 0.96rem;
+    font-size: 1.248rem;
+    font-weight: 500;
+    line-height: 1.4;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--sprog-status-color) 14%, transparent);
+    color: var(--sprog-status-color);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.sprog-status--missing      { --sprog-status-color: var(--sprog-status-missing,      #94a3b8); }
+.sprog-status--draft        { --sprog-status-color: var(--sprog-status-draft,        #f59e0b); }
+.sprog-status--translated   { --sprog-status-color: var(--sprog-status-translated,   #3b82f6); }
+.sprog-status--needs_review { --sprog-status-color: var(--sprog-status-needs_review, #d97706); }
+.sprog-status--revise       { --sprog-status-color: var(--sprog-status-revise,       #a855f7); }
+.sprog-status--approved     { --sprog-status-color: var(--sprog-status-approved,     #10b981); }
+.sprog-status--stale        { --sprog-status-color: var(--sprog-status-stale,        #ef4444); }
+
+/*
+ * sprog-inbox
+ * Listenansicht aller Übersetzungen einer Sprache mit Filter und Pagination.
+ */
+
+.sprog-inbox {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+
+    --sprog-status-missing:      #94a3b8;
+    --sprog-status-draft:        #f59e0b;
+    --sprog-status-translated:   #3b82f6;
+    --sprog-status-needs_review: #d97706;
+    --sprog-status-revise:       #a855f7;
+    --sprog-status-approved:     #10b981;
+    --sprog-status-stale:        #ef4444;
+
+    --sprog-radius:      0.8rem;
+    --sprog-radius-pill: 999px;
+    --sprog-spacing:     1.6rem;
+    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.5);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-inbox *,
+.sprog-inbox *::before,
+.sprog-inbox *::after {
+    box-sizing: border-box;
+}
+
+.sprog-inbox--intro {
+    display: grid;
+    gap: 0.64rem;
+}
+
+.sprog-inbox--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-inbox--lead {
+    margin: 0;
+    max-width: 65ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-inbox--filter {
+    display: grid;
+    gap: var(--sprog-spacing);
+    padding: var(--sprog-spacing);
+    background: var(--sprog-color-surface);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    align-items: end;
+}
+
+.sprog-inbox--field {
+    display: grid;
+    gap: 0.48rem;
+    min-width: 0;
+}
+
+.sprog-inbox--label {
+    font-size: 1.248rem;
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-inbox--field select,
+.sprog-inbox--field input[type="search"],
+.sprog-inbox--field input[type="text"] {
+    padding: 0.8rem 1.12rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    min-width: 0;
+}
+
+.sprog-inbox--field select:focus-visible,
+.sprog-inbox--field input:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+}
+
+.sprog-inbox--statuses {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.64rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.sprog-inbox--statuses .sprog-inbox--label {
+    grid-column: 1 / -1;
+}
+
+.sprog-inbox--check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.72rem;
+    font-size: 1.44rem;
+    user-select: none;
+    cursor: pointer;
+}
+
+.sprog-inbox--check input[type="checkbox"] {
+    accent-color: var(--sprog-color-accent);
+}
+
+.sprog-inbox--search {
+    grid-column: 1 / -1;
+}
+
+.sprog-inbox--actions {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.sprog-inbox--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.72rem 1.6rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-inbox--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-inbox--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+/*
+ * Primary-Button (aktuell nur "+ Neue Einheit") in REDAXO-Header-Cyan,
+ * damit er sich an die globale REDAXO-Markenfarbe anlehnt statt am
+ * generischen sprog-Accent (das tiefe Blau bleibt für Status & Focus).
+ */
+.sprog-inbox--button-primary {
+    background: #4b9ad9;
+    color: #ffffff;
+    border-color: #4b9ad9;
+}
+
+.sprog-inbox--button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, #4b9ad9 85%, black);
+    border-color: color-mix(in srgb, #4b9ad9 85%, black);
+    color: #ffffff;
+}
+
+.sprog-inbox--button-ghost {
+    background: transparent;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-inbox--summary {
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-size: 1.44rem;
+}
+
+.sprog-inbox--summary strong {
+    color: var(--sprog-color-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-inbox--empty {
+    margin: 0;
+    padding: var(--sprog-spacing);
+    border: 1px dashed var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+.sprog-inbox--list {
+    display: grid;
+    gap: 1.04rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sprog-inbox--card {
+    display: grid;
+    gap: 0.88rem;
+    padding: 1.36rem 1.6rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+    transition: border-color 0.15s;
+}
+
+.sprog-inbox--card:hover {
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 50%, var(--sprog-color-border));
+}
+
+.sprog-inbox--card-head {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    flex-wrap: wrap;
+}
+
+.sprog-inbox--namespace {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 1.2rem;
+    padding: 0.24rem 0.8rem;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-muted);
+    text-transform: lowercase;
+}
+
+.sprog-inbox--key {
+    margin: 0;
+    font-size: 1.52rem;
+    font-weight: 600;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--sprog-color-fg);
+    overflow-wrap: anywhere;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sprog-inbox--value {
+    margin: 0;
+    color: var(--sprog-color-fg);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.sprog-inbox--value-empty {
+    color: var(--sprog-color-muted);
+    font-style: italic;
+}
+
+.sprog-inbox--meta {
+    display: flex;
+    gap: 1.36rem;
+    flex-wrap: wrap;
+    font-size: 1.248rem;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-inbox--meta-item {
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-inbox--pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-top: 0.8rem;
+}
+
+.sprog-inbox--page-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.56rem 1.36rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    text-decoration: none;
+    font-size: 1.44rem;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.sprog-inbox--page-link:hover {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-inbox--page-link:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-inbox--page-link-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.sprog-inbox--page-info {
+    font-variant-numeric: tabular-nums;
+    color: var(--sprog-color-muted);
+    font-size: 1.408rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+
+        --sprog-status-missing:      #6b7280;
+        --sprog-status-draft:        #fbbf24;
+        --sprog-status-translated:   #60a5fa;
+        --sprog-status-needs_review: #f59e0b;
+        --sprog-status-approved:     #34d399;
+        --sprog-status-stale:        #f87171;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-inbox--button-primary {
+        color: #0b0f19;
+    }
+}
+
+.sprog-inbox--key-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed transparent;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.sprog-inbox--key-link:hover,
+.sprog-inbox--key-link:focus-visible {
+    color: var(--sprog-color-accent);
+    border-bottom-color: var(--sprog-color-accent);
+    outline: none;
+}
+
+/*
+ * sprog-editor
+ * Side-by-side-Editor aller Sprachen einer Unit.
+ */
+
+.sprog-editor {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+
+    --sprog-status-missing:      #94a3b8;
+    --sprog-status-draft:        #f59e0b;
+    --sprog-status-translated:   #3b82f6;
+    --sprog-status-needs_review: #d97706;
+    --sprog-status-revise:       #a855f7;
+    --sprog-status-approved:     #10b981;
+    --sprog-status-stale:        #ef4444;
+
+    --sprog-radius:      0.8rem;
+    --sprog-radius-pill: 999px;
+    --sprog-spacing:     1.6rem;
+    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.25);
+    max-width: 1600px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-editor *,
+.sprog-editor *::before,
+.sprog-editor *::after {
+    box-sizing: border-box;
+}
+
+.sprog-editor--intro {
+    display: grid;
+    gap: 0.64rem;
+}
+
+.sprog-editor--back {
+    color: var(--sprog-color-muted);
+    text-decoration: none;
+    font-size: 1.408rem;
+    justify-self: start;
+    transition: color 0.15s;
+}
+
+.sprog-editor--back:hover,
+.sprog-editor--back:focus-visible {
+    color: var(--sprog-color-accent);
+    outline: none;
+}
+
+.sprog-editor--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
+.sprog-editor--meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    color: var(--sprog-color-muted);
+    font-size: 1.36rem;
+}
+
+.sprog-editor--ns {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    padding: 0.24rem 0.96rem;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-editor--source {
+    font-style: italic;
+}
+
+.sprog-editor--tags {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.sprog-editor--tag {
+    padding: 0.16rem 0.72rem;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-accent) 12%, transparent);
+    color: var(--sprog-color-accent);
+    font-size: 1.248rem;
+}
+
+.sprog-editor--form {
+    display: contents;
+}
+
+.sprog-editor--grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: var(--sprog-spacing);
+}
+
+.sprog-editor--lang {
+    display: grid;
+    gap: 1.04rem;
+    padding: 1.6rem 1.76rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+    transition: border-color 0.15s;
+}
+
+.sprog-editor--lang:focus-within {
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--lang.is-stale {
+    border-color: color-mix(in srgb, var(--sprog-status-stale) 60%, var(--sprog-color-border));
+    background: color-mix(in srgb, var(--sprog-status-stale) 4%, var(--sprog-color-bg));
+}
+
+.sprog-editor--lang.is-locked {
+    opacity: 0.7;
+}
+
+.sprog-editor--lang-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.sprog-editor--lang-title {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.8rem;
+}
+
+.sprog-editor--clang-code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.7em;
+    padding: 0.15em 0.5em;
+    border-radius: var(--sprog-radius-pill);
+    background: color-mix(in srgb, var(--sprog-color-muted) 15%, transparent);
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sprog-editor--clang-name {
+    color: var(--sprog-color-fg);
+}
+
+.sprog-editor--stale-hint {
+    margin: 0;
+    padding: 0.64rem 0.96rem;
+    background: color-mix(in srgb, var(--sprog-status-stale) 10%, transparent);
+    border-left: 3px solid var(--sprog-status-stale);
+    border-radius: 0.48rem;
+    font-size: 1.328rem;
+    color: var(--sprog-status-stale);
+}
+
+.sprog-editor--field {
+    display: grid;
+    gap: 0.48rem;
+}
+
+.sprog-editor--label {
+    font-size: 1.248rem;
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-editor--textarea {
+    width: 100%;
+    padding: 0.96rem 1.12rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.64rem;
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 9.6rem;
+    overflow-wrap: anywhere;
+}
+
+.sprog-editor--textarea:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--textarea[readonly] {
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-muted);
+    cursor: not-allowed;
+}
+
+.sprog-editor--mt {
+    margin: 0;
+    font-size: 1.312rem;
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-editor--mt strong {
+    color: var(--sprog-color-fg);
+}
+
+.sprog-editor--actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.64rem;
+}
+
+.sprog-editor--action {
+    font: inherit;
+    font-size: 1.28rem;
+    padding: 0.48rem 1.12rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-editor--action:hover:not(:disabled) {
+    border-color: var(--sprog-color-accent);
+    color: var(--sprog-color-accent);
+}
+
+.sprog-editor--action:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-editor--action-approved:hover {
+    border-color: var(--sprog-status-approved);
+    color: var(--sprog-status-approved);
+}
+
+.sprog-editor--action-needs_review:hover {
+    border-color: var(--sprog-status-needs_review);
+    color: var(--sprog-status-needs_review);
+}
+
+.sprog-editor--action-translated:hover {
+    border-color: var(--sprog-status-translated);
+    color: var(--sprog-status-translated);
+}
+
+.sprog-editor--save-bar {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    display: flex;
+    justify-content: flex-end;
+    padding: 1.2rem var(--sprog-spacing);
+    background: color-mix(in srgb, var(--sprog-color-bg) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-editor--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.88rem 1.92rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-editor--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-editor--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-editor--button-primary {
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    color: #ffffff;
+}
+
+/*
+ * Versteckte Status-Transition-Forms — sind im DOM präsent, damit die
+ * Action-Buttons sie per `form="…"`-Attribut referenzieren können, dürfen
+ * aber selbst nichts darstellen.
+ */
+.sprog-editor--hidden-form {
+    display: none;
+}
+
+/*
+ * Unit-Edit: zusammenklappbarer Block im Editor-Header, der Schlüssel und
+ * Notizen der Übersetzungseinheit selbst editierbar macht. Nur sichtbar,
+ * wenn der User die sprog[unit_edit]-Permission hat (Admin geht immer durch).
+ */
+.sprog-editor--unit-edit {
+    margin-bottom: 0.8rem;
+    background: var(--sprog-color-surface);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    overflow: hidden;
+}
+
+.sprog-editor--unit-edit[open] {
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-editor--unit-edit-summary {
+    padding: 0.9rem 1.2rem;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 1.36rem;
+    color: var(--sprog-color-fg);
+    user-select: none;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.sprog-editor--unit-edit-summary::-webkit-details-marker {
+    display: none;
+}
+
+.sprog-editor--unit-edit-summary::before {
+    content: "▸";
+    color: var(--sprog-color-muted);
+    transition: transform 0.15s ease;
+    display: inline-block;
+}
+
+.sprog-editor--unit-edit[open] .sprog-editor--unit-edit-summary::before {
+    transform: rotate(90deg);
+}
+
+.sprog-editor--unit-edit-summary:hover {
+    background: color-mix(in srgb, var(--sprog-color-fg) 4%, transparent);
+}
+
+.sprog-editor--unit-edit-summary:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: -2px;
+}
+
+.sprog-editor--unit-form {
+    display: grid;
+    gap: 0.9rem;
+    padding: 0 1.2rem 1.2rem 1.2rem;
+}
+
+.sprog-editor--unit-edit-lead {
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-size: 1.3rem;
+    line-height: 1.5;
+}
+
+.sprog-editor--unit-input {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.56rem;
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    line-height: 1.4;
+}
+
+.sprog-editor--unit-input:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--unit-notes {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.56rem;
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 4.5rem;
+}
+
+.sprog-editor--unit-notes:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--unit-hint {
+    font-size: 1.2rem;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-editor--unit-hint code {
+    font-size: 0.9em;
+    padding: 0.05em 0.4em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-editor--unit-actions {
+    display: flex;
+    gap: 0.8rem;
+}
+
+/*
+ * MT-Trigger-Bar: ein "MT-Vorschlag"-Button + Status-Span pro Sprachblock.
+ */
+
+.sprog-editor--mt-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.sprog-editor--mt-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font: inherit;
+    font-size: 1.36rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 0.56rem;
+    border: 1px dashed color-mix(in srgb, var(--sprog-color-accent) 60%, var(--sprog-color-border));
+    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
+    color: var(--sprog-color-accent);
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-editor--mt-trigger::before {
+    content: "✨";
+    font-size: 1.1em;
+    line-height: 1;
+}
+
+.sprog-editor--mt-trigger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 10%, transparent);
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-editor--mt-trigger:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-editor--mt-trigger:disabled {
+    opacity: 0.55;
+    cursor: progress;
+}
+
+.sprog-editor--mt-status {
+    font-size: 1.3rem;
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sprog-editor--mt-status[hidden] {
+    display: none;
+}
+
+.sprog-editor--mt-status.is-ok {
+    color: var(--sprog-status-approved);
+}
+
+.sprog-editor--mt-status.is-error {
+    color: var(--sprog-status-stale);
+}
+
+.sprog-editor--mt-discard {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font: inherit;
+    font-size: 1.2rem;
+    font-weight: 500;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-muted);
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-editor--mt-discard:hover:not(:disabled) {
+    border-color: var(--sprog-status-stale);
+    color: var(--sprog-status-stale);
+    background: color-mix(in srgb, var(--sprog-status-stale) 6%, transparent);
+}
+
+.sprog-editor--mt-discard:focus-visible {
+    outline: 2px solid var(--sprog-status-stale);
+    outline-offset: 2px;
+}
+
+.sprog-editor--mt-discard[hidden] {
+    display: none;
+}
+
+/*
+ * Wenn aktuell ein MT-Marker an der Translation hängt, bekommt die ganze
+ * mt-bar einen dezenten Akzent-Background — Signal für „hier kam der Text
+ * aus MT".
+ */
+.sprog-editor--mt-bar[data-mt-active="true"] {
+    padding: 0.6rem 0.8rem;
+    margin-inline: -0.8rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-editor {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+
+        --sprog-status-missing:      #6b7280;
+        --sprog-status-draft:        #fbbf24;
+        --sprog-status-translated:   #60a5fa;
+        --sprog-status-needs_review: #f59e0b;
+        --sprog-status-approved:     #34d399;
+        --sprog-status-stale:        #f87171;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-editor--button-primary {
+        color: #0b0f19;
+    }
+}
+
+/* Inbox-Header bekommt eine Plus-Button-Reihe. */
+.sprog-inbox--intro-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.6rem;
+    flex-wrap: wrap;
+}
+
+/*
+ * sprog-create
+ * Schmale Anlege-Form für neue Übersetzungseinheiten.
+ * Eigene Block-Klasse, damit der Editor-Code unverändert bleibt.
+ */
+
+.sprog-create {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+    --sprog-color-danger:  #dc2626;
+
+    --sprog-radius:  0.8rem;
+    --sprog-spacing: 1.6rem;
+    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.25);
+    max-width: 680px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-create *,
+.sprog-create *::before,
+.sprog-create *::after {
+    box-sizing: border-box;
+}
+
+.sprog-create--intro {
+    display: grid;
+    gap: 0.64rem;
+}
+
+.sprog-create--back {
+    color: var(--sprog-color-muted);
+    text-decoration: none;
+    font-size: 1.408rem;
+    justify-self: start;
+    transition: color 0.15s;
+}
+
+.sprog-create--back:hover,
+.sprog-create--back:focus-visible {
+    color: var(--sprog-color-accent);
+    outline: none;
+}
+
+.sprog-create--heading {
+    margin: 0;
+    font-size: 2.24rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-create--lead {
+    margin: 0;
+    max-width: 60ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-create--lead code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-create--form {
+    display: grid;
+    gap: var(--sprog-spacing);
+    padding: 2rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-create--field {
+    display: grid;
+    gap: 0.48rem;
+}
+
+.sprog-create--label {
+    font-size: 1.312rem;
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-create--hint {
+    font-size: 1.312rem;
+    color: var(--sprog-color-muted);
+    line-height: 1.4;
+}
+
+.sprog-create--hint code {
+    font-size: 0.9em;
+    padding: 0.05em 0.3em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-create--select,
+.sprog-create--input,
+.sprog-create--textarea {
+    width: 100%;
+    padding: 0.88rem 1.12rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.64rem;
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    line-height: 1.4;
+}
+
+.sprog-create--textarea {
+    resize: vertical;
+    min-height: 6.4rem;
+    line-height: 1.5;
+}
+
+.sprog-create--select:focus-visible,
+.sprog-create--input:focus-visible,
+.sprog-create--textarea:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-create--input:invalid:not(:placeholder-shown) {
+    border-color: var(--sprog-color-danger);
+}
+
+.sprog-create--actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--sprog-color-border);
+}
+
+.sprog-create--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.88rem 1.76rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-create--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-create--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-create--button-primary {
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-create--button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    color: #ffffff;
+}
+
+.sprog-create--button-ghost {
+    background: transparent;
+    color: var(--sprog-color-muted);
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-create {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+        --sprog-color-danger:  #f87171;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-create--button-primary {
+        color: #0b0f19;
+    }
+}
+
+/*
+ * sprog-settings-mt
+ * Konfigurations-Formular für MT-Provider-API-Keys.
+ * rem-Werte: ×1.6 wegen REDAXO-Core (html { font-size: 10px }).
+ */
+
+.sprog-settings-mt {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+
+    --sprog-status-missing:    #94a3b8;
+    --sprog-status-approved:   #10b981;
+
+    --sprog-radius:  0.8rem;
+    --sprog-spacing: 1.6rem;
+    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.25);
+    max-width: 720px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-settings-mt *,
+.sprog-settings-mt *::before,
+.sprog-settings-mt *::after {
+    box-sizing: border-box;
+}
+
+.sprog-settings-mt--intro {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.sprog-settings-mt--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-settings-mt--lead {
+    margin: 0;
+    max-width: 65ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-settings-mt--form {
+    display: grid;
+    gap: var(--sprog-spacing);
+}
+
+.sprog-settings-mt--provider {
+    display: grid;
+    gap: 1.2rem;
+    padding: 1.6rem 1.8rem;
+    margin: 0;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-settings-mt--provider-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    padding: 0;
+    margin: 0;
+}
+
+.sprog-settings-mt--provider-label {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.sprog-settings-mt--field {
+    display: grid;
+    gap: 0.4rem;
+}
+
+.sprog-settings-mt--label {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-settings-mt--hint {
+    font-size: 1.3rem;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-settings-mt--hint code {
+    font-size: 0.9em;
+    padding: 0.05em 0.4em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-settings-mt--input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.64rem;
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    line-height: 1.4;
+}
+
+.sprog-settings-mt--input:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-settings-mt--input::placeholder {
+    color: color-mix(in srgb, var(--sprog-color-muted) 80%, transparent);
+    font-family: inherit;
+}
+
+.sprog-settings-mt--check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.4rem;
+    color: var(--sprog-color-fg);
+    cursor: pointer;
+    user-select: none;
+}
+
+.sprog-settings-mt--check input[type="checkbox"] {
+    accent-color: var(--sprog-color-accent);
+}
+
+.sprog-settings-mt--actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+
+.sprog-settings-mt--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.88rem 1.76rem;
+    border-radius: 0.64rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-settings-mt--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-settings-mt--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-settings-mt--button-primary {
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-settings-mt--button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-settings-mt {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+
+        --sprog-status-missing:  #6b7280;
+        --sprog-status-approved: #34d399;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-settings-mt--button-primary {
+        color: #0b0f19;
+    }
+}
+
+/*
+ * sprog-glossary
+ * Feste Begriff-Bindungen pro Sprachpaar.
+ * rem-Werte: ×1.6 wegen REDAXO-Core (html { font-size: 10px }).
+ */
+
+.sprog-glossary {
+    --sprog-color-bg:      #ffffff;
+    --sprog-color-surface: #f9fafb;
+    --sprog-color-fg:      #111827;
+    --sprog-color-muted:   #6b7280;
+    --sprog-color-border:  #e5e7eb;
+    --sprog-color-accent:  #2563eb;
+    --sprog-color-danger:  #dc2626;
+
+    --sprog-radius:  0.8rem;
+    --sprog-spacing: 1.6rem;
+    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+
+    display: grid;
+    gap: calc(var(--sprog-spacing) * 1.25);
+    max-width: 1200px;
+    color: var(--sprog-color-fg);
+}
+
+.sprog-glossary *,
+.sprog-glossary *::before,
+.sprog-glossary *::after {
+    box-sizing: border-box;
+}
+
+.sprog-glossary--intro {
+    display: grid;
+    gap: 0.6rem;
+}
+
+.sprog-glossary--heading {
+    margin: 0;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.sprog-glossary--lead {
+    margin: 0;
+    max-width: 70ch;
+    color: var(--sprog-color-muted);
+    line-height: 1.5;
+}
+
+.sprog-glossary--filter {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--sprog-spacing);
+    align-items: end;
+    padding: var(--sprog-spacing);
+    background: var(--sprog-color-surface);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+}
+
+.sprog-glossary--field {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+}
+
+.sprog-glossary--label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-glossary--clang-tag {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    padding: 0.1em 0.5em;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+    color: var(--sprog-color-fg);
+    text-transform: lowercase;
+    letter-spacing: 0;
+}
+
+.sprog-glossary--filter select,
+.sprog-glossary--input,
+.sprog-glossary--textarea {
+    padding: 0.8rem 1rem;
+    border-radius: 0.56rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    line-height: 1.4;
+    min-width: 0;
+}
+
+.sprog-glossary--textarea {
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.sprog-glossary--filter select:focus-visible,
+.sprog-glossary--input:focus-visible,
+.sprog-glossary--textarea:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 1px;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-glossary--filter-actions {
+    display: flex;
+    gap: 0.8rem;
+    align-items: center;
+}
+
+.sprog-glossary--add {
+    display: grid;
+    gap: 1rem;
+    padding: 1.4rem 1.6rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-glossary--section-heading {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.sprog-glossary--add-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: start;
+}
+
+.sprog-glossary--field-notes {
+    grid-column: 1 / -1;
+}
+
+.sprog-glossary--add-actions {
+    grid-column: 1 / -1;
+    display: flex;
+    gap: 0.8rem;
+}
+
+.sprog-glossary--count {
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-size: 1.36rem;
+}
+
+.sprog-glossary--count strong {
+    color: var(--sprog-color-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-glossary--empty {
+    margin: 0;
+    padding: var(--sprog-spacing);
+    border: 1px dashed var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+.sprog-glossary--list {
+    display: grid;
+    gap: 0.8rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.sprog-glossary--card {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.5rem 1.2rem;
+    align-items: center;
+    padding: 1rem 1.2rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: var(--sprog-shadow);
+}
+
+.sprog-glossary--pair {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.sprog-glossary--source-term,
+.sprog-glossary--target-term {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 1.5rem;
+    color: var(--sprog-color-fg);
+    overflow-wrap: anywhere;
+}
+
+.sprog-glossary--target-term {
+    color: var(--sprog-color-accent);
+    font-weight: 600;
+}
+
+.sprog-glossary--arrow {
+    color: var(--sprog-color-muted);
+    font-size: 1.3rem;
+}
+
+.sprog-glossary--notes {
+    grid-column: 1 / -1;
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-size: 1.3rem;
+    line-height: 1.5;
+}
+
+.sprog-glossary--delete-form {
+    margin: 0;
+}
+
+.sprog-glossary--button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font: inherit;
+    font-weight: 500;
+    padding: 0.7rem 1.4rem;
+    border-radius: 0.56rem;
+    border: 1px solid var(--sprog-color-border);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-glossary--button:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+}
+
+.sprog-glossary--button:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-glossary--button-primary {
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    border-color: var(--sprog-color-accent);
+}
+
+.sprog-glossary--button-primary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
+    color: #ffffff;
+}
+
+.sprog-glossary--button-ghost {
+    background: transparent;
+    color: var(--sprog-color-muted);
+    font-size: 1.2rem;
+    padding: 0.5rem 1rem;
+}
+
+.sprog-glossary--button-ghost:hover {
+    color: var(--sprog-color-danger);
+    border-color: var(--sprog-color-danger);
+    background: color-mix(in srgb, var(--sprog-color-danger) 6%, transparent);
+}
+
+@media (max-width: 600px) {
+    .sprog-glossary--add-form {
+        grid-template-columns: 1fr;
+    }
+
+    .sprog-glossary--card {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-glossary {
+        --sprog-color-bg:      #1f2937;
+        --sprog-color-surface: #111827;
+        --sprog-color-fg:      #f3f4f6;
+        --sprog-color-muted:   #9ca3af;
+        --sprog-color-border:  #374151;
+        --sprog-color-accent:  #60a5fa;
+        --sprog-color-danger:  #f87171;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+
+    .sprog-glossary--button-primary {
+        color: #0b0f19;
+    }
+}
+
+/*
+ * ============================================================================
+ * Inbox v2 – Akkordeon-Liste, Inline-Editor, Auto-Save-Feedback
+ * ============================================================================
+ * Pro Unit ein <details>-Element. Zugeklappt zeigt nur den Header (Namespace,
+ * Key, Coverage, Status). Aufgeklappt: pro definierter clang eine Edit-Zeile
+ * mit Textarea + Status-Badge. Sprachen ohne Edit-Recht sind sichtbar, aber
+ * visuell abgesenkt und mit readonly-Hint markiert.
+ */
+
+.sprog-inbox--unit {
+    background: #ffffff;
+    overflow: hidden;
+}
+
+/*
+ * Cards rücken jetzt eng zusammen: der gemeinsame border-radius/border kommt
+ * vom .sprog-inbox--list-Container, die Trennung zwischen Units übernimmt ein
+ * dünner border-bottom. Kein Box-Shadow — bewusst flacher, GitHub-näher.
+ */
+.sprog-inbox--card {
+    border-bottom: 1px solid var(--gh-border, #d0d7de);
+}
+
+.sprog-inbox--card:last-child {
+    border-bottom: none;
+}
+
+/*
+ * Aktiver Zustand: helles Blau aus dem REDAXO-Header-Cyan (#4b9ad9, 12%).
+ * Hover bleibt neutral grau — so kann man den geöffneten Eintrag auch
+ * beim Hovern noch klar vom geschlossenen unterscheiden.
+ */
+.sprog-inbox--unit[open] {
+    background: rgba(75 154 217 / 16%);
+}
+
+.sprog-inbox--unit-summary {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto auto;
+    align-items: center;
+    gap: 1.92rem;
+    padding: 1.6rem 1.92rem;
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.sprog-inbox--unit-summary::-webkit-details-marker {
+    display: none;
+}
+
+.sprog-inbox--unit-summary:focus-visible {
+    outline: 0.32rem solid var(--sprog-focus, #6366f1);
+    outline-offset: -0.32rem;
+}
+
+.sprog-inbox--unit-summary .sprog-inbox--namespace {
+    font-size: 1.12rem;
+    text-transform: uppercase;
+    letter-spacing: 0.064rem;
+    color: var(--sprog-muted, #64748b);
+}
+
+.sprog-inbox--unit-summary .sprog-inbox--key {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--sprog-text, #0f172a);
+    word-break: break-all;
+}
+
+.sprog-inbox--coverage {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.28rem;
+    color: var(--sprog-muted, #64748b);
+    padding: 0.32rem 0.96rem;
+    border-radius: 0.96rem;
+    background: var(--sprog-surface-muted, #f1f5f9);
+}
+
+.sprog-inbox--chevron {
+    font-size: 1.6rem;
+    color: var(--sprog-muted, #64748b);
+    transition: transform 0.15s ease;
+}
+
+.sprog-inbox--unit[open] .sprog-inbox--chevron {
+    transform: rotate(180deg);
+}
+
+.sprog-inbox--rows {
+    padding: 1.6rem 1.92rem 1.92rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    border-top: 1px solid var(--sprog-border, #e5e7eb);
+}
+
+.sprog-inbox--row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.64rem;
+    padding: 1.28rem 0;
+    border-bottom: 1px dashed var(--sprog-border, #e5e7eb);
+}
+
+.sprog-inbox--row:last-of-type {
+    border-bottom: none;
+}
+
+.sprog-inbox--row.is-readonly {
+    opacity: 0.7;
+}
+
+.sprog-inbox--row.is-stale .sprog-inbox--textarea {
+    border-color: var(--sprog-status-stale, #ef4444);
+}
+
+.sprog-inbox--row-head {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    flex-wrap: wrap;
+}
+
+.sprog-inbox--clang-code {
+    display: inline-block;
+    min-width: 3.2rem;
+    padding: 0.16rem 0.64rem;
+    border-radius: 0.64rem;
+    background: var(--sprog-surface-muted, #f1f5f9);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.12rem;
+    text-transform: uppercase;
+    color: var(--sprog-text, #0f172a);
+    text-align: center;
+}
+
+.sprog-inbox--clang-name {
+    font-size: 1.28rem;
+    color: var(--sprog-text, #0f172a);
+}
+
+.sprog-inbox--readonly-hint {
+    margin-left: auto;
+    font-size: 1.12rem;
+    color: var(--sprog-muted, #64748b);
+    font-style: italic;
+}
+
+.sprog-inbox--stale-hint {
+    margin: 0;
+    font-size: 1.12rem;
+    color: var(--sprog-status-stale, #ef4444);
+}
+
+.sprog-inbox--textarea {
+    width: 100%;
+    min-height: 5.6rem;
+    padding: 0.96rem 1.28rem;
+    border: 1px solid var(--sprog-border, #e5e7eb);
+    border-radius: 0.96rem;
+    background: var(--sprog-surface, #ffffff);
+    color: var(--sprog-text, #0f172a);
+    font-family: inherit;
+    font-size: 1.44rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.sprog-inbox--textarea:focus-visible {
+    outline: none;
+    border-color: var(--sprog-focus, #6366f1);
+    box-shadow: 0 0 0 0.32rem rgba(99 102 241 / 18%);
+}
+
+.sprog-inbox--textarea[readonly] {
+    background: var(--sprog-surface-muted, #f1f5f9);
+    color: var(--sprog-muted, #64748b);
+    cursor: not-allowed;
+}
+
+.sprog-inbox--textarea:disabled {
+    opacity: 0.6;
+}
+
+.sprog-inbox--row-feedback {
+    margin: 0;
+    min-height: 1.6rem;
+    font-size: 1.12rem;
+    color: var(--sprog-muted, #64748b);
+}
+
+.sprog-inbox--row-feedback[data-kind="ok"]      { color: var(--sprog-status-approved, #10b981); }
+.sprog-inbox--row-feedback[data-kind="pending"] { color: var(--sprog-muted, #64748b); font-style: italic; }
+.sprog-inbox--row-feedback[data-kind="error"]   { color: var(--sprog-status-stale, #ef4444); }
+
+.sprog-inbox--unit-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.96rem;
+    padding-top: 0.96rem;
+}
+
+/*
+ * Toast – fixed unten rechts. Liegt im DOM innerhalb des Inbox-Artikels,
+ * `position: fixed` zieht ihn aus dem Fluss.
+ */
+.sprog-inbox--toast {
+    position: fixed;
+    bottom: 2.4rem;
+    right: 2.4rem;
+    z-index: 1000;
+    padding: 1.28rem 1.92rem;
+    border-radius: 0.96rem;
+    background: var(--sprog-text, #0f172a);
+    color: #ffffff;
+    font-size: 1.28rem;
+    box-shadow: 0 0.32rem 1.28rem rgba(15 23 42 / 25%);
+    max-width: 60ch;
+}
+
+.sprog-inbox--toast[data-kind="ok"]    { background: var(--sprog-status-approved, #10b981); }
+.sprog-inbox--toast[data-kind="warn"]  { background: var(--sprog-status-needs_review, #d97706); }
+.sprog-inbox--toast[data-kind="error"] { background: var(--sprog-status-stale, #ef4444); }
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--unit {
+        background: #111827;
+        border-color: #1f2937;
+    }
+
+    .sprog-inbox--coverage,
+    .sprog-inbox--clang-code,
+    .sprog-inbox--textarea[readonly] {
+        background: #1f2937;
+        color: #cbd5e1;
+    }
+
+    .sprog-inbox--textarea {
+        background: #0b1220;
+        color: #f1f5f9;
+        border-color: #1f2937;
+    }
+}
+
+@media (max-width: 48em) {
+    .sprog-inbox--unit-summary {
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "namespace status"
+            "key       coverage"
+            "chevron   chevron";
+        gap: 0.64rem 0.96rem;
+    }
+
+    .sprog-inbox--unit-summary .sprog-inbox--namespace { grid-area: namespace; }
+    .sprog-inbox--unit-summary .sprog-inbox--key       { grid-area: key; }
+    .sprog-inbox--coverage                             { grid-area: coverage; justify-self: end; }
+    .sprog-inbox--unit-summary .sprog-status           { grid-area: status; justify-self: end; }
+    .sprog-inbox--chevron                              { grid-area: chevron; justify-self: end; }
+}
+
+/*
+ * ============================================================================
+ * Inbox-Toolbar – GitHub-Issues-Optik
+ * ============================================================================
+ * Schmale, hellgraue Bar oberhalb der Liste. Zwei Reihen:
+ *   1) Filter-Pills (Sprache, Quelle, Status-Dropdown)
+ *   2) Suchfeld mit Lupe + Filter-Submit + Reset
+ *
+ * Lokale Farb-Overrides für den GitHub-typischen Look (eher kühles Grau,
+ * eckige Buttons, dünnere Linien). Variablen kapseln die Werte, damit
+ * Dark-Mode unten weiter funktioniert.
+ */
+
+.sprog-inbox--toolbar {
+    --gh-border:  #d0d7de;
+    --gh-bg:      #ffffff;
+    --gh-hover:   #eaeef2;
+    --gh-text:    #1f2328;
+    --gh-muted:   #59636e;
+    --gh-radius:  0.96rem;
+
+    display: flex;
+    flex-direction: column;
+    background: var(--gh-bg);
+}
+
+/*
+ * Reihe 1: Suchfeld + Filtern/Reset + Neue Einheit.
+ * Suchfeld wächst, rechte Buttons behalten ihre Breite.
+ */
+.sprog-inbox--search-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.96rem;
+    margin-bottom: 1.6rem;
+}
+
+.sprog-inbox--search-row .sprog-inbox--toolbar-search {
+    flex: 1 1 auto;
+}
+
+.sprog-inbox--search-row .sprog-inbox--button {
+    margin-left: auto;
+}
+
+/*
+ * Listen-Header: Anzahl links, Dropdown-Filter rechts. Sitzt direkt oberhalb
+ * der Liste und teilt sich mit ihr den gemeinsamen border-Container — daher
+ * border-radius nur oben, kein border-bottom (das übernimmt die Liste).
+ */
+.sprog-inbox--list-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.96rem;
+    padding: 0.96rem 1.28rem;
+    background: var(--gh-bg);
+    border: 1px solid var(--gh-border);
+    border-top-left-radius: var(--gh-radius);
+    border-top-right-radius: var(--gh-radius);
+    border-bottom: none;
+}
+
+.sprog-inbox--list-header-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.64rem;
+}
+
+.sprog-inbox--toolbar-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    padding: 0.48rem 0.96rem;
+    background: #ffffff;
+    border: 1px solid var(--gh-border);
+    border-radius: 0.96rem;
+    cursor: pointer;
+    color: var(--gh-text);
+    line-height: 1;
+}
+
+.sprog-inbox--toolbar-cell:hover {
+    background: var(--gh-hover);
+}
+
+.sprog-inbox--toolbar-cell-label {
+    font-size: 1.12rem;
+    color: var(--gh-muted);
+    font-weight: 600;
+}
+
+.sprog-inbox--toolbar-select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--gh-text);
+    font: inherit;
+    font-size: 1.28rem;
+    padding: 0.24rem 1.6rem 0.24rem 0.32rem;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gh-muted) 50%),
+                      linear-gradient(135deg, var(--gh-muted) 50%, transparent 50%);
+    background-position: calc(100% - 0.96rem) 50%, calc(100% - 0.48rem) 50%;
+    background-size: 0.48rem 0.48rem, 0.48rem 0.48rem;
+    background-repeat: no-repeat;
+}
+
+.sprog-inbox--toolbar-select:focus-visible {
+    outline: 0.32rem solid var(--sprog-focus, #6366f1);
+    outline-offset: 0.16rem;
+}
+
+/*
+ * Status-Dropdown via <details>. Das Popup positioniert sich absolut unter
+ * dem Trigger, der Trigger zeigt eine kleine Zusammenfassung ("alle" oder
+ * "N ausgewählt"). Native HTML-Verhalten — kein JS für Aufklappen.
+ */
+.sprog-inbox--toolbar-dropdown {
+    position: relative;
+}
+
+.sprog-inbox--toolbar-trigger {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    cursor: pointer;
+    font-size: 1.28rem;
+    user-select: none;
+}
+
+.sprog-inbox--toolbar-trigger::-webkit-details-marker {
+    display: none;
+}
+
+.sprog-inbox--toolbar-trigger-value {
+    color: var(--gh-text);
+}
+
+.sprog-inbox--toolbar-trigger-chevron {
+    color: var(--gh-muted);
+    font-size: 1.12rem;
+}
+
+.sprog-inbox--toolbar-popup {
+    position: absolute;
+    top: calc(100% + 0.32rem);
+    /* öffnet nach links: rechte Kante des Popups bündig mit rechter Cell-Kante.
+       Status-Pill sitzt ganz rechts in der Filter-Row, daher öffnet das Popup
+       sonst sehr nahe am Viewport-Rand. */
+    right: 0;
+    left: auto;
+    z-index: 50;
+    min-width: 22rem;
+    padding: 0.64rem;
+    background: #ffffff;
+    border: 1px solid var(--gh-border);
+    border-radius: 0.96rem;
+    box-shadow: 0 0.96rem 1.92rem rgba(15 23 42 / 12%);
+    display: flex;
+    flex-direction: column;
+    gap: 0.16rem;
+}
+
+.sprog-inbox--toolbar-check {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    padding: 0.48rem 0.64rem;
+    border-radius: 0.64rem;
+    cursor: pointer;
+    font-size: 1.28rem;
+    color: var(--gh-text);
+    line-height: 1.2;
+}
+
+.sprog-inbox--toolbar-check:hover {
+    background: var(--gh-hover);
+}
+
+/* Checkbox-Box optisch zur Label-Mitte rücken: feste Größe + margin: 0
+   gegen Browser-Defaults, flex-shrink: 0 damit sie nicht gequetscht wird. */
+.sprog-inbox--toolbar-check input[type="checkbox"] {
+    accent-color: var(--sprog-color-accent, #2563eb);
+    width: 1.44rem;
+    height: 1.44rem;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+/*
+ * Apply-Button als Popup-Footer. Trennlinie oberhalb (negative margin gleich
+ * dem popup-padding lässt die Linie bis zum Popup-Rand laufen), padding-top
+ * für Innenabstand der Linie.
+ */
+.sprog-inbox--toolbar-popup-apply {
+    margin: 0.48rem -0.64rem -0.64rem;
+    padding: 0.96rem 1.28rem;
+    border: 0;
+    border-top: 1px solid var(--gh-border);
+    border-bottom-left-radius: 0.96rem;
+    border-bottom-right-radius: 0.96rem;
+    background: var(--gh-bg);
+    color: var(--gh-text);
+    font: inherit;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: right;
+}
+
+.sprog-inbox--toolbar-popup-apply:hover {
+    background: var(--gh-hover);
+}
+
+/*
+ * Reihe 2: Suchfeld nimmt den meisten Platz, Apply/Reset rechts.
+ */
+.sprog-inbox--toolbar-search {
+    flex: 1 1 24rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    padding: 0.48rem 0.96rem;
+    background: #ffffff;
+    border: 1px solid var(--gh-border);
+    border-radius: 0.96rem;
+}
+
+.sprog-inbox--toolbar-search:focus-within {
+    border-color: var(--sprog-focus, #6366f1);
+    box-shadow: 0 0 0 0.32rem rgba(99 102 241 / 18%);
+}
+
+.sprog-inbox--toolbar-search-icon {
+    color: var(--gh-muted);
+    display: inline-flex;
+    line-height: 0;
+}
+
+.sprog-inbox--toolbar-search-input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--gh-text);
+    font: inherit;
+    font-size: 1.28rem;
+    padding: 0.32rem 0;
+}
+
+.sprog-inbox--toolbar-search-input:focus-visible {
+    outline: none;
+}
+
+.sprog-inbox--toolbar-apply {
+    padding: 0.64rem 1.6rem;
+    border: 1px solid var(--gh-border);
+    border-radius: 0.96rem;
+    background: var(--gh-bg);
+    color: var(--gh-text);
+    font: inherit;
+    font-size: 1.28rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.sprog-inbox--toolbar-apply:hover {
+    background: var(--gh-hover);
+}
+
+.sprog-inbox--toolbar-reset {
+    padding: 0.48rem 0.96rem;
+    color: var(--gh-muted);
+    font-size: 1.28rem;
+    text-decoration: none;
+    border-radius: 0.64rem;
+}
+
+.sprog-inbox--toolbar-reset:hover {
+    color: var(--gh-text);
+    background: var(--gh-hover);
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--toolbar {
+        --gh-border: #30363d;
+        --gh-bg:     #161b22;
+        --gh-hover:  #21262d;
+        --gh-text:   #e6edf3;
+        --gh-muted:  #8d96a0;
+    }
+
+    .sprog-inbox--toolbar-cell,
+    .sprog-inbox--toolbar-search,
+    .sprog-inbox--toolbar-popup {
+        background: #0d1117;
+    }
+}
+
+@media (max-width: 48em) {
+    .sprog-inbox--search-row {
+        gap: 0.64rem;
+    }
+
+    .sprog-inbox--toolbar-search {
+        flex-basis: 100%;
+    }
+}
+
+/*
+ * ============================================================================
+ * Listen-Container & Card-Reset
+ * ============================================================================
+ * Liste teilt sich mit dem Listen-Header einen gemeinsamen Border-Container —
+ * der Header gibt border-top + radius-top, die Liste gibt border-bottom +
+ * radius-bottom, dazwischen kein Gap. Cards eng zusammen ohne Box-Shadow.
+ */
+.sprog-inbox--list {
+    display: block;          /* overrides earlier `grid` */
+    gap: 0;                  /* overrides earlier 1.04rem */
+    background: #ffffff;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-top: none;
+    border-bottom-left-radius: 0.96rem;
+    border-bottom-right-radius: 0.96rem;
+    overflow: hidden;
+}
+
+.sprog-inbox--list .sprog-inbox--card {
+    display: block;          /* overrides earlier `grid` */
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0;
+    box-shadow: none;
+    transition: none;
+}
+
+.sprog-inbox--list .sprog-inbox--card:last-child {
+    border-bottom: none;
+}
+
+/*
+ * Hover (closed): neutrales Hellgrau — wie Github-Listen-Items.
+ * Focus-within (closed): helles Blau aus REDAXO-Cyan — signalisiert Tastatur-
+ * Fokus und stimmt mit dem Open-State überein.
+ * Open + Hover: behält das Cyan-Blau (Open hat hier Priorität).
+ */
+.sprog-inbox--list .sprog-inbox--unit:hover {
+    background: var(--gh-hover, #eaeef2);
+}
+
+.sprog-inbox--list .sprog-inbox--unit:focus-within,
+.sprog-inbox--list .sprog-inbox--unit[open]:hover {
+    background: rgba(75 154 217 / 16%);
+}
+
+/*
+ * Article selbst auf weißen Hintergrund, ohne page-fill. Der ursprüngliche
+ * sprog.css-Reset gibt der Seite einen leicht grauen Surface — das setzen
+ * wir hier für die v2-Inbox lokal außer Kraft.
+ */
+.sprog-inbox {
+    background: #ffffff;
+}
+
+/*
+ * REDAXO-Tab-Nav direkt oberhalb der sprog-Pages: margin-bottom raus, dafür
+ * padding-bottom als Innenabstand. So „klebt" der Tab-Streifen optisch nicht
+ * an der Seitenkante darunter, aber der Abstand zur sprog-Inbox bleibt
+ * konsistent — und ist nicht mehr Layout-margin sondern Container-padding.
+ * Scoped über die Body-ID-Präfix-Klasse, damit andere Addons unberührt bleiben.
+ */
+body[id^="rex-page-sprog"] .nav.rex-page-nav {
+    margin-bottom: 0;
+    padding-bottom: 1.6rem;
+}
+
+/*
+ * List-Header + List schließen jetzt direkt aneinander. Border-Top des List-
+ * Containers entfällt (der Header gibt ihn vor), die Liste klebt ohne Lücke
+ * unten an. Border-Width auf 1px (statt 0.16rem ≈ 1.6px) für scharfen Strich
+ * auch bei kleinem Zoom.
+ */
+.sprog-inbox--list,
+.sprog-inbox--list-header {
+    border-width: 1px;
+}
+
+.sprog-inbox--list-header {
+    /* sichtbare Trennlinie zwischen Header und Liste */
+    border-bottom: 1px solid var(--gh-border, #d0d7de);
+}
+
+.sprog-inbox--list .sprog-inbox--card {
+    border-bottom-width: 1px;
+}
+
+/*
+ * Summary-Layout: zweispaltig.
+ *   Spalte 1 (links, wächst): Key + Wert-Preview untereinander
+ *   Spalte 2 (rechts, intrinsisch): Namespace + Coverage + Status + Chevron
+ * Damit liegen die Keys aller Cards linksbündig untereinander.
+ */
+.sprog-inbox--unit-summary {
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 1.28rem;
+}
+
+.sprog-inbox--summary-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.32rem;
+    min-width: 0;       /* nötig damit text-overflow im Child greift */
+}
+
+.sprog-inbox--summary-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+}
+
+.sprog-inbox--value-preview {
+    color: var(--gh-muted, #59636e);
+    font-size: 1.28rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
+
+.sprog-inbox--value-preview.is-empty {
+    font-style: italic;
+}
+
+/*
+ * Sprach-Status-Pillen im Summary: pro Sprache eine kleine Pille mit
+ * dem Sprachkürzel als Inhalt, Hintergrundfarbe vom Status der jeweiligen
+ * Translation. Title-Attribut liefert den Sprach-Namen + Status-Label
+ * als Tooltip.
+ */
+.sprog-inbox--lang-badges {
+    display: inline-flex;
+    gap: 0.24rem;
+    flex-wrap: wrap;
+}
+
+.sprog-inbox--lang-badge {
+    /* kompakter als das normale Status-Tag — Sprachcode in 2-3 Zeichen */
+    padding: 0.16rem 0.56rem;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.04rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    line-height: 1.2;
+    /* zusätzlich zur 14%-Background eine subtile Border in Status-Farbe,
+       damit auch hellere Status (z.B. needs_review) klar abgegrenzt sind */
+    border: 1px solid color-mix(in srgb, var(--sprog-status-color) 35%, transparent);
+}
+
+/*
+ * Initial-Zustand (Sprache noch nicht angefasst): missing rendert neutral
+ * im Coverage-Look — gleicher Hintergrund/Schrift wie das "X/Y"-Coverage-
+ * Tag daneben. So bekommen nur tatsächlich bearbeitete Sprachen visuelles
+ * Gewicht; unberührte Sprachen schmelzen in den ruhigen Listen-Look ein.
+ */
+.sprog-inbox--lang-badge.sprog-status--missing {
+    background: var(--sprog-surface-muted, #f1f5f9);
+    color: var(--sprog-muted, #64748b);
+    border: 0;
+}
+
+/*
+ * Key-Inline-Edit.
+ * Stift-Button sitzt direkt neben dem Key, kommt erst beim Hover des Summary
+ * deutlich hervor (sonst dezent). Im Edit-Modus wird der <span> ersetzt durch
+ * einen <input> im selben Look wie der Key (monospace, gleiche Größe), damit
+ * der visuelle Sprung minimal ist.
+ */
+.sprog-inbox--key-line {
+    /* Zeile streckt sich auf die volle Spaltenbreite (default `stretch` im
+       flex-column-Parent). Dadurch sitzt der Stift-Button visuell rechts
+       neben der Quelle in der Meta-Spalte — bewusst, damit der Edit-Trigger
+       nicht direkt am Text klebt. Der Input behält beim Aufruf die span-
+       Breite (per JS), so dass kein Element nach links springt. */
+    display: flex;
+    align-items: center;
+    gap: 0.48rem;
+}
+
+.sprog-inbox--key-edit {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.48rem;
+    background: transparent;
+    color: var(--gh-muted, #59636e);
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.15s, background-color 0.15s;
+}
+
+.sprog-inbox--unit-summary:hover .sprog-inbox--key-edit,
+.sprog-inbox--unit:focus-within .sprog-inbox--key-edit {
+    opacity: 1;
+}
+
+.sprog-inbox--key-edit:hover,
+.sprog-inbox--key-edit:focus-visible {
+    background: var(--gh-hover, #eaeef2);
+    color: var(--gh-text, #1f2328);
+    opacity: 1;
+}
+
+.sprog-inbox--key-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.6rem;
+    font-weight: 600;
+    padding: 0.16rem 0.48rem;
+    border: 1px solid var(--sprog-color-accent, #2563eb);
+    border-radius: 0.48rem;
+    background: #ffffff;
+    color: var(--gh-text, #1f2328);
+    box-shadow: 0 0 0 0.32rem rgba(37 99 235 / 18%);
+    /* Komfort-Mindestbreite für sehr kurze Keys (z.B. "a"). Bei normalen
+       Keys gewinnt die per JS gesetzte `style.width` (= span-Breite), sodass
+       der Stift-Button an seiner X-Position bleibt. */
+    min-width: 6rem;
+    box-sizing: border-box;
+}
+
+.sprog-inbox--key-input:focus-visible {
+    outline: none;
+}
+
+/*
+ * Row-Actions: Status-Buttons unter der Textarea, nebeneinander.
+ * Klein und im Stil wie der Filtern-Button — der Schwerpunkt liegt auf den
+ * Übersetzungen darüber, die Buttons sind sekundär.
+ */
+.sprog-inbox--row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.48rem;
+    margin-top: 0.32rem;
+}
+
+.sprog-inbox--row-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.32rem;
+    padding: 0.48rem 0.96rem;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0.64rem;
+    background: #ffffff;
+    color: var(--gh-text, #1f2328);
+    font: inherit;
+    font-size: 1.12rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s;
+}
+
+.sprog-inbox--row-action:hover {
+    background: var(--gh-hover, #eaeef2);
+    border-color: color-mix(in srgb, var(--gh-text, #1f2328) 22%, var(--gh-border, #d0d7de));
+}
+
+.sprog-inbox--row-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Status-spezifische Akzentfarben am Border-Left, damit die Wirkung des
+   Buttons schon vor dem Klick erkennbar ist (→ Übersetzt wird blau, →
+   Freigeben grün etc.). */
+.sprog-inbox--row-action--translated   { border-left: 3px solid var(--sprog-status-translated, #3b82f6); }
+.sprog-inbox--row-action--needs_review { border-left: 3px solid var(--sprog-status-needs_review, #d97706); }
+.sprog-inbox--row-action--revise       { border-left: 3px solid var(--sprog-status-revise,       #a855f7); }
+.sprog-inbox--row-action--approved     { border-left: 3px solid var(--sprog-status-approved, #10b981); }
+.sprog-inbox--row-action--draft        { border-left: 3px solid var(--sprog-status-draft, #f59e0b); }
+.sprog-inbox--row-action--stale        { border-left: 3px solid var(--sprog-status-stale, #ef4444); }
+.sprog-inbox--row-action--missing      { border-left: 3px solid var(--sprog-status-missing, #94a3b8); }
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--key-input {
+        background: #0d1117;
+        color: #f1f5f9;
+    }
+    .sprog-inbox--row-action {
+        background: #0d1117;
+        color: #e6edf3;
+    }
+}
+
+/*
+ * Legende & Workflow — Klapp-Block zwischen Intro und Toolbar. Default zu;
+ * für Onboarding und gelegentliches Nachschlagen. Bewusst leise im Design,
+ * damit es die Liste nicht überstrahlt.
+ */
+.sprog-inbox--legend {
+    margin-bottom: 1.6rem;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0.96rem;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.sprog-inbox--legend-summary {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    padding: 0.96rem 1.28rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: 1.28rem;
+    font-weight: 500;
+    color: var(--gh-text, #1f2328);
+    user-select: none;
+}
+
+.sprog-inbox--legend-summary::-webkit-details-marker,
+.sprog-inbox--legend-summary::marker {
+    display: none;
+}
+
+.sprog-inbox--legend-summary:hover {
+    background: var(--gh-hover, #eaeef2);
+}
+
+.sprog-inbox--legend-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.92rem;
+    height: 1.92rem;
+    border-radius: 50%;
+    background: var(--sprog-color-accent, #2563eb);
+    color: #ffffff;
+    font-family: serif;
+    font-size: 1.28rem;
+    font-style: italic;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.sprog-inbox--legend-summary .sprog-inbox--chevron {
+    margin-left: auto;
+}
+
+.sprog-inbox--legend[open] .sprog-inbox--legend-summary .sprog-inbox--chevron {
+    transform: rotate(180deg);
+}
+
+.sprog-inbox--legend-body {
+    display: grid;
+    grid-template-columns: minmax(24rem, 1fr) minmax(24rem, 1fr);
+    gap: 1.6rem 2.4rem;
+    padding: 1.28rem 1.6rem 1.6rem;
+    border-top: 1px solid var(--gh-border, #d0d7de);
+}
+
+.sprog-inbox--legend-section:first-child {
+    grid-row: span 2;
+}
+
+.sprog-inbox--legend-heading {
+    margin: 0 0 0.96rem;
+    font-size: 1.12rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.064rem;
+    color: var(--gh-muted, #59636e);
+}
+
+.sprog-inbox--legend-statuses {
+    margin: 0;
+    display: grid;
+    gap: 0.64rem;
+}
+
+.sprog-inbox--legend-status {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    align-items: center;
+    gap: 1.28rem;
+}
+
+.sprog-inbox--legend-status dt {
+    margin: 0;
+}
+
+.sprog-inbox--legend-status dd {
+    margin: 0;
+    color: var(--gh-text, #1f2328);
+    font-size: 1.28rem;
+    line-height: 1.4;
+}
+
+.sprog-inbox--legend-text {
+    margin: 0;
+    color: var(--gh-text, #1f2328);
+    font-size: 1.28rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 56em) {
+    .sprog-inbox--legend-body {
+        grid-template-columns: 1fr;
+    }
+    .sprog-inbox--legend-section:first-child {
+        grid-row: auto;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--legend {
+        background: #0d1117;
+        border-color: #30363d;
+    }
+    .sprog-inbox--legend-body {
+        border-top-color: #30363d;
+    }
+}
+
+/*
+ * Notes-Block oben im aufgeklappten Akkordeon — Hinweis auf die hinterlegte
+ * unit-notes. Gut sichtbar (gelblicher Hintergrund), aber nicht laut.
+ */
+.sprog-inbox--notes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.64rem;
+    margin: 0 0 0.96rem;
+    padding: 0.96rem 1.28rem;
+    background: #fff8e1;
+    border: 1px solid #f0d97a;
+    border-radius: 0.64rem;
+    color: #4d3a00;
+    font-size: 1.28rem;
+}
+
+.sprog-inbox--notes-label {
+    font-weight: 600;
+    color: #6a5300;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--notes {
+        background: #2a2310;
+        border-color: #6a5300;
+        color: #f5e3a8;
+    }
+
+    .sprog-inbox--notes-label {
+        color: #f5d268;
+    }
+}
+
+/*
+ * Dark-Mode-Variante der gleichen Override-Regeln.
+ */
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox,
+    .sprog-inbox--unit,
+    .sprog-inbox--list,
+    .sprog-inbox--list-header {
+        background: #0d1117;
+    }
+
+    .sprog-inbox--unit[open] {
+        background: #161b22;
+    }
+}
+
+/*
+ * ============================================================================
+ * Feinschliff v3 – Padding, einheitliche Cells, Row-Layout, Auto-Grow
+ * ============================================================================
+ */
+
+.sprog-inbox {
+    padding: 1.92rem;
+}
+
+/* List-Header bekommt jetzt einen Hintergrund, damit er sich klar von der
+ * darunterliegenden weißen Liste absetzt. */
+.sprog-inbox--list-header {
+    background: #f6f8fa;
+}
+
+/*
+ * Toolbar-Cells (Sprache / Quelle / Status) — einheitliche Höhe, padding,
+ * Chevron rechts, ganzer Bereich klickbar. Der echte <select> liegt
+ * absolut transparent darüber; visible Content rendert das Label.
+ */
+.sprog-inbox--toolbar-cell {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    min-height: 3.2rem;
+    padding: 0 1.12rem;
+    background: #ffffff;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0.96rem;
+    cursor: pointer;
+    color: var(--gh-text, #1f2328);
+    line-height: 1;
+}
+
+.sprog-inbox--toolbar-cell:hover {
+    background: var(--gh-hover, #eaeef2);
+}
+
+.sprog-inbox--toolbar-cell-label {
+    font-size: 1.12rem;
+    color: var(--gh-muted, #59636e);
+    font-weight: 600;
+    pointer-events: none;
+}
+
+.sprog-inbox--toolbar-cell-value {
+    font-size: 1.28rem;
+    color: var(--gh-text, #1f2328);
+    pointer-events: none;
+}
+
+/*
+ * Native <select> als unsichtbares Overlay über die ganze Cell — damit
+ * ein Klick irgendwo auf die Pill den nativen Dropdown öffnet (Browser-
+ * Default nur bei Klick direkt aufs select-Element).
+ */
+.sprog-inbox--toolbar-cell-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    border: 0;
+    background: transparent;
+    color: transparent;     /* Inhalt unsichtbar — wir rendern den im span */
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    font: inherit;
+    opacity: 0;             /* doppelt sicher für nicht-Webkit */
+}
+
+.sprog-inbox--toolbar-cell-input:focus-visible + .sprog-inbox--chevron,
+.sprog-inbox--toolbar-cell:focus-within {
+    outline: 2px solid var(--sprog-focus, #6366f1);
+    outline-offset: 2px;
+}
+
+/*
+ * Status-Dropdown — als <details>. Hier ist `<summary>` selbst die Pill
+ * (mit denselben Cell-Stilen), `<details>` der bloße Wrapper. So bekommt
+ * der Dropdown-Trigger exakt die gleiche Höhe + Padding wie die Selects.
+ */
+.sprog-inbox--toolbar-cell--dropdown {
+    /* <details> IST die Pill — Click irgendwo öffnet das popup (geht via
+       <summary> mit display: contents, das die clickable-Semantik behält).
+       So gibt es keine Höhen-Differenz zwischen details und summary, und der
+       Hover-Background bedeckt die komplette Cell ohne sichtbare Lücken. */
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    height: 3.2rem;
+    min-height: 3.2rem;
+    padding: 0 1.12rem;
+    background: #ffffff;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0.96rem;
+    cursor: pointer;
+    color: var(--gh-text, #1f2328);
+    line-height: 1;
+    box-sizing: border-box;
+}
+
+.sprog-inbox--toolbar-cell--dropdown:hover {
+    background: var(--gh-hover, #eaeef2);
+}
+
+/* Focus-Style fürs <details> selbst — weil das <summary> via display: contents
+   keine eigene Layout-Box hat, würde der native focus-outline am summary
+   nicht sichtbar. Wir setzen den Outline aufs <details>. */
+.sprog-inbox--toolbar-cell--dropdown:focus-visible {
+    outline: 2px solid var(--sprog-color-accent, #2563eb);
+    outline-offset: 2px;
+}
+
+/*
+ * <summary> tritt aus dem Layout zurück (display: contents) — seine spans
+ * werden direkt Flex-Children des <details>. Click-Toggle bleibt nativ
+ * funktional, weil der Browser das summary-Element trotzdem als Toggle-Target
+ * registriert.
+ */
+.sprog-inbox--toolbar-cell-summary {
+    display: contents;
+    cursor: pointer;
+    list-style: none;
+}
+
+.sprog-inbox--toolbar-cell-summary::-webkit-details-marker,
+.sprog-inbox--toolbar-cell-summary::marker {
+    display: none;
+}
+
+/* SVG-Chevron als block element ausgeben, sonst zieht baseline-Alignment
+   im inline-context unsichtbaren Spielraum mit hoch. */
+.sprog-inbox--chevron svg {
+    display: block;
+}
+
+.sprog-inbox--toolbar-cell-summary:hover {
+    background: var(--gh-hover, #eaeef2);
+}
+
+.sprog-inbox--toolbar-cell-summary::-webkit-details-marker,
+.sprog-inbox--toolbar-cell-summary::marker {
+    display: none;
+}
+
+/*
+ * Chevron — einheitliches Aussehen für Toolbar-Cells, Status-Dropdown,
+ * Unit-Akkordeon. Das SVG ist 12×12 mit `currentColor`-Fill, hier
+ * leicht abgedunkelt und sanft rotierbar.
+ */
+.sprog-inbox--chevron {
+    display: inline-flex;
+    align-items: center;
+    color: var(--gh-muted, #59636e);
+    transition: transform 0.15s ease;
+    pointer-events: none;       /* clicks gehen durch zur Cell/Summary */
+    margin-left: auto;          /* schiebt Chevron in der Cell nach rechts */
+}
+
+.sprog-inbox--unit[open] > .sprog-inbox--unit-summary .sprog-inbox--chevron,
+.sprog-inbox--toolbar-cell--dropdown[open] .sprog-inbox--chevron {
+    transform: rotate(180deg);
+}
+
+/*
+ * Row-Layout im Akkordeon — Header links (Code/Name/Status-Badge),
+ * Body rechts (Textarea + Feedback). Auf schmalen Viewports stapeln
+ * sich beide Spalten.
+ */
+.sprog-inbox--rows .sprog-inbox--row {
+    display: grid;
+    grid-template-columns: minmax(16rem, 20rem) 1fr;
+    gap: 1.6rem;
+    align-items: start;
+    padding: 0.96rem 0;
+    border-bottom: 1px dashed var(--gh-border, #d0d7de);
+}
+
+/*
+ * Row-Head bekommt die gleiche Mindesthöhe wie die einzeilige Textarea (38px)
+ * und zentriert seinen Inhalt — dadurch liegen Sprach-Pille und Textarea-
+ * Mittellinie exakt auf einer Höhe. Bei aufgewachsener Textarea bleibt der
+ * Head an der oberen ersten Zeile (visuell „neben dem ersten Wort").
+ */
+.sprog-inbox--rows .sprog-inbox--row-head {
+    min-height: 3.8rem;
+    align-items: center;
+}
+
+.sprog-inbox--rows .sprog-inbox--row-head {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.64rem;
+}
+
+.sprog-inbox--row-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+/*
+ * Textarea — einzeilig per default (rows="1"), wächst per JS bis max-rows.
+ * Resize handle ausblenden, overflow erst sichtbar wenn max erreicht ist
+ * (das setzt das JS dann inline).
+ */
+.sprog-inbox--rows .sprog-inbox--textarea {
+    /* Einzeilig 38px Höhe (= 3.8rem bei 10px html). Auto-Grow hebt das
+       Limit beim Tippen via inline-style; min-height bleibt Untergrenze. */
+    min-height: 3.8rem;
+    height: auto;
+    padding: 0.64rem 0.96rem;
+    resize: none;
+    overflow: hidden;
+    font-size: 1.5rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 48em) {
+    .sprog-inbox--rows .sprog-inbox--row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/*
+ * Konflikt-Warnung im Summary: kleines Dreieck mit Ausrufezeichen vor dem
+ * Key/Context. Nur sichtbar, wenn der Server pro Unit einen Konflikt-Hint
+ * mitgegeben hat (z.B. doppelte Auflösung wegen Punkt-Trenner-Ambiguität).
+ * Title-Attribut erklärt im Tooltip, warum der Eintrag nicht greift.
+ */
+.sprog-inbox--conflict-flag {
+    display: inline-flex;
+    align-items: center;
+    color: var(--sprog-status-stale, #ef4444);
+    cursor: help;
+}
+
+.sprog-inbox--conflict-flag svg {
+    display: block;
+}
+
+/*
+ * Context-Anzeige im Summary: "page.about / title".
+ * Vor dem Key steht der frei vergebene Bereich als zarter Pfad-Indicator,
+ * getrennt durch einen schmalen Slash. Nur sichtbar wenn context !== ''.
+ */
+.sprog-inbox--context {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.28rem;
+    font-weight: 500;
+    color: var(--gh-muted, #59636e);
+}
+
+.sprog-inbox--context-sep {
+    color: var(--gh-muted, #59636e);
+    opacity: 0.6;
+    margin: 0 0.16rem;
+}
+
+/*
+ * Unit-Edit-Modal (natives <dialog>).
+ * Stift im Akkordeon öffnet das Modal mit Key + Bereich + Notiz.
+ */
+.sprog-inbox--unit-modal {
+    width: min(56rem, 92vw);
+    padding: 0;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 1.28rem;
+    background: #ffffff;
+    color: var(--gh-text, #1f2328);
+    box-shadow: 0 1.6rem 3.2rem rgba(15 23 42 / 24%);
+}
+
+/* Backdrop (nur in Browsern mit ::backdrop-Support) */
+.sprog-inbox--unit-modal::backdrop {
+    background: rgba(15 23 42 / 50%);
+    backdrop-filter: blur(0.32rem);
+}
+
+.sprog-inbox--unit-modal-form {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sprog-inbox--unit-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    padding: 1.6rem 2rem;
+    border-bottom: 1px solid var(--gh-border, #d0d7de);
+}
+
+.sprog-inbox--unit-modal-title {
+    margin: 0;
+    flex: 1;
+    font-size: 1.76rem;
+    font-weight: 600;
+    color: var(--gh-text, #1f2328);
+}
+
+.sprog-inbox--unit-modal-close {
+    width: 3.2rem;
+    height: 3.2rem;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--gh-muted, #59636e);
+    cursor: pointer;
+    font-size: 2.4rem;
+    line-height: 1;
+    border-radius: 0.64rem;
+}
+
+.sprog-inbox--unit-modal-close:hover,
+.sprog-inbox--unit-modal-close:focus-visible {
+    background: var(--gh-hover, #eaeef2);
+    color: var(--gh-text, #1f2328);
+}
+
+.sprog-inbox--unit-modal-body {
+    padding: 1.6rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+}
+
+.sprog-inbox--unit-modal-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.48rem;
+}
+
+.sprog-inbox--unit-modal-label {
+    font-size: 1.12rem;
+    font-weight: 600;
+    color: var(--gh-muted, #59636e);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.sprog-inbox--unit-modal-readonly {
+    padding: 0.64rem 0.96rem;
+    background: var(--sprog-surface-muted, #f1f5f9);
+    border-radius: 0.64rem;
+    color: var(--gh-text, #1f2328);
+    font-size: 1.36rem;
+    font-family: inherit;
+}
+
+.sprog-inbox--unit-modal-input,
+.sprog-inbox--unit-modal-textarea {
+    padding: 0.8rem 1.12rem;
+    border: 1px solid var(--gh-border, #d0d7de);
+    border-radius: 0.64rem;
+    background: #ffffff;
+    color: var(--gh-text, #1f2328);
+    font: inherit;
+    font-size: 1.44rem;
+    line-height: 1.4;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.sprog-inbox--unit-modal-textarea {
+    resize: vertical;
+    min-height: 7.2rem;
+    font-family: inherit;
+}
+
+.sprog-inbox--unit-modal-input:focus-visible,
+.sprog-inbox--unit-modal-textarea:focus-visible {
+    outline: 0.32rem solid rgba(37 99 235 / 22%);
+    outline-offset: 0;
+    border-color: var(--sprog-color-accent, #2563eb);
+}
+
+.sprog-inbox--unit-modal-hint {
+    font-size: 1.12rem;
+    color: var(--gh-muted, #59636e);
+    line-height: 1.4;
+}
+
+.sprog-inbox--unit-modal-hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--sprog-surface-muted, #f1f5f9);
+    padding: 0 0.32rem;
+    border-radius: 0.32rem;
+}
+
+.sprog-inbox--unit-modal-error {
+    margin: 0;
+    padding: 0.96rem 1.28rem;
+    background: rgba(239 68 68 / 10%);
+    border: 1px solid var(--sprog-status-stale, #ef4444);
+    border-radius: 0.64rem;
+    color: var(--sprog-status-stale, #ef4444);
+    font-size: 1.28rem;
+}
+
+.sprog-inbox--unit-modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.96rem;
+    padding: 1.28rem 2rem;
+    border-top: 1px solid var(--gh-border, #d0d7de);
+    background: var(--gh-bg, #f6f8fa);
+    border-bottom-left-radius: 1.28rem;
+    border-bottom-right-radius: 1.28rem;
+}
+
+.sprog-inbox--unit-modal-cancel {
+    padding: 0.64rem 1.6rem;
+    background: transparent;
+    border: 0;
+    color: var(--gh-muted, #59636e);
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.28rem;
+    border-radius: 0.64rem;
+}
+
+.sprog-inbox--unit-modal-cancel:hover,
+.sprog-inbox--unit-modal-cancel:focus-visible {
+    color: var(--gh-text, #1f2328);
+    background: var(--gh-hover, #eaeef2);
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox--unit-modal {
+        background: #0d1117;
+        border-color: #30363d;
+        color: #e6edf3;
+    }
+    .sprog-inbox--unit-modal-header,
+    .sprog-inbox--unit-modal-footer {
+        border-color: #30363d;
+    }
+    .sprog-inbox--unit-modal-footer {
+        background: #161b22;
+    }
+    .sprog-inbox--unit-modal-input,
+    .sprog-inbox--unit-modal-textarea {
+        background: #0b1220;
+        color: #f1f5f9;
+        border-color: #30363d;
+    }
+    .sprog-inbox--unit-modal-readonly {
+        background: #1f2937;
+        color: #cbd5e1;
+    }
+}
+
+
+

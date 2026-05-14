@@ -12,6 +12,8 @@
 namespace Symfony\Component\Serializer\Mapping\Loader;
 
 use Symfony\Component\Config\Util\XmlUtils;
+use Symfony\Component\PropertyAccess\Exception\InvalidPropertyPathException;
+use Symfony\Component\PropertyAccess\PropertyPath;
 use Symfony\Component\Serializer\Exception\MappingException;
 use Symfony\Component\Serializer\Mapping\AttributeMetadata;
 use Symfony\Component\Serializer\Mapping\ClassDiscriminatorMapping;
@@ -27,20 +29,13 @@ class XmlFileLoader extends FileLoader
     /**
      * An array of {@class \SimpleXMLElement} instances.
      *
-     * @var \SimpleXMLElement[]|null
+     * @var array<class-string, \SimpleXMLElement>|null
      */
-    private $classes;
+    private ?array $classes = null;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function loadClassMetadata(ClassMetadataInterface $classMetadata)
+    public function loadClassMetadata(ClassMetadataInterface $classMetadata): bool
     {
-        if (null === $this->classes) {
-            $this->classes = $this->getClassesFromXml();
-        }
-
-        if (!$this->classes) {
+        if (!$this->classes ??= $this->getClassesFromXml()) {
             return false;
         }
 
@@ -71,8 +66,16 @@ class XmlFileLoader extends FileLoader
                     $attributeMetadata->setSerializedName((string) $attribute['serialized-name']);
                 }
 
+                if (isset($attribute['serialized-path'])) {
+                    try {
+                        $attributeMetadata->setSerializedPath(new PropertyPath((string) $attribute['serialized-path']));
+                    } catch (InvalidPropertyPathException) {
+                        throw new MappingException(\sprintf('The "serialized-path" value must be a valid property path for the attribute "%s" of the class "%s".', $attributeName, $classMetadata->getName()));
+                    }
+                }
+
                 if (isset($attribute['ignore'])) {
-                    $attributeMetadata->setIgnore((bool) $attribute['ignore']);
+                    $attributeMetadata->setIgnore(XmlUtils::phpize($attribute['ignore']));
                 }
 
                 foreach ($attribute->context as $node) {
@@ -104,7 +107,8 @@ class XmlFileLoader extends FileLoader
 
                 $classMetadata->setClassDiscriminatorMapping(new ClassDiscriminatorMapping(
                     (string) $xml->{'discriminator-map'}->attributes()->{'type-property'},
-                    $mapping
+                    $mapping,
+                    $xml->{'discriminator-map'}->attributes()->{'default-type'} ?? null
                 ));
             }
 
@@ -117,15 +121,11 @@ class XmlFileLoader extends FileLoader
     /**
      * Return the names of the classes mapped in this file.
      *
-     * @return string[] The classes names
+     * @return class-string[]
      */
-    public function getMappedClasses()
+    public function getMappedClasses(): array
     {
-        if (null === $this->classes) {
-            $this->classes = $this->getClassesFromXml();
-        }
-
-        return array_keys($this->classes);
+        return array_keys($this->classes ??= $this->getClassesFromXml());
     }
 
     /**
@@ -144,6 +144,9 @@ class XmlFileLoader extends FileLoader
         return simplexml_import_dom($dom);
     }
 
+    /**
+     * @return array<class-string, \SimpleXMLElement>
+     */
     private function getClassesFromXml(): array
     {
         $xml = $this->parseFile($this->file);

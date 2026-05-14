@@ -16,4 +16,33 @@ namespace Symfony\Component\Serializer\Exception;
  */
 class MissingConstructorArgumentsException extends RuntimeException
 {
+    /**
+     * @param string[]          $missingArguments
+     * @param class-string|null $class
+     */
+    public function __construct(
+        string $message,
+        int $code = 0,
+        ?\Throwable $previous = null,
+        private array $missingArguments = [],
+        private ?string $class = null,
+    ) {
+        parent::__construct($message, $code, $previous);
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getMissingConstructorArguments(): array
+    {
+        return $this->missingArguments;
+    }
+
+    /**
+     * @return class-string|null
+     */
+    public function getClass(): ?string
+    {
+        return $this->class;
+    }
 }

@@ -16,31 +16,24 @@ use Symfony\Component\HttpKernel\CacheWarmer\CacheWarmerInterface;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryCompiler;
 use Symfony\Component\Serializer\Mapping\Factory\ClassMetadataFactoryInterface;
 
+trigger_deprecation('symfony/serializer', '7.3', 'The "%s" class is deprecated.', CompiledClassMetadataCacheWarmer::class);
+
 /**
  * @author Fabien Bourigault <bourigaultfabien@gmail.com>
+ *
+ * @deprecated since Symfony 7.3
  */
 final class CompiledClassMetadataCacheWarmer implements CacheWarmerInterface
 {
-    private $classesToCompile;
-
-    private $classMetadataFactory;
-
-    private $classMetadataFactoryCompiler;
-
-    private $filesystem;
-
-    public function __construct(array $classesToCompile, ClassMetadataFactoryInterface $classMetadataFactory, ClassMetadataFactoryCompiler $classMetadataFactoryCompiler, Filesystem $filesystem)
-    {
-        $this->classesToCompile = $classesToCompile;
-        $this->classMetadataFactory = $classMetadataFactory;
-        $this->classMetadataFactoryCompiler = $classMetadataFactoryCompiler;
-        $this->filesystem = $filesystem;
+    public function __construct(
+        private readonly array $classesToCompile,
+        private readonly ClassMetadataFactoryInterface $classMetadataFactory,
+        private readonly ClassMetadataFactoryCompiler $classMetadataFactoryCompiler,
+        private readonly Filesystem $filesystem,
+    ) {
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function warmUp($cacheDir)
+    public function warmUp(string $cacheDir, ?string $buildDir = null): array
     {
         $metadatas = [];
 
@@ -55,10 +48,7 @@ final class CompiledClassMetadataCacheWarmer implements CacheWarmerInterface
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function isOptional()
+    public function isOptional(): bool
     {
         return true;
     }

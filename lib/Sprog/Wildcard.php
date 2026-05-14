@@ -14,6 +14,7 @@ namespace Sprog;
 use rex;
 use rex_clang;
 use rex_sql;
+use Sprog\Service\WildcardLookupService;
 
 class Wildcard
 {
@@ -43,7 +44,10 @@ class Wildcard
      * @param string $wildcard
      * @param int    $clang_id
      *
-     * @return string
+     * @return string|false replacement string when found, false otherwise.
+     *                      v1-API contract — bewusst beibehalten, weil Caller in
+     *                      Bestandscode auf "if (false === Wildcard::get(...))"
+     *                      prüfen.
      */
     public static function get($wildcard, $clang_id = null)
     {
@@ -55,16 +59,15 @@ class Wildcard
             $clang_id = \rex_clang::getCurrentId();
         }
 
-        $clangBase = \rex_config::get('sprog', 'clang_base');
-        if (isset($clangBase[$clang_id])) {
-            $clang_id = $clangBase[$clang_id];
+        // Lookup geht über den v2-Service: zuerst sprog_unit/sprog_translation,
+        // bei Leere fällt er auf rex_sprog_wildcard zurück. clang_base-Auflösung
+        // erledigt der Service selbst — daher hier nicht mehr doppelt mappen.
+        $replacement = WildcardLookupService::instance()->findOne((string) $wildcard, (int) $clang_id);
+
+        if (null !== $replacement && '' !== trim((string) $replacement)) {
+            return self::replace($wildcard, $replacement);
         }
 
-        $sql = \rex_sql::factory();
-        $sql->setQuery('SELECT `replace` FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id = :clang_id AND `wildcard` = :wildcard', ['clang_id' => $clang_id, 'wildcard' => trim($wildcard)]);
-        if ($sql->getRows() == 1 && trim($sql->getValue('replace')) != '') {
-            return self::replace($wildcard, $sql->getValue('replace'));
-        }
         return false;
     }
 
@@ -91,20 +94,11 @@ class Wildcard
             $clang_id = \rex_clang::getCurrentId();
         }
 
-        $clangBase = \rex_config::get('sprog', 'clang_base');
-        if (isset($clangBase[$clang_id])) {
-            $clang_id = $clangBase[$clang_id];
-        }
-
-        $sql = \rex_sql::factory();
-        $items = $sql->getArray('SELECT `wildcard`, `replace` FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id = :clang_id', ['clang_id' => $clang_id]);
-        if (count($items) < 1) {
+        // Eine Query für alle Wildcards der Sprache; v2 zuerst, sonst v1.
+        // clang_base wird im Service aufgelöst.
+        $wildcards = WildcardLookupService::instance()->allForClang((int) $clang_id);
+        if ([] === $wildcards) {
             return $content;
-        }
-
-        $wildcards = [];
-        foreach ($items as $item) {
-            $wildcards[$item['wildcard']] = $item['replace'];
         }
 
         $filters = \rex::getProperty('SPROG_FILTER', []);

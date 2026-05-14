@@ -11,31 +11,45 @@
 
 namespace Sprog;
 
+use Sprog\Matcher\TokenMatcher;
+use Sprog\Service\AbbreviationLookupService;
+
 class Abbreviation
 {
+    /**
+     * Wraps every configured abbreviation found inside the <body> with
+     * <abbr title="…">…</abbr>.
+     *
+     * Datenquelle ab v2 ist der AbbreviationLookupService (v2 zuerst,
+     * v1 als Fallback). Das Replacement-Pattern ist 1:1 das v1-Pattern,
+     * aber alle Abbreviations laufen in einem einzigen Pass über den
+     * TokenMatcher — statt N preg_replace_callback-Aufrufen.
+     */
     public static function parse($content, $clangId = null)
     {
         if (!\rex_clang::exists($clangId)) {
             $clangId = \rex_clang::getCurrentId();
         }
 
-        preg_match_all('|<body[^>]*>(.*)</body>|msU', $content, $body);
-
-        if (!isset($body[1][0])) {
+        $map = AbbreviationLookupService::instance()->allForClang((int) $clangId);
+        if ([] === $map) {
             return $content;
         }
-        $bodyReplace = $body[1][0];
 
-        $sql = \rex_sql::factory();
-        $sql->setQuery('SELECT `abbreviation`, `text` FROM '.\rex::getTable('sprog_abbreviation').' WHERE `clang_id` = :clangId AND `status` = 1', ['clangId' => $clangId]);
-        $items = $sql->getArray();
+        $matcher = new TokenMatcher(
+            $map,
+            static function (string $matched, mixed $text): string {
+                if (!is_string($text) || '' === $text) {
+                    return $matched;
+                }
 
-        foreach ($items as $item) {
-            $bodyReplace = preg_replace_callback('|(?!<[^<>]*?)(?<![?.&])\b'.$item['abbreviation'].'\b(?!:)(?![^<>]*?>)|msU', function ($matches) use ($item) {
-                    return sprintf('<abbr title="%s">%s</abbr>', rex_escape($item['text']), $matches[0]);
-            }, $bodyReplace);
-        }
+                // rex_escape schützt den title-Attribut-Wert gegen XSS aus
+                // dem Übersetzungs-Text — wichtig, weil $text aus der DB
+                // kommt und ggf. von Übersetzern bearbeitet wurde.
+                return sprintf('<abbr title="%s">%s</abbr>', rex_escape($text), $matched);
+            },
+        );
 
-        return str_replace($body[1][0], $bodyReplace, $content);
+        return $matcher->replaceInBody((string) $content);
     }
 }

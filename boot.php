@@ -18,6 +18,7 @@ class_alias('\Sprog\Wildcard', 'Wildcard');
 
 rex_perm::register('sprog[abbreviation]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
+rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
 
 // number of articles to generate per single request
 // increase to speed up (reduces number of requests but extends script time)
@@ -41,6 +42,7 @@ if (count($filters) > 0) {
 if (!rex::isBackend()) {
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
     \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
+    \rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceForeignwords', rex_extension::NORMAL);
 }
 
 if (rex::isBackend() && rex::getUser()) {
@@ -100,21 +102,32 @@ if (rex::isBackend() && rex::getUser()) {
 
 
         if (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('sprog[abbreviation]')) {
+            // getPageObject() liefert NULL, wenn die Subpage nicht (mehr) im Tree
+            // ist — z.B. wenn das Addon zwar aktiv, aber nicht installiert ist
+            // oder die package.yml-Definition noch nicht durchgelaufen ist.
+            // Vorher hat boot.php hier mit "Call to a member function
+            // addSubpage() on null" gecrasht.
             $page = \rex_be_controller::getPageObject('sprog/abbreviation');
-            $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
+            if (null !== $page) {
+                $clang_id = str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
 
-            foreach (rex_clang::getAll() as $id => $clang) {
-                if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
-                    $bePage = new rex_be_page('clang'.$id, $clang->getName());
-                    $bePage->setSubPath(rex_path::addon('sprog', 'pages/abbreviation.php'));
-                    $bePage->setIsActive($id == $clang_id);
-                    $page->addSubpage($bePage);
+                foreach (rex_clang::getAll() as $id => $clang) {
+                    if (rex::getUser()->getComplexPerm('clang')->hasPerm($id)) {
+                        $bePage = new rex_be_page('clang'.$id, $clang->getName());
+                        $bePage->setSubPath(rex_path::addon('sprog', 'pages/abbreviation.php'));
+                        $bePage->setIsActive($id == $clang_id);
+                        $page->addSubpage($bePage);
+                    }
                 }
             }
         }
 
         if (rex::getUser()->isAdmin() || rex::getUser()->hasPerm('sprog[wildcard]')) {
             $page = \rex_be_controller::getPageObject('sprog/wildcard');
+            if (null === $page) {
+                // siehe Hinweis oben — Subpage nicht im Tree, also nichts zu tun.
+                return;
+            }
 
             if (Wildcard::isClangSwitchMode()) {
                 $hrefParams = [];
@@ -189,4 +202,39 @@ if (rex::isBackend() && rex::getUser()) {
 
     rex_view::addCssFile($this->getAssetsUrl('css/sprog.css?v='.$this->getVersion()));
     rex_view::addJsFile($this->getAssetsUrl('js/sprog.js?v='.$this->getVersion()));
+
+    // v2-Assets: CSS globalsicher (Block-Klassen mit Präfix), JS nur dort,
+    // wo die jeweilige Backend-Seite es tatsächlich braucht.
+    rex_view::addCssFile($this->getAssetsUrl('css/sprog.v2.css?v=' . $this->getVersion()));
+
+    if ('migration' === rex_be_controller::getCurrentPagePart(2)) {
+        // defer, damit das external Script garantiert NACH dem Inline-
+        // <script>window.sprogMigration = {...}</script>-Block in der
+        // pages/migration.php ausgeführt wird. Ohne defer läuft das external
+        // Script schon im <head> und stolpert über ein noch nicht gesetztes
+        // window.sprogMigration -> click-Handler werden nie gebunden.
+        rex_view::addJsFile(
+            $this->getAssetsUrl('js/sprog.migration.js?v=' . $this->getVersion()),
+            [rex_view::JS_DEFERED => true],
+        );
+    }
+
+    if ('editor' === rex_be_controller::getCurrentPagePart(2)) {
+        // defer aus dem gleichen Grund wie bei sprog.migration.js: erst
+        // den Inline-window.sprogEditor-Block parsen, dann den Click-Handler-
+        // Code laufen lassen.
+        rex_view::addJsFile(
+            $this->getAssetsUrl('js/sprog.editor.js?v=' . $this->getVersion()),
+            [rex_view::JS_DEFERED => true],
+        );
+    }
+
+    if ('inbox' === rex_be_controller::getCurrentPagePart(2)) {
+        // Inline-Editor + Auto-Save fürs Akkordeon. Defer, weil das Script
+        // window.sprogInbox als Inline-Block referenziert (s. pages/inbox.php).
+        rex_view::addJsFile(
+            $this->getAssetsUrl('js/sprog.inbox.js?v=' . $this->getVersion()),
+            [rex_view::JS_DEFERED => true],
+        );
+    }
 }

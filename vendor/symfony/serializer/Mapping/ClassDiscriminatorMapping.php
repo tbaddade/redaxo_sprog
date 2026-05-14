@@ -16,14 +16,14 @@ namespace Symfony\Component\Serializer\Mapping;
  */
 class ClassDiscriminatorMapping
 {
-    private $typeProperty;
-    private $typesMapping;
-
-    public function __construct(string $typeProperty, array $typesMapping = [])
-    {
-        $this->typeProperty = $typeProperty;
-        $this->typesMapping = $typesMapping;
-
+    /**
+     * @param array<string, string> $typesMapping
+     */
+    public function __construct(
+        private readonly string $typeProperty,
+        private array $typesMapping = [],
+        private readonly ?string $defaultType = null,
+    ) {
         uasort($this->typesMapping, static function (string $a, string $b): int {
             if (is_a($a, $b, true)) {
                 return -1;
@@ -47,13 +47,10 @@ class ClassDiscriminatorMapping
         return $this->typesMapping[$type] ?? null;
     }
 
-    /**
-     * @param object|string $object
-     */
-    public function getMappedObjectType($object): ?string
+    public function getMappedObjectType(object|string $object): ?string
     {
         foreach ($this->typesMapping as $type => $typeClass) {
-            if (is_a($object, $typeClass)) {
+            if (is_a($object, $typeClass, true)) {
                 return $type;
             }
         }
@@ -64,5 +61,10 @@ class ClassDiscriminatorMapping
     public function getTypesMapping(): array
     {
         return $this->typesMapping;
+    }
+
+    public function getDefaultType(): ?string
+    {
+        return $this->defaultType;
     }
 }
