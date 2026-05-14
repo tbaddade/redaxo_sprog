@@ -17,6 +17,22 @@ use Sprog\Service\AbbreviationLookupService;
 class Abbreviation
 {
     /**
+     * Statischer Holder für die LookupService-Instanz innerhalb eines Requests
+     * — analog zu Compat\Wildcard. Service ist DI, der Caller hält ihn zentral.
+     */
+    private static ?AbbreviationLookupService $lookupService = null;
+
+    private static function lookupService(): AbbreviationLookupService
+    {
+        return self::$lookupService ??= AbbreviationLookupService::create();
+    }
+
+    public static function resetLookupService(): void
+    {
+        self::$lookupService = null;
+    }
+
+    /**
      * Wraps every configured abbreviation found inside the <body> with
      * <abbr title="…">…</abbr>.
      *
@@ -31,7 +47,7 @@ class Abbreviation
             $clangId = \rex_clang::getCurrentId();
         }
 
-        $map = AbbreviationLookupService::instance()->allForClang((int) $clangId);
+        $map = self::lookupService()->allForClang((int) $clangId);
         if ([] === $map) {
             return $content;
         }

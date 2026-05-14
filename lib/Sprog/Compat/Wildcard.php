@@ -18,6 +18,25 @@ use Sprog\Service\WildcardLookupService;
 
 class Wildcard
 {
+    /**
+     * Statischer Holder für die LookupService-Instanz innerhalb eines Requests.
+     * Der Service selbst nutzt kein Singleton-Pattern mehr — sein Cache lebt
+     * in einer normalen Instanz. Damit alle Aufrufe aus parse()/get() in
+     * derselben Request denselben Cache treffen, hält Wildcard die Instanz
+     * hier zentral. Tests können sie via `resetLookupService()` zurücksetzen.
+     */
+    private static ?WildcardLookupService $lookupService = null;
+
+    private static function lookupService(): WildcardLookupService
+    {
+        return self::$lookupService ??= WildcardLookupService::create();
+    }
+
+    public static function resetLookupService(): void
+    {
+        self::$lookupService = null;
+    }
+
     public static function getOpenTag()
     {
         return \rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
@@ -62,7 +81,7 @@ class Wildcard
         // Lookup geht über den v2-Service: zuerst sprog_unit/sprog_translation,
         // bei Leere fällt er auf rex_sprog_wildcard zurück. clang_base-Auflösung
         // erledigt der Service selbst — daher hier nicht mehr doppelt mappen.
-        $replacement = WildcardLookupService::instance()->findOne((string) $wildcard, (int) $clang_id);
+        $replacement = self::lookupService()->findOne((string) $wildcard, (int) $clang_id);
 
         if (null !== $replacement && '' !== trim((string) $replacement)) {
             return self::replace($wildcard, $replacement);
@@ -96,7 +115,7 @@ class Wildcard
 
         // Eine Query für alle Wildcards der Sprache; v2 zuerst, sonst v1.
         // clang_base wird im Service aufgelöst.
-        $wildcards = WildcardLookupService::instance()->allForClang((int) $clang_id);
+        $wildcards = self::lookupService()->allForClang((int) $clang_id);
         if ([] === $wildcards) {
             return $content;
         }

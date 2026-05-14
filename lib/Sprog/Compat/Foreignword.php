@@ -28,13 +28,29 @@ use Sprog\Service\ForeignwordLookupService;
  */
 class Foreignword
 {
+    /**
+     * Statischer Holder für die LookupService-Instanz innerhalb eines Requests
+     * — analog zu Compat\Wildcard / Compat\Abbreviation.
+     */
+    private static ?ForeignwordLookupService $lookupService = null;
+
+    private static function lookupService(): ForeignwordLookupService
+    {
+        return self::$lookupService ??= ForeignwordLookupService::create();
+    }
+
+    public static function resetLookupService(): void
+    {
+        self::$lookupService = null;
+    }
+
     public static function parse($content, $clangId = null)
     {
         if (!\rex_clang::exists($clangId)) {
             $clangId = \rex_clang::getCurrentId();
         }
 
-        $map = ForeignwordLookupService::instance()->allForClang((int) $clangId);
+        $map = self::lookupService()->allForClang((int) $clangId);
         if ([] === $map) {
             return $content;
         }

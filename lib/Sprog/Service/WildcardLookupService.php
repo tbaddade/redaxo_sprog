@@ -42,21 +42,25 @@ final class WildcardLookupService
      */
     private array $cacheByClang = [];
 
-    private static ?self $instance = null;
-
-    public static function instance(): self
+    /**
+     * Factory-Method analog zu TranslationService / MigrationService / MtService —
+     * konsistentes DI-Pattern statt Singleton. Der Caller hält die Instanz so
+     * lange er den Cache nutzen will (z.B. eine Compat\Wildcard-Klasse einmal
+     * pro Request).
+     */
+    public static function create(): self
     {
-        return self::$instance ??= new self();
+        return new self();
     }
 
     /**
-     * Verwirft den Request-Cache. Wird vom TranslationService nach Schreib-
-     * Operationen aufgerufen (sobald Schicht 2 vorhanden ist) und steht
-     * für Tests zur Verfügung.
+     * Verwirft den Request-Cache der konkreten Instanz. Hauptsächlich für
+     * Tests und für Caller, die den Cache nach einem Write invalidieren
+     * wollen (siehe Cache-Invalidation-Hooks).
      */
-    public static function reset(): void
+    public function reset(): void
     {
-        self::$instance = null;
+        $this->cacheByClang = [];
     }
 
     /**

@@ -33,16 +33,23 @@ final class ForeignwordLookupService
     /** @var array<int, array<string, string>> */
     private array $cacheByClang = [];
 
-    private static ?self $instance = null;
-
-    public static function instance(): self
+    /**
+     * Factory-Method analog zu den anderen v2-Services. DI statt Singleton —
+     * der Caller (typischerweise Sprog\Compat\Foreignword) hält die Instanz
+     * so lange er den Request-Cache nutzt.
+     */
+    public static function create(): self
     {
-        return self::$instance ??= new self();
+        return new self();
     }
 
-    public static function reset(): void
+    /**
+     * Verwirft den instanz-eigenen Request-Cache. Für Tests und für Caller,
+     * die nach einem Write die Lookups invalidieren wollen.
+     */
+    public function reset(): void
     {
-        self::$instance = null;
+        $this->cacheByClang = [];
     }
 
     /**
