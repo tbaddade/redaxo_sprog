@@ -1,8 +1,8 @@
 parameters:
-    # Konzept zielt auf Level 8. Bis REDAXO-Stubs (z.B. via rexstan) eingebunden
-    # sind, läuft die Analyse mit reduziertem Level — sonst überwiegen
-    # false-positives für rex_*-Klassen, die per scanDirectories aufgelöst werden.
-    level: 5
+    # Level 8 ist der Zielwert; REDAXO-Core wird per scanDirectories für die
+    # rex_*-Klassen aufgelöst. Bei Bedarf später durch staabm/redaxo-phpstan
+    # ersetzen — für die aktuelle Tranche reichen die Core-Stubs aus.
+    level: 8
 
     phpVersion: 80400
 

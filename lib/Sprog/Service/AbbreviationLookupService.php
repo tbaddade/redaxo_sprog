@@ -7,6 +7,7 @@ namespace Sprog\Service;
 use rex;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
 /**
@@ -22,23 +23,40 @@ use Sprog\Enum\Status;
  *   Sobald migrierte Daten im Spiel sind, werden auch ehemals inaktive
  *   Abbreviations im Frontend gerendert. Wird in der Migrations-UI markiert.
  */
-final class AbbreviationLookupService
+final class AbbreviationLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_ABBREVIATION = 'abbreviation';
 
     /** @var array<int, array<string, string>> */
     private array $cacheByClang = [];
 
-    private static ?self $instance = null;
-
-    public static function instance(): self
+    /**
+     * Factory-Method analog zu den anderen v2-Services. DI statt Singleton —
+     * der Caller (typischerweise Sprog\Compat\Abbreviation) hält die Instanz
+     * so lange er den Request-Cache nutzt.
+     */
+    public static function create(): self
     {
-        return self::$instance ??= new self();
+        return new self();
     }
 
-    public static function reset(): void
+    /**
+     * Verwirft den instanz-eigenen Request-Cache. Für Tests und für Caller,
+     * die nach einem Write die Lookups invalidieren wollen.
+     */
+    public function reset(): void
     {
-        self::$instance = null;
+        $this->cacheByClang = [];
+    }
+
+    public function invalidateClang(int $clangId): void
+    {
+        unset($this->cacheByClang[$clangId]);
+    }
+
+    public function invalidateAll(): void
+    {
+        $this->reset();
     }
 
     /**

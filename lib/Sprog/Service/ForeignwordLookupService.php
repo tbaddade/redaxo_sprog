@@ -8,6 +8,7 @@ use JsonException;
 use rex;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
 /**
@@ -24,7 +25,7 @@ use Sprog\Enum\Status;
  * lang lebt in v2 auf Unit-Ebene als Tag "lang:xx". In v1 ist es per Row;
  * Migrationsstrategie siehe ForeignwordMigrator.
  */
-final class ForeignwordLookupService
+final class ForeignwordLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_FOREIGNWORD = 'foreignword';
     private const LANG_REGEX            = '/^[a-z]{2}$/';
@@ -33,16 +34,33 @@ final class ForeignwordLookupService
     /** @var array<int, array<string, string>> */
     private array $cacheByClang = [];
 
-    private static ?self $instance = null;
-
-    public static function instance(): self
+    /**
+     * Factory-Method analog zu den anderen v2-Services. DI statt Singleton —
+     * der Caller (typischerweise Sprog\Compat\Foreignword) hält die Instanz
+     * so lange er den Request-Cache nutzt.
+     */
+    public static function create(): self
     {
-        return self::$instance ??= new self();
+        return new self();
     }
 
-    public static function reset(): void
+    /**
+     * Verwirft den instanz-eigenen Request-Cache. Für Tests und für Caller,
+     * die nach einem Write die Lookups invalidieren wollen.
+     */
+    public function reset(): void
     {
-        self::$instance = null;
+        $this->cacheByClang = [];
+    }
+
+    public function invalidateClang(int $clangId): void
+    {
+        unset($this->cacheByClang[$clangId]);
+    }
+
+    public function invalidateAll(): void
+    {
+        $this->reset();
     }
 
     /**

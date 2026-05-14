@@ -9,11 +9,13 @@
     },
     "require-dev": {
         "phpstan/phpstan": "^2.0",
-        "friendsofphp/php-cs-fixer": "^3.65"
+        "friendsofphp/php-cs-fixer": "^3.65",
+        "phpunit/phpunit": "^11.5"
     },
     "scripts": {
         "lint": "php-cs-fixer fix --dry-run --diff",
         "fix": "php-cs-fixer fix",
-        "analyse": "phpstan analyse --memory-limit=1G"
+        "analyse": "phpstan analyse --memory-limit=1G",
+        "test": "phpunit"
     }
 }

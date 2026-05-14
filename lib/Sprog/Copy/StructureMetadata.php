@@ -2,16 +2,16 @@
 
 namespace Sprog\Copy;
 
-use Sprog\Sync;
+use Sprog\Compat\Sync;
 
 class StructureMetadata extends Copy
 {
     /**
      * Prepare all cache items.
      *
-     * @return array
+     * @return array{articles: array{count: int, params: mixed, items: list<list<array{0: int, 1: int}>>}}
      */
-    public static function prepareItems()
+    public static function prepareItems(): array
     {
         return [
             'articles' => self::getChunkedArray(),
@@ -21,9 +21,9 @@ class StructureMetadata extends Copy
     /**
      * Get all pages being online.
      *
-     * @return array
+     * @return list<int>
      */
-    public static function getArticleIds()
+    public static function getArticleIds(): array
     {
         $articles = [];
         if (\rex_addon::get('structure')->isAvailable()) {
@@ -31,7 +31,7 @@ class StructureMetadata extends Copy
             $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');
 
             foreach ($items as $item) {
-                $articles[] = $item['id'];
+                $articles[] = (int) $item['id'];
             }
         }
         return $articles;
@@ -40,9 +40,9 @@ class StructureMetadata extends Copy
     /**
      * Get all pages and languages as chunked array including 'count' and 'items'.
      *
-     * @return array
+     * @return array{count: int, params: mixed, items: list<list<array{0: int, 1: int}>>}
      */
-    public static function getChunkedArray()
+    public static function getChunkedArray(): array
     {
         $articles = self::getArticleIds();
 
@@ -53,17 +53,17 @@ class StructureMetadata extends Copy
             }
         }
 
-        $chunkedItems = self::chunk($items, \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
+        $chunkedItems = self::chunk($items, (int) \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
         return ['count' => count($items), 'params' => rex_request('params', 'array', 0), 'items' => $chunkedItems];
     }
 
     /**
-     * @param array $items
-     * @param array $params
+     * @param list<array{0: int, 1: int}>                            $items
+     * @param array{clangFrom: int, clangTo: int, fields: string}    $params
      *
-     * @return array
+     * @return list<array{0: int, 1: int}>
      */
-    public static function fire(array $items, array $params)
+    public static function fire(array $items, array $params): array
     {
         if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
             foreach ($items as $item) {

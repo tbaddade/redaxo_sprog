@@ -378,23 +378,9 @@ foreach ($translations->findByUnit($unitId) as $t) {
     $currentTranslations[$t->clangId] = $t;
 }
 
-/**
- * Erlaubte Übergänge pro Status — gespiegelt zu TranslationService::assertCanTransition,
- * aber hier UI-spezifisch reduziert (nur die für den Reviewer-Alltag relevanten
- * Forward-Aktionen, keine destruktiven Rückwege).
- *
- * @return list<Status>
- */
-$availableTransitions = static function (Status $current): array {
-    return match ($current) {
-        Status::Missing      => [],
-        Status::Draft        => [Status::NeedsReview, Status::Translated],
-        Status::Translated   => [Status::Approved, Status::NeedsReview],
-        Status::NeedsReview  => [Status::Approved, Status::Translated],
-        Status::Approved     => [Status::NeedsReview],
-        Status::Stale        => [Status::Translated],
-    };
-};
+// Forward-Workflow für die Status-Buttons: zentral im Status-Enum
+// (`Status::userActions()`). Single source of truth, geteilt mit der
+// Inbox-Page und dem TranslationService-Validator.
 
 ?>
 <article class="sprog-editor">
@@ -589,7 +575,7 @@ $availableTransitions = static function (Status $current): array {
                     <?php endif; ?>
 
                     <?php if (null !== $current && $hasPerm) :
-                        $transitions = $availableTransitions($status);
+                        $transitions = $status->userActions();
                         if ([] !== $transitions) : ?>
                             <div class="sprog-editor--actions" role="group" aria-label="<?= rex_i18n::msg('sprog_editor_actions_label') ?>">
                                 <?php foreach ($transitions as $targetStatus) : ?>
@@ -625,7 +611,7 @@ $availableTransitions = static function (Status $current): array {
         if (!$user->getComplexPerm('clang')->hasPerm($clangId)) {
             continue;
         }
-        foreach ($availableTransitions($current->status) as $targetStatus) :
+        foreach ($current->status->userActions() as $targetStatus) :
     ?>
         <form
             id="transition-<?= rex_escape((string) $current->id) ?>-<?= rex_escape($targetStatus->value) ?>"

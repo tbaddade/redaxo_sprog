@@ -2,14 +2,13 @@
 
 declare(strict_types=1);
 
-use Sprog\Enum\Status;
+use Sprog\Controller\Inbox\InboxRouter;
 use Sprog\Enum\SourceType;
-use Sprog\Exception\OptimisticLockException;
+use Sprog\Enum\Status;
 use Sprog\Model\TranslationListFilter;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
 use Sprog\Service\TranslationListService;
-use Sprog\Service\TranslationService;
 use Sprog\Service\WildcardConflictService;
 use Sprog\Support\Labels;
 
@@ -20,379 +19,15 @@ if (null === $user) {
 
 /*
  |---------------------------------------------------------------------------
- | JSON-Endpoint: Auto-Save aus dem Akkordeon
+ | JSON-Endpoints
  |---------------------------------------------------------------------------
- | Vor jedem HTML-Rendering, damit kein Output-Buffer-Müll im Response landet.
- | CSRF ist pro Unit gebunden (sprog_inbox_save_<unit_id>), damit ein gestohlenes
- | Token nicht für andere Units missbraucht werden kann.
+ | Die vier Inbox-Endpoints (save / update_unit / create_unit / transition)
+ | leben jeweils in einer Controller-Klasse unter Sprog\Controller\Inbox\*.
+ | Bekannte $func-Werte werden vom Router dispatched; der Controller exitet
+ | via JsonResponse direkt. Unbekannte $func fallen durch zum HTML-Render.
  */
 $func = (string) rex_request('func', 'string', '');
-
-/**
- * Forward-Workflow für die Status-Buttons im Akkordeon (und für den
- * Transition-Endpoint, damit die Response nach einem Übergang die nun
- * erlaubten Buttons direkt mitliefert).
- *
- * Reihenfolge nach Muster: nächster natürlicher Workflow-Schritt zuerst.
- * Bei NeedsReview: zuerst „Überarbeiten" (Reject-Aktion), danach „Freigegeben"
- * (Accept) — bewusste Reihenfolge des Nutzers.
- *
- *   Entwurf      → Übersetzt | Review nötig
- *   Übersetzt    → Review nötig | Freigegeben
- *   Review nötig → Überarbeiten | Freigegeben
- *   Überarbeiten → Übersetzt | Review nötig
- *   Freigegeben  → Review nötig (re-open)
- *   Veraltet     → Übersetzt | Review nötig
- *
- * @return list<Status>
- */
-$availableTransitions = static function (Status $current): array {
-    return match ($current) {
-        Status::Missing      => [],
-        Status::Draft        => [Status::Translated, Status::NeedsReview],
-        Status::Translated   => [Status::NeedsReview, Status::Approved],
-        Status::NeedsReview  => [Status::Revise, Status::Approved],
-        Status::Revise       => [Status::Translated, Status::NeedsReview],
-        Status::Approved     => [Status::NeedsReview],
-        Status::Stale        => [Status::Translated, Status::NeedsReview],
-    };
-};
-
-if ('save' === $func) {
-    rex_response::cleanOutputBuffers();
-
-    $unitId  = (int) rex_request('unit_id', 'int', 0);
-    $clangId = (int) rex_request('clang_id', 'int', 0);
-
-    $csrf = rex_csrf_token::factory('sprog_inbox_save_' . $unitId);
-    if (!$csrf->isValid()) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_csrf')]);
-        exit;
-    }
-    if ($unitId <= 0 || !rex_clang::exists($clangId)) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_bad_request')]);
-        exit;
-    }
-    if (!$user->getComplexPerm('clang')->hasPerm($clangId)) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_no_perm')]);
-        exit;
-    }
-
-    $units = new UnitRepository();
-    $unit  = $units->find($unitId);
-    if (null === $unit) {
-        rex_response::setStatus(rex_response::HTTP_NOT_FOUND);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_unit_missing')]);
-        exit;
-    }
-
-    $value            = (string) rex_request('value', 'string', '');
-    $expectedRevision = (int) rex_request('revision', 'int', 0);
-
-    try {
-        $saved = TranslationService::create()->updateValue(
-            $unit,
-            $clangId,
-            $value,
-            $user->getId(),
-            expectedRevision: $expectedRevision,
-        );
-
-        // Erlaubte Folge-Übergänge mitliefern, damit das JS die Status-Buttons
-        // nach Auto-Save (Auto-Status missing → draft, stale → translated, etc.)
-        // direkt aktualisieren kann.
-        $nextAvailable = array_map(
-            static fn (Status $s) => $s->value,
-            $availableTransitions($saved->status),
-        );
-
-        rex_response::sendJson([
-            'ok'                   => true,
-            'revision'             => $saved->revision,
-            'status'               => $saved->status->value,
-            'statusLabel'          => Labels::status($saved->status),
-            'value_hash'           => $saved->valueHash,
-            'updatedAt'            => null !== $saved->updatedAt ? $saved->updatedAt->format('c') : null,
-            'availableTransitions' => $nextAvailable,
-        ]);
-    } catch (OptimisticLockException) {
-        // rex_response hat keine HTTP_CONFLICT-Konstante — Status als Literal.
-        rex_response::setStatus('409 Conflict');
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_conflict')]);
-    } catch (Throwable $e) {
-        rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
-        rex_response::sendJson(['ok' => false, 'error' => $e->getMessage()]);
-    }
-    exit;
-}
-
-/*
- |---------------------------------------------------------------------------
- | JSON-Endpoint: Inline-Edit des Unit-Key (Stift-Button im Akkordeon)
- |---------------------------------------------------------------------------
- | Eigene Permission `sprog[unit_edit]`. Admin geht immer durch.
- | namespace, source_type, source_ref, tags, notes bleiben unverändert —
- | nur unit_key wird inline editiert. Längen- und UNIQUE-Check inline,
- | identisch zur Logik in editor.php (action=update_unit).
- */
-if ('update_unit' === $func) {
-    rex_response::cleanOutputBuffers();
-
-    $unitId = (int) rex_request('unit_id', 'int', 0);
-
-    $csrf = rex_csrf_token::factory('sprog_inbox_save_' . $unitId);
-    if (!$csrf->isValid()) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_csrf')]);
-        exit;
-    }
-
-    if (!($user->isAdmin() || $user->hasPerm('sprog[unit_edit]'))) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_editor_unit_edit_no_perm')]);
-        exit;
-    }
-
-    $units = new UnitRepository();
-    $unit  = $units->find($unitId);
-    if (null === $unit) {
-        rex_response::setStatus(rex_response::HTTP_NOT_FOUND);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_unit_missing')]);
-        exit;
-    }
-
-    $newKey     = trim((string) rex_request('unit_key', 'string', ''));
-    $newContext = trim((string) rex_request('context', 'string', ''));
-    $newNotesIn = trim((string) rex_request('notes', 'string', ''));
-    $newNotes   = '' === $newNotesIn ? null : $newNotesIn;
-
-    if ('' === $newKey) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_key_empty')]);
-        exit;
-    }
-    if (strlen($newKey) > 191) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_key_too_long')]);
-        exit;
-    }
-    if (strlen($newContext) > 64) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_unit_context_too_long')]);
-        exit;
-    }
-    if (null !== $newNotes && strlen($newNotes) > 500) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_notes_too_long')]);
-        exit;
-    }
-
-    // UNIQUE-Vorprüfung nur, wenn sich Key oder Context tatsächlich ändert —
-    // sonst würde der eigene Eintrag als „Duplikat" gewertet.
-    if ($newKey !== $unit->unitKey || $newContext !== $unit->context) {
-        $existing = $units->findByKey($unit->namespace, $newKey, $newContext);
-        if (null !== $existing && $existing->id !== $unit->id) {
-            rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-            rex_response::sendJson([
-                'ok'    => false,
-                'error' => rex_i18n::msg('sprog_editor_unit_edit_duplicate', $newKey, $unit->namespace),
-            ]);
-            exit;
-        }
-    }
-
-    try {
-        $units->save(new \Sprog\Model\Unit(
-            id:         $unit->id,
-            namespace:  $unit->namespace,
-            unitKey:    $newKey,
-            context:    $newContext,
-            sourceType: $unit->sourceType,
-            sourceRef:  $unit->sourceRef,
-            sourceHash: $unit->sourceHash,
-            tags:       $unit->tags,
-            notes:      $newNotes,
-        ));
-        rex_response::sendJson([
-            'ok'       => true,
-            'unit_key' => $newKey,
-            'context'  => $newContext,
-            'notes'    => $newNotes,
-        ]);
-    } catch (Throwable $e) {
-        rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
-        rex_response::sendJson(['ok' => false, 'error' => $e->getMessage()]);
-    }
-    exit;
-}
-
-/*
- |---------------------------------------------------------------------------
- | JSON-Endpoint: Neue Unit anlegen (Modal im Create-Mode)
- |---------------------------------------------------------------------------
- | CSRF-Token ist hier inbox-global (sprog_inbox_create), nicht pro Unit,
- | weil bei Anlage noch keine ID existiert. Permissions: any logged-in User
- | mit sprog-Zugriff darf eine Unit anlegen — dieselbe Schwelle wie auf
- | pages/create.php, die parallel weiter erreichbar bleibt.
- */
-if ('create_unit' === $func) {
-    rex_response::cleanOutputBuffers();
-
-    $csrf = rex_csrf_token::factory('sprog_inbox_create');
-    if (!$csrf->isValid()) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_csrf')]);
-        exit;
-    }
-
-    $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
-    $unitKeyInput   = trim((string) rex_request('unit_key', 'string', ''));
-    $contextInput   = trim((string) rex_request('context', 'string', ''));
-    $notesInput     = trim((string) rex_request('notes', 'string', ''));
-    $notesValue     = '' === $notesInput ? null : $notesInput;
-
-    if (!in_array($namespaceInput, SourceType::values(), true)) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_namespace_invalid')]);
-        exit;
-    }
-    if ('' === $unitKeyInput) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_key_empty')]);
-        exit;
-    }
-    if (strlen($unitKeyInput) > 191) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_key_too_long')]);
-        exit;
-    }
-    if (strlen($contextInput) > 64) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_unit_context_too_long')]);
-        exit;
-    }
-    if (null !== $notesValue && strlen($notesValue) > 500) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_create_notes_too_long')]);
-        exit;
-    }
-
-    $units = new UnitRepository();
-    if (null !== $units->findByKey($namespaceInput, $unitKeyInput, $contextInput)) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson([
-            'ok'    => false,
-            'error' => rex_i18n::msg('sprog_create_duplicate', $unitKeyInput, $namespaceInput),
-        ]);
-        exit;
-    }
-
-    try {
-        $sourceType = SourceType::tryFrom($namespaceInput);
-        $unit = $units->save(new \Sprog\Model\Unit(
-            id:         null,
-            namespace:  $namespaceInput,
-            unitKey:    $unitKeyInput,
-            context:    $contextInput,
-            sourceType: $sourceType,
-            sourceRef:  null,
-            sourceHash: null,
-            tags:       [],
-            notes:      $notesValue,
-        ));
-
-        // Pro definierter clang eine missing-Row anlegen — spiegelt das Verhalten
-        // von pages/create.php (siehe TranslationService::ensureRowsForUnit).
-        TranslationService::create()->ensureRowsForUnit($unit);
-
-        rex_response::sendJson([
-            'ok'      => true,
-            'unit_id' => $unit->id,
-        ]);
-    } catch (Throwable $e) {
-        rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
-        rex_response::sendJson(['ok' => false, 'error' => $e->getMessage()]);
-    }
-    exit;
-}
-
-/*
- |---------------------------------------------------------------------------
- | JSON-Endpoint: Status-Übergang einer Übersetzung (Buttons im Akkordeon)
- |---------------------------------------------------------------------------
- | Whitelist-Validierung erfolgt im TranslationService::assertCanTransition.
- | Hier nur: CSRF + clang-Perm + Translation-Belongs-To-Unit-Check.
- */
-if ('transition' === $func) {
-    rex_response::cleanOutputBuffers();
-
-    $unitId         = (int) rex_request('unit_id', 'int', 0);
-    $translationId  = (int) rex_request('translation_id', 'int', 0);
-    $targetStatusIn = (string) rex_request('target_status', 'string', '');
-    $expectedRev    = (int) rex_request('revision', 'int', 0);
-
-    $csrf = rex_csrf_token::factory('sprog_inbox_save_' . $unitId);
-    if (!$csrf->isValid()) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_csrf')]);
-        exit;
-    }
-    if ($translationId <= 0 || !in_array($targetStatusIn, Status::values(), true)) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_bad_request')]);
-        exit;
-    }
-
-    $translations = new \Sprog\Repository\TranslationRepository();
-    $translation  = $translations->find($translationId);
-    if (null === $translation || $translation->unitId !== $unitId) {
-        rex_response::setStatus(rex_response::HTTP_NOT_FOUND);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_unit_missing')]);
-        exit;
-    }
-    if (!$user->getComplexPerm('clang')->hasPerm($translation->clangId)) {
-        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_no_perm')]);
-        exit;
-    }
-
-    try {
-        $saved = TranslationService::create()->transition(
-            $translationId,
-            Status::from($targetStatusIn),
-            $user->getId(),
-            expectedRevision: $expectedRev,
-        );
-        // Erlaubte Folge-Übergänge für den neuen Status mitliefern, damit
-        // das JS die Buttons im Akkordeon disabled/enabled umschalten kann
-        // statt sie zu entfernen.
-        $nextAvailable = array_map(
-            static fn (Status $s) => $s->value,
-            $availableTransitions($saved->status),
-        );
-
-        rex_response::sendJson([
-            'ok'                   => true,
-            'revision'             => $saved->revision,
-            'status'               => $saved->status->value,
-            'statusLabel'          => Labels::status($saved->status),
-            'availableTransitions' => $nextAvailable,
-        ]);
-    } catch (OptimisticLockException) {
-        rex_response::setStatus('409 Conflict');
-        rex_response::sendJson(['ok' => false, 'error' => rex_i18n::rawMsg('sprog_inbox_save_conflict')]);
-    } catch (InvalidArgumentException $e) {
-        rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
-        rex_response::sendJson(['ok' => false, 'error' => $e->getMessage()]);
-    } catch (Throwable $e) {
-        rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
-        rex_response::sendJson(['ok' => false, 'error' => $e->getMessage()]);
-    }
-    exit;
-}
+InboxRouter::dispatch($func, $user);
 
 /*
  |---------------------------------------------------------------------------
@@ -529,8 +164,6 @@ $endpointTransition = rex_url::currentBackendPage(['func' => 'transition'], fals
 // Deep-Link auf die Editor-Page.
 $canEditUnit = $user->isAdmin() || $user->hasPerm('sprog[unit_edit]');
 
-// $availableTransitions wurde bereits am Datei-Anfang definiert (für den
-// Transition-Endpoint). Die Closure-Variable steht hier weiter zur Verfügung.
 
 // Gemeinsame Anzeige-Werte für die Toolbar-Cells (Sprache + Quelle).
 // Liegen in der Cell sichtbar — der eigentliche <select> ist absolut darüber
@@ -915,7 +548,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                          * Reload aktiv. Reibungsloses Arbeiten ohne DOM-Flicker.
                                          */
                                         if ($hasPerm && null !== $tr) :
-                                            $activeTransitions = $availableTransitions($status);
+                                            $activeTransitions = $status->userActions();
                                             $workflowButtons   = [
                                                 Status::Translated,
                                                 Status::NeedsReview,

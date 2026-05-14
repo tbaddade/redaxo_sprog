@@ -6,6 +6,7 @@ namespace Sprog\Service;
 
 use InvalidArgumentException;
 use rex_clang;
+use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
 use Sprog\Model\Translation;
@@ -34,11 +35,16 @@ final class TranslationService
         private readonly TranslationRepository $translations,
         private readonly UnitRepository $units,
         private readonly ActivityService $activity,
+        private readonly ?CacheInvalidationBus $cacheBus = null,
     ) {
     }
 
     /**
      * Convenience-Factory, falls kein DI-Container im Aufrufer existiert.
+     * Hängt automatisch am App-weiten Default-Bus, an dem sich die Lookup-
+     * Services beim ersten Aufruf registrieren — so funktioniert Cache-
+     * Invalidation out-of-the-box ohne dass die Pages den Bus selbst kennen
+     * müssen. Tests können einen eigenen Bus via Constructor injizieren.
      */
     public static function create(): self
     {
@@ -46,6 +52,7 @@ final class TranslationService
             new TranslationRepository(),
             new UnitRepository(),
             ActivityService::create(),
+            CacheInvalidationBus::default(),
         );
     }
 
@@ -229,6 +236,8 @@ final class TranslationService
             );
         }
 
+        $this->cacheBus?->clangChanged($saved->clangId);
+
         return $saved;
     }
 
@@ -294,6 +303,8 @@ final class TranslationService
             to:            $saved->status,
         );
 
+        $this->cacheBus?->clangChanged($saved->clangId);
+
         return $saved;
     }
 
@@ -327,51 +338,32 @@ final class TranslationService
             staleCount: $staleCount,
         );
 
+        // Stale-Markierung trifft alle clangs der Unit auf einmal — full
+        // invalidate ist günstiger als pro clang einzeln zu feuern.
+        $this->cacheBus?->allChanged();
+
         return $staleCount;
     }
 
     /**
-     * @param array<int, Status> $allowed
+     * Validiert einen Status-Übergang gegen die Whitelist im Status-Enum.
+     * Wirft `InvalidArgumentException`, wenn der Übergang nicht erlaubt ist.
+     *
+     * Die Whitelist selbst lebt in `Status::allowedNextStates()` — Single
+     * source of truth, von der auch die UI-Buttons (über `userActions()`)
+     * abgeleitet sind.
      */
-    private function isTransitionAllowed(Status $from, Status $to, array $allowed): bool
-    {
-        foreach ($allowed as $candidate) {
-            if ($candidate === $to) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function assertCanTransition(Status $from, Status $to): void
     {
-        if ($from === $to) {
-            // Idempotent — z.B. Approve auf bereits Approved.
+        if ($from->canTransitionTo($to)) {
             return;
         }
 
-        $allowed = match ($from) {
-            Status::Missing       => [Status::Draft, Status::Translated],
-            Status::Draft         => [Status::Translated, Status::NeedsReview, Status::Missing],
-            Status::Translated    => [Status::NeedsReview, Status::Approved, Status::Stale, Status::Draft],
-            // NeedsReview kann jetzt nicht mehr direkt zurück auf Translated —
-            // stattdessen geht das über Status::Revise (Reviewer fordert
-            // Überarbeitung an). Translated bleibt erreichbar, falls intern
-            // ein Service korrigiert (z.B. Stale-Auto-Recovery).
-            Status::NeedsReview   => [Status::Approved, Status::Revise, Status::Translated, Status::Stale, Status::Draft],
-            Status::Revise        => [Status::Draft, Status::Translated, Status::NeedsReview],
-            Status::Approved      => [Status::Stale, Status::NeedsReview],
-            Status::Stale         => [Status::Draft, Status::Translated, Status::NeedsReview],
-        };
-
-        if (!$this->isTransitionAllowed($from, $to, $allowed)) {
-            throw new InvalidArgumentException(sprintf(
-                'Status-Übergang "%s" → "%s" ist nicht erlaubt.',
-                $from->value,
-                $to->value,
-            ));
-        }
+        throw new InvalidArgumentException(sprintf(
+            'Status-Übergang "%s" → "%s" ist nicht erlaubt.',
+            $from->value,
+            $to->value,
+        ));
     }
 
     private function autoStatusForUpdate(Status $current, string $value): Status

@@ -72,4 +72,72 @@ enum Status: string
             self::Translated, self::Approved => false,
         };
     }
+
+    /**
+     * Vollständige Whitelist erlaubter Folge-Status.
+     *
+     * Wird sowohl im TranslationService genutzt (Validierung über
+     * `assertCanTransition`) als auch von Pages, um anzuzeigen, ob eine
+     * Aktion grundsätzlich möglich ist. Single source of truth.
+     *
+     * Enthält auch destruktive Rückwege (z.B. Translated → Draft) und
+     * System-induzierte Übergänge (Stale, Missing-Reset bei leerem Wert).
+     * Forward-Workflow-Buttons im UI verwenden stattdessen `userActions()`.
+     *
+     * @return list<Status>
+     */
+    public function allowedNextStates(): array
+    {
+        return match ($this) {
+            self::Missing      => [self::Draft, self::Translated],
+            self::Draft        => [self::Translated, self::NeedsReview, self::Missing],
+            self::Translated   => [self::NeedsReview, self::Approved, self::Stale, self::Draft],
+            self::NeedsReview  => [self::Approved, self::Revise, self::Translated, self::Stale, self::Draft],
+            self::Revise       => [self::Draft, self::Translated, self::NeedsReview],
+            self::Approved     => [self::Stale, self::NeedsReview],
+            self::Stale        => [self::Draft, self::Translated, self::NeedsReview],
+        };
+    }
+
+    /**
+     * UI-Subset von `allowedNextStates()`: nur die für den Reviewer-Alltag
+     * relevanten Vorwärts-Aktionen. Reihenfolge nach Muster „nächster
+     * natürlicher Workflow-Schritt zuerst, Alternativen danach".
+     *
+     * Die Reihenfolge bestimmt die Reihenfolge der Buttons im UI.
+     *
+     * Bewusst NICHT enthalten:
+     * - Status::Missing als Ziel (Auto-Reset über leeren Wert, nicht User-Aktion)
+     * - Status::Stale als Ziel (System-Status, wird per Hash-Detection gesetzt)
+     * - destruktive Rückwege auf Draft (Wert geht nicht verloren, aber das
+     *   Konzept „Reviewer wirft auf Draft zurück" hat seinen eigenen Status
+     *   `Revise`)
+     *
+     * @return list<Status>
+     */
+    public function userActions(): array
+    {
+        return match ($this) {
+            self::Missing      => [],
+            self::Draft        => [self::Translated, self::NeedsReview],
+            self::Translated   => [self::NeedsReview, self::Approved],
+            self::NeedsReview  => [self::Revise, self::Approved],
+            self::Revise       => [self::Translated, self::NeedsReview],
+            self::Approved     => [self::NeedsReview],
+            self::Stale        => [self::Translated, self::NeedsReview],
+        };
+    }
+
+    /**
+     * Prüft ohne Exception, ob der Übergang in der Whitelist liegt.
+     * Idempotenz (from == to) gilt als erlaubt.
+     */
+    public function canTransitionTo(Status $to): bool
+    {
+        if ($this === $to) {
+            return true;
+        }
+
+        return in_array($to, $this->allowedNextStates(), true);
+    }
 }
