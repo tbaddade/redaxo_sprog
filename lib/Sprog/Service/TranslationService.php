@@ -331,47 +331,24 @@ final class TranslationService
     }
 
     /**
-     * @param array<int, Status> $allowed
+     * Validiert einen Status-Übergang gegen die Whitelist im Status-Enum.
+     * Wirft `InvalidArgumentException`, wenn der Übergang nicht erlaubt ist.
+     *
+     * Die Whitelist selbst lebt in `Status::allowedNextStates()` — Single
+     * source of truth, von der auch die UI-Buttons (über `userActions()`)
+     * abgeleitet sind.
      */
-    private function isTransitionAllowed(Status $from, Status $to, array $allowed): bool
-    {
-        foreach ($allowed as $candidate) {
-            if ($candidate === $to) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private function assertCanTransition(Status $from, Status $to): void
     {
-        if ($from === $to) {
-            // Idempotent — z.B. Approve auf bereits Approved.
+        if ($from->canTransitionTo($to)) {
             return;
         }
 
-        $allowed = match ($from) {
-            Status::Missing       => [Status::Draft, Status::Translated],
-            Status::Draft         => [Status::Translated, Status::NeedsReview, Status::Missing],
-            Status::Translated    => [Status::NeedsReview, Status::Approved, Status::Stale, Status::Draft],
-            // NeedsReview kann jetzt nicht mehr direkt zurück auf Translated —
-            // stattdessen geht das über Status::Revise (Reviewer fordert
-            // Überarbeitung an). Translated bleibt erreichbar, falls intern
-            // ein Service korrigiert (z.B. Stale-Auto-Recovery).
-            Status::NeedsReview   => [Status::Approved, Status::Revise, Status::Translated, Status::Stale, Status::Draft],
-            Status::Revise        => [Status::Draft, Status::Translated, Status::NeedsReview],
-            Status::Approved      => [Status::Stale, Status::NeedsReview],
-            Status::Stale         => [Status::Draft, Status::Translated, Status::NeedsReview],
-        };
-
-        if (!$this->isTransitionAllowed($from, $to, $allowed)) {
-            throw new InvalidArgumentException(sprintf(
-                'Status-Übergang "%s" → "%s" ist nicht erlaubt.',
-                $from->value,
-                $to->value,
-            ));
-        }
+        throw new InvalidArgumentException(sprintf(
+            'Status-Übergang "%s" → "%s" ist nicht erlaubt.',
+            $from->value,
+            $to->value,
+        ));
     }
 
     private function autoStatusForUpdate(Status $current, string $value): Status

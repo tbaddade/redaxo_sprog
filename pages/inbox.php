@@ -28,35 +28,9 @@ if (null === $user) {
  */
 $func = (string) rex_request('func', 'string', '');
 
-/**
- * Forward-Workflow für die Status-Buttons im Akkordeon (und für den
- * Transition-Endpoint, damit die Response nach einem Übergang die nun
- * erlaubten Buttons direkt mitliefert).
- *
- * Reihenfolge nach Muster: nächster natürlicher Workflow-Schritt zuerst.
- * Bei NeedsReview: zuerst „Überarbeiten" (Reject-Aktion), danach „Freigegeben"
- * (Accept) — bewusste Reihenfolge des Nutzers.
- *
- *   Entwurf      → Übersetzt | Review nötig
- *   Übersetzt    → Review nötig | Freigegeben
- *   Review nötig → Überarbeiten | Freigegeben
- *   Überarbeiten → Übersetzt | Review nötig
- *   Freigegeben  → Review nötig (re-open)
- *   Veraltet     → Übersetzt | Review nötig
- *
- * @return list<Status>
- */
-$availableTransitions = static function (Status $current): array {
-    return match ($current) {
-        Status::Missing      => [],
-        Status::Draft        => [Status::Translated, Status::NeedsReview],
-        Status::Translated   => [Status::NeedsReview, Status::Approved],
-        Status::NeedsReview  => [Status::Revise, Status::Approved],
-        Status::Revise       => [Status::Translated, Status::NeedsReview],
-        Status::Approved     => [Status::NeedsReview],
-        Status::Stale        => [Status::Translated, Status::NeedsReview],
-    };
-};
+// Forward-Workflow für die Status-Buttons: die Whitelist liegt zentral im
+// Status-Enum (`Status::userActions()`). Single source of truth — assertCan-
+// Transition im Service nutzt die volle Liste, das UI nur dieses Subset.
 
 if ('save' === $func) {
     rex_response::cleanOutputBuffers();
@@ -106,7 +80,7 @@ if ('save' === $func) {
         // direkt aktualisieren kann.
         $nextAvailable = array_map(
             static fn (Status $s) => $s->value,
-            $availableTransitions($saved->status),
+            $saved->status->userActions(),
         );
 
         rex_response::sendJson([
@@ -371,7 +345,7 @@ if ('transition' === $func) {
         // statt sie zu entfernen.
         $nextAvailable = array_map(
             static fn (Status $s) => $s->value,
-            $availableTransitions($saved->status),
+            $saved->status->userActions(),
         );
 
         rex_response::sendJson([
@@ -529,8 +503,6 @@ $endpointTransition = rex_url::currentBackendPage(['func' => 'transition'], fals
 // Deep-Link auf die Editor-Page.
 $canEditUnit = $user->isAdmin() || $user->hasPerm('sprog[unit_edit]');
 
-// $availableTransitions wurde bereits am Datei-Anfang definiert (für den
-// Transition-Endpoint). Die Closure-Variable steht hier weiter zur Verfügung.
 
 // Gemeinsame Anzeige-Werte für die Toolbar-Cells (Sprache + Quelle).
 // Liegen in der Cell sichtbar — der eigentliche <select> ist absolut darüber
@@ -915,7 +887,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                          * Reload aktiv. Reibungsloses Arbeiten ohne DOM-Flicker.
                                          */
                                         if ($hasPerm && null !== $tr) :
-                                            $activeTransitions = $availableTransitions($status);
+                                            $activeTransitions = $status->userActions();
                                             $workflowButtons   = [
                                                 Status::Translated,
                                                 Status::NeedsReview,
