@@ -88,6 +88,29 @@ class Extension
 
     public static function clangAdded(\rex_extension_point $ep)
     {
+        $clangId = $ep->getParam('clang')->getId();
+
+        self::clangAddedV1($clangId);
+        self::clangAddedV2($clangId);
+    }
+
+    public static function clangDeleted(\rex_extension_point $ep)
+    {
+        $clangId = $ep->getParam('clang')->getId();
+
+        $deleteLang = \rex_sql::factory();
+        $deleteLang->setQuery('DELETE FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [$clangId]);
+
+        self::clangDeletedV2($clangId);
+    }
+
+    /**
+     * v1-Verhalten beibehalten: Wildcard-Rows der Start-Sprache für die
+     * neue clang replizieren. Bestandsinstallationen, die v2 (noch) nicht
+     * benutzen, sehen kein Verhaltens-Delta.
+     */
+    private static function clangAddedV1(int $clangId): void
+    {
         $firstLang = \rex_sql::factory();
         $firstLang->setQuery('SELECT * FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [\rex_clang::getStartId()]);
         $fields = $firstLang->getFieldnames();
@@ -99,9 +122,10 @@ class Extension
 
             foreach ($fields as $key => $value) {
                 if ($value == 'pid') {
-                    echo '';
-                } elseif ($value == 'clang_id') {
-                    $newLang->setValue('clang_id', $ep->getParam('clang')->getId());
+                    continue;
+                }
+                if ($value == 'clang_id') {
+                    $newLang->setValue('clang_id', $clangId);
                 } else {
                     $newLang->setValue($value, $firstLangEntry->getValue($value));
                 }
@@ -111,10 +135,50 @@ class Extension
         }
     }
 
-    public static function clangDeleted(\rex_extension_point $ep)
+    /**
+     * v2-Sync: pro existierender Unit eine missing-Translation für die neue
+     * Sprache anlegen. So bleibt die Inbox/Coverage konsistent — die neue
+     * clang taucht überall sofort als „fehlt" auf, statt dass der
+     * WildcardLookupService still auf den v1-Pfad zurückfällt und divergiert.
+     *
+     * INSERT IGNORE schützt vor Duplikaten am UNIQUE-Index (unit_id, clang_id),
+     * falls Migration und CLANG_ADDED in derselben Request-Reihenfolge laufen.
+     *
+     * Die v2-Tabellen können (noch) fehlen, wenn install.php noch nicht
+     * gelaufen ist — Try/Catch fängt das ab und das Addon-Verhalten reduziert
+     * sich auf v1.
+     */
+    private static function clangAddedV2(int $clangId): void
     {
-        $deleteLang = \rex_sql::factory();
-        $deleteLang->setQuery('DELETE FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [$ep->getParam('clang')->getId()]);
+        try {
+            \rex_sql::factory()->setQuery(
+                'INSERT IGNORE INTO '.\rex::getTable('sprog_translation').'
+                    (unit_id, clang_id, value, value_hash, source_hash_at_translation,
+                     status, revision, createdate, createuser, updatedate, updateuser)
+                 SELECT u.id, :clang_id, \'\', NULL, NULL, \'missing\', 0,
+                        NOW(), \'system\', NOW(), \'system\'
+                 FROM '.\rex::getTable('sprog_unit').' u',
+                ['clang_id' => $clangId],
+            );
+        } catch (\rex_sql_exception) {
+            // v2-Schema noch nicht installiert — kein Sync nötig.
+        }
+    }
+
+    /**
+     * v2-Cleanup: alle Translations der gelöschten Sprache entfernen. Spiegelt
+     * das v1-Verhalten (Wildcard-Rows der clang löschen) für die v2-Tabellen.
+     */
+    private static function clangDeletedV2(int $clangId): void
+    {
+        try {
+            \rex_sql::factory()->setQuery(
+                'DELETE FROM '.\rex::getTable('sprog_translation').' WHERE clang_id = :clang_id',
+                ['clang_id' => $clangId],
+            );
+        } catch (\rex_sql_exception) {
+            // v2-Schema noch nicht installiert — keine v2-Daten vorhanden.
+        }
     }
 
     public static function wildcardFormControlElement(\rex_extension_point $ep)
