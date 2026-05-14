@@ -7,6 +7,7 @@ namespace Sprog\Service;
 use rex;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
 /**
@@ -22,7 +23,7 @@ use Sprog\Enum\Status;
  *   Sobald migrierte Daten im Spiel sind, werden auch ehemals inaktive
  *   Abbreviations im Frontend gerendert. Wird in der Migrations-UI markiert.
  */
-final class AbbreviationLookupService
+final class AbbreviationLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_ABBREVIATION = 'abbreviation';
 
@@ -46,6 +47,16 @@ final class AbbreviationLookupService
     public function reset(): void
     {
         $this->cacheByClang = [];
+    }
+
+    public function invalidateClang(int $clangId): void
+    {
+        unset($this->cacheByClang[$clangId]);
+    }
+
+    public function invalidateAll(): void
+    {
+        $this->reset();
     }
 
     /**

@@ -11,6 +11,7 @@
 
 namespace Sprog\Compat;
 
+use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Matcher\TokenMatcher;
 use Sprog\Service\AbbreviationLookupService;
 
@@ -24,7 +25,13 @@ class Abbreviation
 
     private static function lookupService(): AbbreviationLookupService
     {
-        return self::$lookupService ??= AbbreviationLookupService::create();
+        if (null !== self::$lookupService) {
+            return self::$lookupService;
+        }
+        self::$lookupService = AbbreviationLookupService::create();
+        CacheInvalidationBus::default()->register(self::$lookupService);
+
+        return self::$lookupService;
     }
 
     public static function resetLookupService(): void

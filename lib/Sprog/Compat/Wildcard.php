@@ -14,6 +14,7 @@ namespace Sprog\Compat;
 use rex;
 use rex_clang;
 use rex_sql;
+use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Service\WildcardLookupService;
 
 class Wildcard
@@ -29,7 +30,16 @@ class Wildcard
 
     private static function lookupService(): WildcardLookupService
     {
-        return self::$lookupService ??= WildcardLookupService::create();
+        if (null !== self::$lookupService) {
+            return self::$lookupService;
+        }
+        self::$lookupService = WildcardLookupService::create();
+        // Registrierung am Default-Bus: sobald TranslationService einen
+        // Write macht und dessen create() den Default-Bus zieht, werden alle
+        // hier registrierten Lookup-Caches automatisch invalidiert.
+        CacheInvalidationBus::default()->register(self::$lookupService);
+
+        return self::$lookupService;
     }
 
     public static function resetLookupService(): void

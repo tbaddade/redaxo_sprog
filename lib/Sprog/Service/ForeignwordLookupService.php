@@ -8,6 +8,7 @@ use JsonException;
 use rex;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
 /**
@@ -24,7 +25,7 @@ use Sprog\Enum\Status;
  * lang lebt in v2 auf Unit-Ebene als Tag "lang:xx". In v1 ist es per Row;
  * Migrationsstrategie siehe ForeignwordMigrator.
  */
-final class ForeignwordLookupService
+final class ForeignwordLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_FOREIGNWORD = 'foreignword';
     private const LANG_REGEX            = '/^[a-z]{2}$/';
@@ -50,6 +51,16 @@ final class ForeignwordLookupService
     public function reset(): void
     {
         $this->cacheByClang = [];
+    }
+
+    public function invalidateClang(int $clangId): void
+    {
+        unset($this->cacheByClang[$clangId]);
+    }
+
+    public function invalidateAll(): void
+    {
+        $this->reset();
     }
 
     /**

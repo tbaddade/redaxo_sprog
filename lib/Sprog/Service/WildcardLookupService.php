@@ -8,6 +8,7 @@ use rex;
 use rex_config;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
 /**
@@ -29,7 +30,7 @@ use Sprog\Enum\Status;
  *
  * clang_base-Mapping bleibt 1:1 zum v1-Verhalten erhalten.
  */
-final class WildcardLookupService
+final class WildcardLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_WILDCARD = 'wildcard';
 
@@ -56,11 +57,32 @@ final class WildcardLookupService
     /**
      * Verwirft den Request-Cache der konkreten Instanz. Hauptsächlich für
      * Tests und für Caller, die den Cache nach einem Write invalidieren
-     * wollen (siehe Cache-Invalidation-Hooks).
+     * wollen.
      */
     public function reset(): void
     {
         $this->cacheByClang = [];
+    }
+
+    /**
+     * TranslationCacheInvalidator: gezielte Invalidierung einer clang.
+     * Wir invalidieren auch die "Spiegel"-clang_base-Einträge nicht
+     * separat — der Cache ist nach effektiver clang_id geschlüsselt, und
+     * der Caller sendet i.d.R. die originale clang_id. Daher räumen wir
+     * pragmatisch sowohl die Original- als auch die effektive clang_id raus.
+     */
+    public function invalidateClang(int $clangId): void
+    {
+        unset($this->cacheByClang[$clangId]);
+        $effective = $this->resolveClang($clangId);
+        if ($effective !== $clangId) {
+            unset($this->cacheByClang[$effective]);
+        }
+    }
+
+    public function invalidateAll(): void
+    {
+        $this->reset();
     }
 
     /**

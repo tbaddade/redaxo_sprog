@@ -6,6 +6,7 @@ namespace Sprog\Service;
 
 use InvalidArgumentException;
 use rex_clang;
+use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
 use Sprog\Model\Translation;
@@ -34,11 +35,16 @@ final class TranslationService
         private readonly TranslationRepository $translations,
         private readonly UnitRepository $units,
         private readonly ActivityService $activity,
+        private readonly ?CacheInvalidationBus $cacheBus = null,
     ) {
     }
 
     /**
      * Convenience-Factory, falls kein DI-Container im Aufrufer existiert.
+     * Hängt automatisch am App-weiten Default-Bus, an dem sich die Lookup-
+     * Services beim ersten Aufruf registrieren — so funktioniert Cache-
+     * Invalidation out-of-the-box ohne dass die Pages den Bus selbst kennen
+     * müssen. Tests können einen eigenen Bus via Constructor injizieren.
      */
     public static function create(): self
     {
@@ -46,6 +52,7 @@ final class TranslationService
             new TranslationRepository(),
             new UnitRepository(),
             ActivityService::create(),
+            CacheInvalidationBus::default(),
         );
     }
 
@@ -229,6 +236,8 @@ final class TranslationService
             );
         }
 
+        $this->cacheBus?->clangChanged($saved->clangId);
+
         return $saved;
     }
 
@@ -294,6 +303,8 @@ final class TranslationService
             to:            $saved->status,
         );
 
+        $this->cacheBus?->clangChanged($saved->clangId);
+
         return $saved;
     }
 
@@ -326,6 +337,10 @@ final class TranslationService
             newHash:    $newSourceHash,
             staleCount: $staleCount,
         );
+
+        // Stale-Markierung trifft alle clangs der Unit auf einmal — full
+        // invalidate ist günstiger als pro clang einzeln zu feuern.
+        $this->cacheBus?->allChanged();
 
         return $staleCount;
     }

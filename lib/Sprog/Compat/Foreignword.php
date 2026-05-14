@@ -11,6 +11,7 @@
 
 namespace Sprog\Compat;
 
+use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Matcher\TokenMatcher;
 use Sprog\Service\ForeignwordLookupService;
 
@@ -36,7 +37,13 @@ class Foreignword
 
     private static function lookupService(): ForeignwordLookupService
     {
-        return self::$lookupService ??= ForeignwordLookupService::create();
+        if (null !== self::$lookupService) {
+            return self::$lookupService;
+        }
+        self::$lookupService = ForeignwordLookupService::create();
+        CacheInvalidationBus::default()->register(self::$lookupService);
+
+        return self::$lookupService;
     }
 
     public static function resetLookupService(): void
