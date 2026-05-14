@@ -1,3 +1,9 @@
 
 # Coder/Reviewer-Pattern: Feedback wird nicht versioniert
 review/feedback.md
+
+# PHPUnit-Cache (Result-Cache, Coverage-Cache)
+/var/
+
+# Lokale PHPUnit-Overrides
+/phpunit.xml
