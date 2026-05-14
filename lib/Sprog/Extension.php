@@ -18,22 +18,34 @@ use Sprog\Compat\Wildcard;
 
 class Extension
 {
+    /**
+     * @param \rex_extension_point<string> $ep
+     */
     public static function replaceAbbreviations(\rex_extension_point $ep): void
     {
         $ep->setSubject(Abbreviation::parse($ep->getSubject(), null));
     }
 
+    /**
+     * @param \rex_extension_point<string> $ep
+     */
     public static function replaceWildcards(\rex_extension_point $ep): void
     {
         $ep->setSubject(Wildcard::parse($ep->getSubject(), null));
     }
 
+    /**
+     * @param \rex_extension_point<string> $ep
+     */
     public static function replaceForeignwords(\rex_extension_point $ep): void
     {
         $ep->setSubject(Foreignword::parse($ep->getSubject(), null));
     }
 
-    public static function articleUpdated(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<mixed> $ep
+     */
+    public static function articleUpdated(\rex_extension_point $ep): void
     {
         $addon = \rex_addon::get('sprog');
 
@@ -50,7 +62,10 @@ class Extension
         }
     }
 
-    public static function articleMetadataUpdated(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<mixed> $ep
+     */
+    public static function articleMetadataUpdated(\rex_extension_point $ep): void
     {
         $addon = \rex_addon::get('sprog');
         $fields = $addon->getConfig('sync_metainfo_art', []);
@@ -59,7 +74,10 @@ class Extension
         }
     }
 
-    public static function categoryUpdated(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<mixed> $ep
+     */
+    public static function categoryUpdated(\rex_extension_point $ep): void
     {
         $addon = \rex_addon::get('sprog');
 
@@ -89,7 +107,10 @@ class Extension
     }
     */
 
-    public static function clangAdded(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<mixed> $ep
+     */
+    public static function clangAdded(\rex_extension_point $ep): void
     {
         $clangId = $ep->getParam('clang')->getId();
 
@@ -97,7 +118,10 @@ class Extension
         self::clangAddedV2($clangId);
     }
 
-    public static function clangDeleted(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<mixed> $ep
+     */
+    public static function clangDeleted(\rex_extension_point $ep): void
     {
         $clangId = $ep->getParam('clang')->getId();
 
@@ -184,7 +208,10 @@ class Extension
         }
     }
 
-    public static function wildcardFormControlElement(\rex_extension_point $ep)
+    /**
+     * @param \rex_extension_point<array<string, mixed>> $ep
+     */
+    public static function wildcardFormControlElement(\rex_extension_point $ep): void
     {
         $subject = $ep->getSubject();
         $subject['delete'] = '';

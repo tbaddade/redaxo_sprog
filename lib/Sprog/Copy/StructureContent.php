@@ -7,11 +7,9 @@ class StructureContent extends Copy
     /**
      * Prepare all cache items.
      *
-     * @param int $startingArticleId
-     * 
-     * @return array
+     * @return array{articles: array{count: int, params: mixed, items: list<list<array{0: int, 1: int}>>}}
      */
-    public static function prepareItems($startingArticleId = null)
+    public static function prepareItems(?int $startingArticleId = null): array
     {
         return [
             'articles' => self::getChunkedArray($startingArticleId),
@@ -20,12 +18,10 @@ class StructureContent extends Copy
 
     /**
      * Get all pages being online.
-     * 
-     * @param int $startingArticleId
      *
-     * @return array
+     * @return list<int>
      */
-    public static function getArticleIds($startingArticleId = null)
+    public static function getArticleIds(?int $startingArticleId = null): array
     {
         $articles = [];
         if (\rex_addon::get('structure')->isAvailable()) {
@@ -59,7 +55,7 @@ EOM;
             }
             
             foreach ($items as $item) {
-                $articles[] = $item['id'];
+                $articles[] = (int) $item['id'];
             }
         }
         return $articles;
@@ -67,12 +63,10 @@ EOM;
 
     /**
      * Get all pages and languages as chunked array including 'count' and 'items'.
-     * 
-     * @param int $startingArticleId
      *
-     * @return array
+     * @return array{count: int, params: mixed, items: list<list<array{0: int, 1: int}>>}
      */
-    public static function getChunkedArray($startingArticleId = null)
+    public static function getChunkedArray(?int $startingArticleId = null): array
     {
         $articles = self::getArticleIds($startingArticleId);
 
@@ -83,17 +77,17 @@ EOM;
             }
         }
 
-        $chunkedItems = self::chunk($items, \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
+        $chunkedItems = self::chunk($items, (int) \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
         return ['count' => count($items), 'params' => rex_request('params', 'array', 0), 'items' => $chunkedItems];
     }
 
     /**
-     * @param array $items
-     * @param array $params
+     * @param list<array{0: int, 1: int}> $items     Tupel aus [article_id, source_clang_id]
+     * @param array{clangFrom: int, clangTo: int}    $params
      *
-     * @return array
+     * @return list<array{0: int, 1: int}> die unveränderte Items-Liste (für Chunked-Progress)
      */
-    public static function fire(array $items, array $params)
+    public static function fire(array $items, array $params): array
     {
         if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
             foreach ($items as $item) {
@@ -156,13 +150,13 @@ EOM;
                 'SELECT MAX(`priority`) as max FROM '.\rex::getTable('article_slice').' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
                 ['to_id' => $to_id, 'to_clang' => $to_clang, 'revision' => $revision]
             );
-            $maxPriority = ($max->getRows() == 1) ? $max->getValue('max') : 0;
+            $maxPriority = ($max->getRows() == 1) ? (int) $max->getValue('max') : 0;
 
             $user = \rex::isBackend() ? null : 'frontend';
 
             foreach ($gc as $slice) {
                 foreach ($cols as $col) {
-                    $colname = $col->getValue('Field');
+                    $colname = (string) $col->getValue('Field');
                     if ($colname == 'clang_id') {
                         $value = $to_clang;
                     } elseif ($colname == 'article_id') {
@@ -175,7 +169,8 @@ EOM;
 
                     // collect all affected ctypes
                     if ($colname == 'ctype_id') {
-                        $ctypes[$value] = $value;
+                        $ctypeId          = (int) $value;
+                        $ctypes[$ctypeId] = $ctypeId;
                     }
 
                     if ($colname != 'id') {

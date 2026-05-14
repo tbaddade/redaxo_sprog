@@ -47,22 +47,22 @@ class Wildcard
         self::$lookupService = null;
     }
 
-    public static function getOpenTag()
+    public static function getOpenTag(): string
     {
-        return \rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
+        return (string) \rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
     }
 
-    public static function getCloseTag()
+    public static function getCloseTag(): string
     {
-        return \rex_config::get('sprog', 'wildcard_close_tag', ' }}');
+        return (string) \rex_config::get('sprog', 'wildcard_close_tag', ' }}');
     }
 
-    public static function getRegexp($value = '.*?')
+    public static function getRegexp(string $value = '.*?'): string
     {
         return '@(?<complete>'.preg_quote(trim(self::getOpenTag())).'\s*(?<wildcard>'.$value.')\s*((\|(?<filter>\s*[a-z]+)\(?(?<arguments>.*?)?\)?))?\s*'.preg_quote(trim(self::getCloseTag())).')@';
     }
 
-    public static function isClangSwitchMode()
+    public static function isClangSwitchMode(): bool
     {
         return (\rex_config::get('sprog', 'wildcard_clang_switch', '1') == 1) ? true : false;
     }
@@ -152,6 +152,9 @@ class Wildcard
         return str_replace($search, $replace, $content);
     }
 
+    /**
+     * @return array<string, array{wildcard: string, url: string}>|false false wenn structure-Addon nicht verfügbar.
+     */
     public static function getMissingWildcards()
     {
         $wildcards = [];
@@ -196,10 +199,10 @@ class Wildcard
                 $items = $sql->getArray();
 
                 foreach ($items as $item) {
-                    preg_match_all(self::getRegexp(), $item['subject'], $matchesSubject, PREG_SET_ORDER);
+                    preg_match_all(self::getRegexp(), (string) $item['subject'], $matchesSubject, PREG_SET_ORDER);
 
                     foreach ($matchesSubject as $match) {
-                        $wildcard = $match['wildcard'];
+                        $wildcard = (string) $match['wildcard'];
                         $wildcards[$wildcard]['wildcard'] = $wildcard;
                         $wildcards[$wildcard]['url'] = \rex_url::backendController(
                             [
@@ -228,8 +231,9 @@ class Wildcard
                 if ($sql->getRows() >= 1) {
                     $items = $sql->getArray();
                     foreach ($items as $item) {
-                        if (isset($wildcards[$item['wildcard']])) {
-                            unset($wildcards[$item['wildcard']]);
+                        $key = (string) $item['wildcard'];
+                        if (isset($wildcards[$key])) {
+                            unset($wildcards[$key]);
                         }
                     }
                 }
@@ -240,54 +244,51 @@ class Wildcard
         return false;
     }
 
-    public static function getMissingWildcardsAsTable()
+    public static function getMissingWildcardsAsTable(): ?string
     {
         $missingWildcards = self::getMissingWildcards();
-        if (count($missingWildcards)) {
-            $content = '';
-            $content .= '
-                <table class="table table-striped table-hover">
-                   <thead>
-                       <tr>
-                           <th class="rex-table-icon"></th>
-                           <th>'.\rex_addon::get('sprog')->i18n('wildcard').'</th>
-                           <th class="rex-table-action" colspan="2">'.\rex_addon::get('sprog')->i18n('function').'</th>
-                       </tr>
-                   </thead>
-                   <tbody>
-               ';
-
-            foreach ($missingWildcards as $name => $params) {
-                $content .= '
-                           <tr>
-                               <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
-                               <td data-title="'.\rex_addon::get('sprog')->i18n('wildcard').'">'.$name.'</td>
-                               <td class="rex-table-action"><a href="'.\rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]).'"><i class="rex-icon rex-icon-edit"></i> '.\rex_addon::get('sprog')->i18n('function_add').'</a></td>
-                               <td class="rex-table-action"><a href="'.$params['url'].'"><i class="rex-icon rex-icon-article"></i> '.\rex_addon::get('sprog')->i18n('wildcard_go_to_the_article').'</a></td>
-                           </tr>';
-            }
-
-            $content .= '
-                   </tbody>
-               </table>';
-
-            $fragment = new \rex_fragment();
-            $fragment->setVar('title', \rex_addon::get('sprog')->i18n('wildcard_caption_missing', \rex_addon::get('structure')->i18n('title_structure')), false);
-            $fragment->setVar('content', $content, false);
-            $content = $fragment->parse('core/page/section.php');
-
-            return $content;
+        if (false === $missingWildcards || 0 === count($missingWildcards)) {
+            return null;
         }
+
+        $content = '';
+        $content .= '
+            <table class="table table-striped table-hover">
+               <thead>
+                   <tr>
+                       <th class="rex-table-icon"></th>
+                       <th>'.\rex_addon::get('sprog')->i18n('wildcard').'</th>
+                       <th class="rex-table-action" colspan="2">'.\rex_addon::get('sprog')->i18n('function').'</th>
+                   </tr>
+               </thead>
+               <tbody>
+           ';
+
+        foreach ($missingWildcards as $name => $params) {
+            $content .= '
+                       <tr>
+                           <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
+                           <td data-title="'.\rex_addon::get('sprog')->i18n('wildcard').'">'.$name.'</td>
+                           <td class="rex-table-action"><a href="'.\rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]).'"><i class="rex-icon rex-icon-edit"></i> '.\rex_addon::get('sprog')->i18n('function_add').'</a></td>
+                           <td class="rex-table-action"><a href="'.$params['url'].'"><i class="rex-icon rex-icon-article"></i> '.\rex_addon::get('sprog')->i18n('wildcard_go_to_the_article').'</a></td>
+                       </tr>';
+        }
+
+        $content .= '
+               </tbody>
+           </table>';
+
+        $fragment = new \rex_fragment();
+        $fragment->setVar('title', \rex_addon::get('sprog')->i18n('wildcard_caption_missing', \rex_addon::get('structure')->i18n('title_structure')), false);
+        $fragment->setVar('content', $content, false);
+
+        return (string) $fragment->parse('core/page/section.php');
     }
 
     /**
      * Returns the replaced wildcard.
-     *
-     * @param string $wildcard
-     *
-     * @return string
      */
-    protected static function replace($wildcard, $replace)
+    protected static function replace(string $wildcard, string $replace): string
     {
         return nl2br($replace);
     }
@@ -299,7 +300,7 @@ class Wildcard
 
         $items = [];
         foreach ($records as $record) {
-            $items[$record['id']][$record['clang_id']] = $record;
+            $items[(int) $record['id']][(int) $record['clang_id']] = $record;
         }
 
         foreach ($items as $id => $clangRecords) {

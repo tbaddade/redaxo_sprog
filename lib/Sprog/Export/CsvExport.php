@@ -15,8 +15,11 @@ use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 class CsvExport
 {
+    /** @var array<int|string, string> */
     protected array $headers;
-    protected array $items;
+    /** @var list<array<int|string, scalar|null>> */
+    protected array $items = [];
+    /** @var array<string, mixed> */
     private array $context;
     private CsvEncoder $encoder;
 
@@ -30,23 +33,29 @@ class CsvExport
         ];
     }
 
-    public function addHeaders(array $values)
+    /**
+     * @param array<int|string, string> $values
+     */
+    public function addHeaders(array $values): void
     {
         $this->context[CsvEncoder::HEADERS_KEY] = $values;
         $this->context[CsvEncoder::NO_HEADERS_KEY] = false;
     }
 
-    public function addItem(array $values)
+    /**
+     * @param array<int|string, scalar|null> $values
+     */
+    public function addItem(array $values): void
     {
         $this->items[] = $values;
     }
 
-    public function setDelimiter(string $value)
+    public function setDelimiter(string $value): void
     {
         $this->context[CsvEncoder::DELIMITER_KEY] = $value;
     }
 
-    public function setUtf8Bom(bool $value = true)
+    public function setUtf8Bom(bool $value = true): void
     {
         $this->context[CsvEncoder::OUTPUT_UTF8_BOM_KEY] = $value;
     }
@@ -62,9 +71,10 @@ class CsvExport
         exit();
     }
 
-    public function getStream()
+    public function getStream(): string
     {
         if (false === $this->context[CsvEncoder::NO_HEADERS_KEY] && isset($this->context[CsvEncoder::HEADERS_KEY])) {
+            /** @var array<int|string, string> $headers */
             $headers = $this->context[CsvEncoder::HEADERS_KEY];
 
             foreach ($this->items as $index => $item) {

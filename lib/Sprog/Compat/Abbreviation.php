@@ -48,13 +48,13 @@ class Abbreviation
      * aber alle Abbreviations laufen in einem einzigen Pass über den
      * TokenMatcher — statt N preg_replace_callback-Aufrufen.
      */
-    public static function parse($content, $clangId = null)
+    public static function parse(string $content, ?int $clangId = null): string
     {
-        if (!\rex_clang::exists($clangId)) {
+        if (null === $clangId || !\rex_clang::exists($clangId)) {
             $clangId = \rex_clang::getCurrentId();
         }
 
-        $map = self::lookupService()->allForClang((int) $clangId);
+        $map = self::lookupService()->allForClang($clangId);
         if ([] === $map) {
             return $content;
         }

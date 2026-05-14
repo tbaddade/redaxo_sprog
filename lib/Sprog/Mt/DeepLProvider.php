@@ -154,6 +154,13 @@ final class DeepLProvider implements ProviderInterface
      */
     private function postForm(string $url, array $params): array
     {
+        if ('' === $url) {
+            // Defensive: CURLOPT_URL wird in der cURL-Lib als non-empty-string
+            // erwartet — leerer String hier würde stumm zu einem Fehler-Response
+            // führen statt zu einer klaren Exception.
+            throw new ProviderException('cURL-URL darf nicht leer sein.', $this->name());
+        }
+
         $ch = curl_init();
         if (false === $ch) {
             throw new ProviderException('cURL konnte nicht initialisiert werden.', $this->name());

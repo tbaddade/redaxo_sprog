@@ -125,6 +125,17 @@ final class CoverageService
             return [];
         }
 
-        return $rows;
+        // rex_sql::getArray() typisiert als array<string, scalar|null>; das Query
+        // garantiert die Spaltentypen, daher hier explizite Normalisierung.
+        $result = [];
+        foreach ($rows as $row) {
+            $result[] = [
+                'namespace' => (string) $row['namespace'],
+                'clang_id'  => (int) $row['clang_id'],
+                'status'    => (string) $row['status'],
+                'cnt'       => (int) $row['cnt'],
+            ];
+        }
+        return $result;
     }
 }

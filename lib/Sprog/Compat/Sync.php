@@ -13,7 +13,10 @@ namespace Sprog\Compat;
 
 class Sync
 {
-    public static function articleNameToCategoryName($params)
+    /**
+     * @param array<string, mixed> $params Extension-Point-Params (id, clang, parent_id, name, …)
+     */
+    public static function articleNameToCategoryName(array $params): void
     {
         try {
             $id = $params['id'];
@@ -36,7 +39,10 @@ class Sync
         }
     }
 
-    public static function categoryNameToArticleName($params)
+    /**
+     * @param array<string, mixed> $params
+     */
+    public static function categoryNameToArticleName(array $params): void
     {
         try {
             $id = $params['id'];
@@ -58,7 +64,10 @@ class Sync
         }
     }
 
-    public static function articleStatus($params)
+    /**
+     * @param array<string, mixed> $params
+     */
+    public static function articleStatus(array $params): void
     {
         try {
             $id = $params['id'];
@@ -79,7 +88,10 @@ class Sync
         }
     }
 
-    public static function articleTemplate($params)
+    /**
+     * @param array<string, mixed> $params
+     */
+    public static function articleTemplate(array $params): void
     {
         try {
             $id = $params['id'];
@@ -102,7 +114,11 @@ class Sync
         }
     }
 
-    public static function articleMetainfo($params, $fields, $toClangId = 0)
+    /**
+     * @param array<string, mixed> $params
+     * @param list<string>         $fields zu synchronisierende Spaltennamen
+     */
+    public static function articleMetainfo(array $params, array $fields, int $toClangId = 0): void
     {
         // Check whether field exists in table
         $sql = \rex_sql::factory()->setQuery('SELECT * FROM '.\rex::getTable('article').' LIMIT 1');
@@ -144,7 +160,11 @@ class Sync
         }
     }
 
-    public static function categoryMetainfo($params, $fields)
+    /**
+     * @param array<string, mixed> $params
+     * @param list<string>         $fields
+     */
+    public static function categoryMetainfo(array $params, array $fields): void
     {
         self::articleMetainfo($params, $fields);
     }

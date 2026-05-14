@@ -81,7 +81,7 @@ final class PageTreeBuilder
             return;
         }
 
-        $currentClangId = (int) str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
+        $currentClangId = (int) str_replace('clang', '', (string) rex_be_controller::getCurrentPagePart(3, ''));
 
         foreach (rex_clang::getAll() as $id => $clang) {
             if (!$user->getComplexPerm('clang')->hasPerm($id)) {
@@ -113,7 +113,7 @@ final class PageTreeBuilder
         $hrefParams = self::collectWildcardHrefParams();
         $pidItems   = self::collectWildcardPidItems();
 
-        $currentClangId = (int) str_replace('clang', '', rex_be_controller::getCurrentPagePart(3, ''));
+        $currentClangId = (int) str_replace('clang', '', (string) rex_be_controller::getCurrentPagePart(3, ''));
         $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
 
         // Alle Sprachen, die eine andere clang_base haben, aus der Navigation

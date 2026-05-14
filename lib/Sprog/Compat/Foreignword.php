@@ -51,13 +51,13 @@ class Foreignword
         self::$lookupService = null;
     }
 
-    public static function parse($content, $clangId = null)
+    public static function parse(string $content, ?int $clangId = null): string
     {
-        if (!\rex_clang::exists($clangId)) {
+        if (null === $clangId || !\rex_clang::exists($clangId)) {
             $clangId = \rex_clang::getCurrentId();
         }
 
-        $map = self::lookupService()->allForClang((int) $clangId);
+        $map = self::lookupService()->allForClang($clangId);
         if ([] === $map) {
             return $content;
         }
