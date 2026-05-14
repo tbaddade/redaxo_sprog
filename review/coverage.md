@@ -2,7 +2,7 @@
 
 | Modul/Pfad          | Letztes Review | Status                  |
 |---------------------|----------------|-------------------------|
-| (architecture)      | 2026-05-14     | 2 BLOCKER, 7 MAJOR, 6 NIT |
+| (architecture)      | 2026-05-14     | done — gemerged in v2/redesign am 2026-05-14 |
 | (interfaces)        | —              | pending                 |
 | lib/Sprog/Service/  | —              | pending                 |
 | lib/Sprog/Repository/ | —            | pending                 |
