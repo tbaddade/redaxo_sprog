@@ -2,7 +2,7 @@
 
 namespace Sprog\Copy;
 
-use Sprog\Sync;
+use Sprog\Compat\Sync;
 
 class StructureMetadata extends Copy
 {

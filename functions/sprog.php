@@ -1,6 +1,6 @@
 <?php
 
-use Sprog\Wildcard;
+use Sprog\Compat\Wildcard;
 
 /**
  * Returns a modified array.

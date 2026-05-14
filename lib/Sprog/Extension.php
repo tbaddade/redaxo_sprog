@@ -11,7 +11,10 @@
 
 namespace Sprog;
 
-use Sprog\Abbreviation;
+use Sprog\Compat\Abbreviation;
+use Sprog\Compat\Foreignword;
+use Sprog\Compat\Sync;
+use Sprog\Compat\Wildcard;
 
 class Extension
 {
