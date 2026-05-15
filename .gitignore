@@ -7,3 +7,6 @@ review/feedback.md
 
 # Lokale PHPUnit-Overrides
 /phpunit.xml
+
+# Coder/Reviewer-Pattern
+review
