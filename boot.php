@@ -25,12 +25,22 @@ rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
 // Wie viele Artikel ein einzelner Copy-Generate-Request abarbeitet.
 // Höher = weniger Requests, längere Script-Laufzeit pro Request.
 // (Debug-Modus in sprog.js misst die Laufzeiten.)
+// TODO(v2-review NIT, boot.php:28): setConfig läuft pro Request und überschreibt
+// jede User-Anpassung in rex_config. Entweder nach `default_config:` in
+// package.yml verschieben (einmaliges Seeding beim Install) oder am Use-Site
+// per `$addon->getConfig('chunkSizeArticles') ?? 4` lesen.
 $this->setConfig('chunkSizeArticles', 4);
 
 require_once __DIR__ . '/functions/sprog.php';
 
 FilterRegistry::publish($this->getProperty('filter'));
 
+// TODO(v2-review NIT, boot.php:34ff): EP-Callbacks unten sind als String-FQNs
+// ('\Sprog\Extension::replaceWildcards' …) registriert. Konsequent zur
+// v2-Modernisierung wäre `[\Sprog\Extension::class, 'replaceWildcards']`
+// (oder `use Sprog\Extension;` + `[Extension::class, 'replaceWildcards']`).
+// Vorteile: IDE-Navigation, Refactor-Rename greift, PHPStan löst den
+// Callback auf. Funktional gleichwertig, daher nur NIT.
 if (!rex::isBackend()) {
     rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
     rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
