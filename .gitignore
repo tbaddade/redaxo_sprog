@@ -4,9 +4,25 @@ review/feedback.md
 
 # PHPUnit-Cache (Result-Cache, Coverage-Cache)
 /var/
+/.php-cs-fixer.cache
 
 # Lokale PHPUnit-Overrides
 /phpunit.xml
 
 # Coder/Reviewer-Pattern
 review
+
+# vendor/: nur Production-Deps sind committed (symfony/serializer + Transitive
+# und der vendor/composer/-Autoloader). Lokales `composer install` (mit dev)
+# zieht phpstan / php-cs-fixer / phpunit + Co dazu — diese sollen NICHT in
+# Git landen. Allowlist via Negation.
+/vendor/*
+!/vendor/autoload.php
+!/vendor/composer/
+!/vendor/symfony/
+/vendor/composer/*/
+/vendor/symfony/*
+!/vendor/symfony/deprecation-contracts/
+!/vendor/symfony/polyfill-ctype/
+!/vendor/symfony/polyfill-php84/
+!/vendor/symfony/serializer/
