@@ -30,6 +30,19 @@ final class V1Schema
         self::ensureForeignwordTable();
     }
 
+    /**
+     * Gegenstück zu ensure() — droppt die v1-Tabellen. Wird beim Uninstall
+     * des Addons aus uninstall.php aufgerufen. rex_sql_table::drop() ist
+     * idempotent (DROP TABLE IF EXISTS), kann also bedenkenlos auf einem
+     * frischen System laufen.
+     */
+    public static function drop(): void
+    {
+        rex_sql_table::get(rex::getTable('sprog_wildcard'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_abbreviation'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_foreignword'))->drop();
+    }
+
     private static function ensureWildcardTable(): void
     {
         rex_sql_table::get(rex::getTable('sprog_wildcard'))

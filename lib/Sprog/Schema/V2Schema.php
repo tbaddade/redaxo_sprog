@@ -65,6 +65,22 @@ final class V2Schema
     }
 
     /**
+     * Gegenstück zu ensure() — droppt die v2-Tabellen. Wird beim Uninstall
+     * des Addons aus uninstall.php aufgerufen. Reihenfolge: translation und
+     * activity referenzieren sprog_unit per unit_id, also zuerst die
+     * abhängigen Tabellen droppen. rex_sql_table::drop() ist idempotent
+     * (DROP TABLE IF EXISTS).
+     */
+    public static function drop(): void
+    {
+        rex_sql_table::get(rex::getTable('sprog_activity'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_tm'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_glossary'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_translation'))->drop();
+        rex_sql_table::get(rex::getTable('sprog_unit'))->drop();
+    }
+
+    /**
      * Eine Übersetzungseinheit — sprachunabhängiger Anker.
      * Pro Wildcard, Artikel-Name, Slice-Feld o.ä. genau eine Row.
      */
