@@ -24,15 +24,6 @@ rex_perm::register('sprog[abbreviation]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
 
-// Wie viele Artikel ein einzelner Copy-Generate-Request abarbeitet.
-// Höher = weniger Requests, längere Script-Laufzeit pro Request.
-// (Debug-Modus in sprog.js misst die Laufzeiten.)
-// TODO(v2-review NIT, boot.php:28): setConfig läuft pro Request und überschreibt
-// jede User-Anpassung in rex_config. Entweder nach `default_config:` in
-// package.yml verschieben (einmaliges Seeding beim Install) oder am Use-Site
-// per `$addon->getConfig('chunkSizeArticles') ?? 4` lesen.
-$addon->setConfig('chunkSizeArticles', 4);
-
 require_once __DIR__ . '/functions/sprog.php';
 
 FilterRegistry::publish($addon->getProperty('filter'));
