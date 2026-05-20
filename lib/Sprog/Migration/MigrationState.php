@@ -6,6 +6,9 @@ namespace Sprog\Migration;
 
 use JsonException;
 
+use function is_array;
+use function is_string;
+
 /**
  * Aggregat-State über alle Migration-Quellen. Immutable.
  *
@@ -20,8 +23,7 @@ final readonly class MigrationState
      */
     public function __construct(
         public array $progressBySource,
-    ) {
-    }
+    ) {}
 
     public static function empty(): self
     {

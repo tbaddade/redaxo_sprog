@@ -6,7 +6,6 @@ namespace Sprog\Controller\Inbox;
 
 use rex_clang;
 use rex_i18n;
-use rex_request;
 use rex_user;
 use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
@@ -40,7 +39,7 @@ final class SaveTranslationController
 
     public function handle(rex_user $user): never
     {
-        $unitId  = (int) rex_request('unit_id', 'int', 0);
+        $unitId = (int) rex_request('unit_id', 'int', 0);
         $clangId = (int) rex_request('clang_id', 'int', 0);
 
         JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
@@ -57,7 +56,7 @@ final class SaveTranslationController
             JsonResponse::notFound(rex_i18n::rawMsg('sprog_inbox_save_unit_missing'));
         }
 
-        $value            = (string) rex_request('value', 'string', '');
+        $value = (string) rex_request('value', 'string', '');
         $expectedRevision = (int) rex_request('revision', 'int', 0);
 
         try {
@@ -83,11 +82,11 @@ final class SaveTranslationController
         );
 
         JsonResponse::ok([
-            'revision'             => $saved->revision,
-            'status'               => $saved->status->value,
-            'statusLabel'          => Labels::status($saved->status),
-            'value_hash'           => $saved->valueHash,
-            'updatedAt'            => null !== $saved->updatedAt ? $saved->updatedAt->format('c') : null,
+            'revision' => $saved->revision,
+            'status' => $saved->status->value,
+            'statusLabel' => Labels::status($saved->status),
+            'value_hash' => $saved->valueHash,
+            'updatedAt' => null !== $saved->updatedAt ? $saved->updatedAt->format('c') : null,
             'availableTransitions' => $nextAvailable,
         ]);
     }

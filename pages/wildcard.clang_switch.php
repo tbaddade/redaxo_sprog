@@ -35,15 +35,15 @@ if (!function_exists('sprogStyleTd')) {
         if ($pid == $list->getValue('pid')) {
             $classes[] = 'sprog-mark-highlight';
         }
-        $value = $value != '' ? $value : $params['value'];
-        $value = $params['field'] == 'replace' ? htmlspecialchars($value) : $value;
+        $value = '' != $value ? $value : $params['value'];
+        $value = 'replace' == $params['field'] ? htmlspecialchars($value) : $value;
         if (isset($params['params']['classes'])) {
             $classes = array_merge($classes, $params['params']['classes']);
         }
         if (count($classes)) {
-            $class = ' class="'.implode(' ', $classes).'"';
+            $class = ' class="' . implode(' ', $classes) . '"';
         }
-        return '<td'.$class.'>'.$value.'</td>';
+        return '<td' . $class . '>' . $value . '</td>';
     }
 }
 if (!function_exists('sprogStyleTdPid')) {
@@ -55,23 +55,23 @@ if (!function_exists('sprogStyleTdPid')) {
 if (!function_exists('sprogStyleTdEdit')) {
     function sprogStyleTdEdit($params)
     {
-        return sprogStyleTd($params, $params['list']->getColumnLink('edit', '<i class="rex-icon rex-icon-edit"></i> '.\rex_i18n::msg('edit')), ['rex-table-action']);
+        return sprogStyleTd($params, $params['list']->getColumnLink('edit', '<i class="rex-icon rex-icon-edit"></i> ' . rex_i18n::msg('edit')), ['rex-table-action']);
     }
 }
 if (!function_exists('sprogStyleTdDelete')) {
     function sprogStyleTdDelete($params)
     {
-        return sprogStyleTd($params, $params['list']->getColumnLink('delete', '<i class="rex-icon rex-icon-delete"></i> '.\rex_i18n::msg('delete')), ['rex-table-action']);
+        return sprogStyleTd($params, $params['list']->getColumnLink('delete', '<i class="rex-icon rex-icon-delete"></i> ' . rex_i18n::msg('delete')), ['rex-table-action']);
     }
 }
 
 // Wenn der Platzhalter vom Admin geändert wird, muss dieser in den anderen Sprachen synchronisiert werden
 if (rex::getUser()->getComplexPerm('clang')->hasAll() && count(rex_clang::getAll()) >= 2) {
-    \rex_extension::register('REX_FORM_SAVED', function (rex_extension_point $ep) use ($pid, $clang_id) {
+    rex_extension::register('REX_FORM_SAVED', static function (rex_extension_point $ep) use ($pid) {
         $form = $ep->getParam('form');
         if ($form->isEditMode()) {
-            $items = rex_sql::factory()->getArray('SELECT `id`, `wildcard` FROM '.$form->getTablename().' WHERE `pid` = :pid LIMIT 2', ['pid' => $pid]);
-            if (count($items) == 1) {
+            $items = rex_sql::factory()->getArray('SELECT `id`, `wildcard` FROM ' . $form->getTablename() . ' WHERE `pid` = :pid LIMIT 2', ['pid' => $pid]);
+            if (1 == count($items)) {
                 $savedId = $items[0]['id'];
                 $savedWildcard = $items[0]['wildcard'];
                 $sql = rex_sql::factory();
@@ -85,11 +85,11 @@ if (rex::getUser()->getComplexPerm('clang')->hasAll() && count(rex_clang::getAll
 }
 
 // ----- delete wildcard
-if ($func == 'delete' && !$csrfToken->isValid()) {
+if ('delete' == $func && !$csrfToken->isValid()) {
     $error = rex_i18n::msg('csrf_token_invalid');
-} elseif ($func == 'delete' && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
+} elseif ('delete' == $func && $wildcard_id > 0 && rex::getUser()->getComplexPerm('clang')->hasAll()) {
     $deleteWildcard = rex_sql::factory();
-    $deleteWildcard->setQuery('DELETE FROM '.rex::getTable('sprog_wildcard').' WHERE id=?', [$wildcard_id]);
+    $deleteWildcard->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE id=?', [$wildcard_id]);
     $success = $this->i18n('wildcard_deleted');
 
     $func = '';
@@ -97,20 +97,20 @@ if ($func == 'delete' && !$csrfToken->isValid()) {
 }
 
 $search_term = rex_request('search-term', 'string', '');
-if ($func == '') {
+if ('' == $func) {
     $title = $this->i18n('wildcard_caption');
 
     $sqlWhere = '';
     if (strlen($search_term)) {
-        $sqlWhere = ' AND (`wildcard` LIKE "%'.$search_term.'%" OR `replace` LIKE "%'.$search_term.'%")';
+        $sqlWhere = ' AND (`wildcard` LIKE "%' . $search_term . '%" OR `replace` LIKE "%' . $search_term . '%")';
     }
 
-    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' WHERE `clang_id`="'.$clang_id.'"'.$sqlWhere.' ORDER BY `wildcard`');
+    $list = rex_list::factory('SELECT `pid`, `id`, `wildcard`, `replace` FROM ' . rex::getTable('sprog_wildcard') . ' WHERE `clang_id`="' . $clang_id . '"' . $sqlWhere . ' ORDER BY `wildcard`');
     $list->addParam('search-term', $search_term);
     $list->addTableAttribute('class', 'table-striped table-hover');
 
     $tdIcon = '<i class="rex-icon rex-icon-refresh"></i>';
-    $thIcon = rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="'.$list->getUrl(['func' => 'add']).'#wildcard"'.rex::getAccesskey($this->i18n('add'), 'add').'><i class="rex-icon rex-icon-add-article"></i></a>' : '';
+    $thIcon = rex::getUser()->getComplexPerm('clang')->hasAll() ? '<a href="' . $list->getUrl(['func' => 'add']) . '#wildcard"' . rex::getAccesskey($this->i18n('add'), 'add') . '><i class="rex-icon rex-icon-add-article"></i></a>' : '';
 
     $list->addColumn($thIcon, $tdIcon, 0, ['<th class="rex-table-icon">###VALUE###</th>', '###VALUE###']);
     $list->setColumnParams($thIcon, ['func' => 'edit', 'pid' => '###pid###']);
@@ -130,18 +130,18 @@ if ($func == '') {
     $list->setColumnLayout('replace', ['<th>###VALUE###</th>', '###VALUE###']);
     $list->setColumnFormat('replace', 'custom', 'sprogStyleTd');
 
-    $list->addColumn('edit', '<i class="rex-icon rex-icon-edit"></i> '.$this->i18n('edit'));
+    $list->addColumn('edit', '<i class="rex-icon rex-icon-edit"></i> ' . $this->i18n('edit'));
     $list->setColumnLabel('edit', $this->i18n('function'));
     $list->setColumnLayout('edit', ['<th class="rex-table-action" colspan="2">###VALUE###</th>', '###VALUE###']);
     $list->setColumnParams('edit', ['func' => 'edit', 'pid' => '###pid###']);
     $list->setColumnFormat('edit', 'custom', 'sprogStyleTdEdit');
 
     if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
-        $list->addColumn('delete', '<i class="rex-icon rex-icon-delete"></i> '.$this->i18n('delete'));
+        $list->addColumn('delete', '<i class="rex-icon rex-icon-delete"></i> ' . $this->i18n('delete'));
         $list->setColumnLabel('delete', $this->i18n('function'));
         $list->setColumnLayout('delete', ['', '###VALUE###']);
         $list->setColumnParams('delete', ['func' => 'delete', 'wildcard_id' => '###id###'] + $csrfToken->getUrlParams());
-        $list->addLinkAttribute('delete', 'data-confirm', $this->i18n('delete').' ?');
+        $list->addLinkAttribute('delete', 'data-confirm', $this->i18n('delete') . ' ?');
         $list->setColumnFormat('delete', 'custom', 'sprogStyleTdDelete');
     } else {
         $list->addColumn('delete', '');
@@ -151,7 +151,7 @@ if ($func == '') {
 
     $content .= $list->get();
 
-    $searchControl = '<form action="'.\rex_url::currentBackendPage().'" method="post" class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="'.rex_url::currentBackendPage().'" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control sprog-search-input" type="text" name="search-term" value="'.htmlspecialchars($search_term).'" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">'.$this->i18n('search').'</button></div></div></form>';
+    $searchControl = '<form action="' . rex_url::currentBackendPage() . '" method="post" class="form-inline"><div class="input-group input-group-xs"><div class="input-group-btn"><a href="' . rex_url::currentBackendPage() . '" class="btn btn-default btn-xs"><i class="rex-icon rex-icon-clear"></i></a></div><input class="form-control sprog-search-input" type="text" name="search-term" value="' . htmlspecialchars($search_term) . '" /><div class="input-group-btn"><button type="submit" class="btn btn-primary btn-xs">' . $this->i18n('search') . '</button></div></div></form>';
 
     $fragment = new rex_fragment();
     $fragment->setVar('title', $title);
@@ -159,16 +159,16 @@ if ($func == '') {
     $fragment->setVar('options', $searchControl, false);
     $content = $fragment->parse('core/page/section.php');
 } else {
-    $title = $func == 'edit' ? $this->i18n('edit') : $this->i18n('add');
+    $title = 'edit' == $func ? $this->i18n('edit') : $this->i18n('add');
 
-    \rex_extension::register('REX_FORM_CONTROL_FIELDS', '\Sprog\Extension::wildcardFormControlElement');
+    rex_extension::register('REX_FORM_CONTROL_FIELDS', '\Sprog\Extension::wildcardFormControlElement');
 
-    $form = rex_form::factory(rex::getTable('sprog_wildcard'), '', 'pid = '.$pid);
+    $form = rex_form::factory(rex::getTable('sprog_wildcard'), '', 'pid = ' . $pid);
     $form->setApplyUrl(rex_url::currentBackendPage(['search-term' => $search_term], false));
     $form->addParam('pid', $pid);
     $form->addParam('search-term', $search_term);
     $form->setLanguageSupport('id', 'clang_id');
-    $form->setEditMode($func == 'edit');
+    $form->setEditMode('edit' == $func);
 
     if (rex::getUser()->getComplexPerm('clang')->hasAll()) {
         $field = $form->addTextField('wildcard', rex_request('wildcard_name', 'string', null));
@@ -191,11 +191,11 @@ if ($func == '') {
     $content = $fragment->parse('core/page/section.php');
 }
 
-if ($success != '') {
+if ('' != $success) {
     $message .= rex_view::success($success);
 }
 
-if ($error != '') {
+if ('' != $error) {
     $message .= rex_view::error($error);
 }
 

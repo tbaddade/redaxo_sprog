@@ -4,10 +4,10 @@
 
 use Sprog\Copy\StructureMetadata;
 
-$csrfToken = \rex_csrf_token::factory('sprog-copy-metadata');
+$csrfToken = rex_csrf_token::factory('sprog-copy-metadata');
 
 if (!$csrfToken->isValid()) {
-    echo \rex_view::error(\rex_i18n::msg('csrf_token_invalid'));
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
     return;
 }
 
@@ -31,10 +31,10 @@ echo $fragment->parse('core/page/section.php');
 /* add sprog items JSON */
 
 echo '
-<script nonce="'.rex_response::getNonce().'">
-    var sprogItems = '.json_encode(StructureMetadata::prepareItems()).'; 
+<script nonce="' . rex_response::getNonce() . '">
+    var sprogItems = ' . json_encode(StructureMetadata::prepareItems()) . '; 
     var sprogGeneratePage = "sprog.copy.structure_metadata_generate";
-    var sprogCsrfToken = "'.\rex_string::buildQuery($csrfToken->getUrlParams()).'";
+    var sprogCsrfToken = "' . rex_string::buildQuery($csrfToken->getUrlParams()) . '";
 </script>';
 ?>
 
@@ -61,7 +61,7 @@ echo '
 <?php /* templates: components */ ?>
 
 <script id="sprog_copy_tpl_stopwatch" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_time_elapsed') ?>: <span id="sprog_copy_time"></span>
+    <?= rex_i18n::rawMsg('sprog_copy_time_elapsed') ?>: <span id="sprog_copy_time"></span>
 </script>
 
 
@@ -75,29 +75,29 @@ echo '
 <?php /* templates: titles */ ?>
 
 <script id="sprog_copy_tpl_title_articles" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_structure_metadata_title') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_structure_metadata_title') ?>
 </script>
 
 
 <script id="sprog_copy_tpl_title_finished" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_structure_metadata_finished_title') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_structure_metadata_finished_title') ?>
 </script>
 
 
 <script id="sprog_copy_tpl_title_error" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_error_title') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_error_title') ?>
 </script>
 
 
 <script id="sprog_copy_tpl_title_nothing" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_nothing_title') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_nothing_title') ?>
 </script>
 
 
 <?php /* templates: progress */ ?>
 
 <script id="sprog_copy_tpl_progress_articles" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_structure_metadata_progress') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_structure_metadata_progress') ?>
 </script>
 
 
@@ -121,44 +121,44 @@ echo '
 <?php /* templates: texts */ ?>
 
 <script id="sprog_copy_tpl_text_finished" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <p><?php echo rex_i18n::rawMsg('sprog_copy_structure_metadata_finished_text') ?></p>
+    <p><?= rex_i18n::rawMsg('sprog_copy_structure_metadata_finished_text') ?></p>
 </script>
 
 
 <script id="sprog_copy_tpl_text_error" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <p><?php echo rex_i18n::rawMsg('sprog_copy_error_text') ?></p>
+    <p><?= rex_i18n::rawMsg('sprog_copy_error_text') ?></p>
 </script>
 
 
 <script id="sprog_copy_tpl_text_nothing" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <p><?php echo rex_i18n::rawMsg('sprog_copy_nothing_text') ?></p>
+    <p><?= rex_i18n::rawMsg('sprog_copy_nothing_text') ?></p>
 </script>
 
 
 <?php /* templates: links */ ?>
 
 <script id="sprog_copy_tpl_error_link" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <?php echo rex_i18n::rawMsg('sprog_copy_error_link') ?>
+    <?= rex_i18n::rawMsg('sprog_copy_error_link') ?>
 </script>
 
 
 <?php /* templates: buttons */ ?>
 
 <script id="sprog_copy_tpl_button_success" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
-    <button class="btn btn-success sprog-button-success"><?php echo rex_i18n::rawMsg('sprog_copy_button_success') ?></button>
+    <button class="btn btn-success sprog-button-success"><?= rex_i18n::rawMsg('sprog_copy_button_success') ?></button>
 </script>
 
 
 <script id="sprog_copy_tpl_button_again" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
     <div class="text-right">
-        <button class="btn btn-link sprog-button-again"><?php echo rex_i18n::rawMsg('sprog_copy_button_again') ?></button>
-        <button class="btn btn-danger sprog-button-cancel"><?php echo rex_i18n::rawMsg('sprog_copy_button_cancel') ?></button>
+        <button class="btn btn-link sprog-button-again"><?= rex_i18n::rawMsg('sprog_copy_button_again') ?></button>
+        <button class="btn btn-danger sprog-button-cancel"><?= rex_i18n::rawMsg('sprog_copy_button_cancel') ?></button>
     </div>
 </script>
 
 
 <script id="sprog_copy_tpl_button_cancel" type="text/x-handlebars-template" nonce="<?= rex_response::getNonce() ?>">
     <div class="text-right">
-        <button class="btn btn-danger sprog-button-cancel"><?php echo rex_i18n::rawMsg('sprog_copy_button_cancel') ?></button>
+        <button class="btn btn-danger sprog-button-cancel"><?= rex_i18n::rawMsg('sprog_copy_button_cancel') ?></button>
     </div>
 </script>

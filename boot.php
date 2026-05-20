@@ -13,6 +13,8 @@ use Sprog\Boot\AssetRegistry;
 use Sprog\Boot\FilterRegistry;
 use Sprog\Boot\PageTreeBuilder;
 
+$addon = rex_addon::get('sprog');
+
 /**
  * @deprecated since version 1.3.0, use \Sprog\Wildcard
  */
@@ -29,11 +31,11 @@ rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
 // jede User-Anpassung in rex_config. Entweder nach `default_config:` in
 // package.yml verschieben (einmaliges Seeding beim Install) oder am Use-Site
 // per `$addon->getConfig('chunkSizeArticles') ?? 4` lesen.
-$this->setConfig('chunkSizeArticles', 4);
+$addon->setConfig('chunkSizeArticles', 4);
 
 require_once __DIR__ . '/functions/sprog.php';
 
-FilterRegistry::publish($this->getProperty('filter'));
+FilterRegistry::publish($addon->getProperty('filter'));
 
 // TODO(v2-review NIT, boot.php:34ff): EP-Callbacks unten sind als String-FQNs
 // ('\Sprog\Extension::replaceWildcards' …) registriert. Konsequent zur
@@ -62,7 +64,6 @@ if (rex::isBackend() && rex::getUser()) {
     rex_extension::register('CLANG_ADDED', '\Sprog\Extension::clangAdded');
     rex_extension::register('CLANG_DELETED', '\Sprog\Extension::clangDeleted');
 
-    $addon = $this;
     rex_extension::register('PAGES_PREPARED', static function () use ($addon): void {
         PageTreeBuilder::publish($addon);
     });
@@ -73,5 +74,5 @@ if (rex::isBackend() && rex::getUser()) {
         $ep->setSubject($subject);
     });
 
-    AssetRegistry::publish($this);
+    AssetRegistry::publish($addon);
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sprog\Repository;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use rex;
 use rex_sql;
 use rex_sql_exception;
@@ -66,9 +67,8 @@ final class TranslationRepository
     /**
      * Alle Übersetzungen einer Unit, über alle Sprachen.
      *
-     * @return list<Translation>
-     *
      * @throws rex_sql_exception
+     * @return list<Translation>
      */
     public function findByUnit(int $unitId): array
     {
@@ -88,9 +88,9 @@ final class TranslationRepository
      * Spart das N+1, das Inbox-Akkordeon sonst auslösen würde.
      *
      * @param list<int> $unitIds
-     * @return array<int, array<int, Translation>>  unitId → clangId → Translation
      *
      * @throws rex_sql_exception
+     * @return array<int, array<int, Translation>>  unitId → clangId → Translation
      */
     public function findByUnits(array $unitIds): array
     {
@@ -100,10 +100,10 @@ final class TranslationRepository
 
         // IDs hier explizit ge-int-cast, damit der IN-Build Injection-frei
         // ist (named-params in IN-Listen sind treiberabhängig nervig).
-        $ints      = array_map(static fn ($id) => (int) $id, $unitIds);
-        $inClause  = implode(',', $ints);
+        $ints = array_map(static fn ($id) => (int) $id, $unitIds);
+        $inClause = implode(',', $ints);
 
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT * FROM ' . $this->tableName() . '
              WHERE unit_id IN (' . $inClause . ')
@@ -124,14 +124,13 @@ final class TranslationRepository
      * limit + offset ohne Default, weil der Caller über die Paginierung
      * bewusst entscheiden muss (Inbox-Lazy-Loading vs. Full-Export).
      *
-     * @return list<Translation>
-     *
      * @throws rex_sql_exception
+     * @return list<Translation>
      */
     public function findByClangAndStatus(int $clangId, Status $status, int $limit, int $offset): array
     {
         if ($limit <= 0 || $offset < 0) {
-            throw new \InvalidArgumentException('limit muss > 0 und offset >= 0 sein.');
+            throw new InvalidArgumentException('limit muss > 0 und offset >= 0 sein.');
         }
 
         // LIMIT/OFFSET nicht als named params: einige PDO-Treiber binden
@@ -146,7 +145,7 @@ final class TranslationRepository
              LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset,
             [
                 'clang_id' => $clangId,
-                'status'   => $status->value,
+                'status' => $status->value,
             ],
         );
 
@@ -176,9 +175,7 @@ final class TranslationRepository
         $sql->setWhere('id = :id', ['id' => $translation->id]);
         $sql->update();
 
-        return $this->find($translation->id) ?? throw new RuntimeException(
-            'Translation ' . $translation->id . ' nach Update nicht auffindbar.',
-        );
+        return $this->find($translation->id) ?? throw new RuntimeException('Translation ' . $translation->id . ' nach Update nicht auffindbar.');
     }
 
     /**
@@ -219,9 +216,7 @@ final class TranslationRepository
             throw new OptimisticLockException($translation->id, $translation->revision);
         }
 
-        return $this->find($translation->id) ?? throw new RuntimeException(
-            'Translation ' . $translation->id . ' nach Update nicht auffindbar.',
-        );
+        return $this->find($translation->id) ?? throw new RuntimeException('Translation ' . $translation->id . ' nach Update nicht auffindbar.');
     }
 
     /**
@@ -238,9 +233,7 @@ final class TranslationRepository
         $sql->insert();
         $newId = (int) $sql->getLastId();
 
-        return $this->find($newId) ?? throw new RuntimeException(
-            'Translation ' . $newId . ' nach Insert nicht auffindbar.',
-        );
+        return $this->find($newId) ?? throw new RuntimeException('Translation ' . $newId . ' nach Insert nicht auffindbar.');
     }
 
     /**
@@ -269,9 +262,8 @@ final class TranslationRepository
      * Atomarer Single-UPDATE statt Schleife, sonst killt das die Performance
      * bei mehreren tausend Translations.
      *
-     * @return int Anzahl der betroffenen Rows
-     *
      * @throws rex_sql_exception
+     * @return int Anzahl der betroffenen Rows
      */
     public function markStaleForUnit(int $unitId): int
     {
@@ -281,11 +273,11 @@ final class TranslationRepository
              SET status = :stale, revision = revision + 1, updatedate = NOW()
              WHERE unit_id = :unit_id AND status IN (:translated, :needs_review, :approved)',
             [
-                'stale'         => Status::Stale->value,
-                'unit_id'       => $unitId,
-                'translated'    => Status::Translated->value,
-                'needs_review'  => Status::NeedsReview->value,
-                'approved'      => Status::Approved->value,
+                'stale' => Status::Stale->value,
+                'unit_id' => $unitId,
+                'translated' => Status::Translated->value,
+                'needs_review' => Status::NeedsReview->value,
+                'approved' => Status::Approved->value,
             ],
         );
 
@@ -336,20 +328,20 @@ final class TranslationRepository
         $status = Status::from((string) $row['status']);
 
         return new Translation(
-            id:                       (int) $row['id'],
-            unitId:                   (int) $row['unit_id'],
-            clangId:                  (int) $row['clang_id'],
-            value:                    (string) $row['value'],
-            valueHash:                isset($row['value_hash']) ? (string) $row['value_hash'] : null,
-            sourceHashAtTranslation:  isset($row['source_hash_at_translation']) ? (string) $row['source_hash_at_translation'] : null,
-            status:                   $status,
-            mtProvider:               isset($row['mt_provider']) ? (string) $row['mt_provider'] : null,
-            mtConfidence:             isset($row['mt_confidence']) ? (float) $row['mt_confidence'] : null,
-            translatorId:             isset($row['translator_id']) ? (int) $row['translator_id'] : null,
-            reviewerId:               isset($row['reviewer_id']) ? (int) $row['reviewer_id'] : null,
-            revision:                 (int) $row['revision'],
-            createdAt:                $this->toDateTime($row['createdate'] ?? null),
-            updatedAt:                $this->toDateTime($row['updatedate'] ?? null),
+            id: (int) $row['id'],
+            unitId: (int) $row['unit_id'],
+            clangId: (int) $row['clang_id'],
+            value: (string) $row['value'],
+            valueHash: isset($row['value_hash']) ? (string) $row['value_hash'] : null,
+            sourceHashAtTranslation: isset($row['source_hash_at_translation']) ? (string) $row['source_hash_at_translation'] : null,
+            status: $status,
+            mtProvider: isset($row['mt_provider']) ? (string) $row['mt_provider'] : null,
+            mtConfidence: isset($row['mt_confidence']) ? (float) $row['mt_confidence'] : null,
+            translatorId: isset($row['translator_id']) ? (int) $row['translator_id'] : null,
+            reviewerId: isset($row['reviewer_id']) ? (int) $row['reviewer_id'] : null,
+            revision: (int) $row['revision'],
+            createdAt: $this->toDateTime($row['createdate'] ?? null),
+            updatedAt: $this->toDateTime($row['updatedate'] ?? null),
         );
     }
 

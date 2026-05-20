@@ -43,10 +43,10 @@ final class CoverageService
         $validStatus = array_flip(Status::values());
 
         foreach ($rows as $row) {
-            $clang     = (int) ($row['clang_id'] ?? 0);
+            $clang = (int) ($row['clang_id'] ?? 0);
             $namespace = (string) ($row['namespace'] ?? '');
-            $status    = (string) ($row['status'] ?? '');
-            $count     = (int) ($row['cnt'] ?? 0);
+            $status = (string) ($row['status'] ?? '');
+            $count = (int) ($row['cnt'] ?? 0);
 
             // Unbekannte Status-Werte werden ignoriert statt eine ValueError zu
             // werfen — Dashboard soll auch bei Daten-Korruption etwas anzeigen.
@@ -131,9 +131,9 @@ final class CoverageService
         foreach ($rows as $row) {
             $result[] = [
                 'namespace' => (string) $row['namespace'],
-                'clang_id'  => (int) $row['clang_id'],
-                'status'    => (string) $row['status'],
-                'cnt'       => (int) $row['cnt'],
+                'clang_id' => (int) $row['clang_id'],
+                'status' => (string) $row['status'],
+                'cnt' => (int) $row['cnt'],
             ];
         }
         return $result;

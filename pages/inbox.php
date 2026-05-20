@@ -48,13 +48,13 @@ if (!$user->getComplexPerm('clang')->hasPerm($defaultClang)) {
     }
 }
 
-$clangId        = (int) rex_request('clang_id', 'int', $defaultClang);
+$clangId = (int) rex_request('clang_id', 'int', $defaultClang);
 $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
-$statusesInput  = rex_request('status', 'array', []);
-$searchInput    = trim((string) rex_request('search', 'string', ''));
-$page           = max(1, (int) rex_request('pg', 'int', 1));
-$pageSize       = (int) rex_request('page_size', 'int', TranslationListFilter::DEFAULT_PAGE_SIZE);
-$openUnit       = (int) rex_request('open', 'int', 0);
+$statusesInput = rex_request('status', 'array', []);
+$searchInput = trim((string) rex_request('search', 'string', ''));
+$page = max(1, (int) rex_request('pg', 'int', 1));
+$pageSize = (int) rex_request('page_size', 'int', TranslationListFilter::DEFAULT_PAGE_SIZE);
+$openUnit = (int) rex_request('open', 'int', 0);
 
 // Per-Sprache Berechtigungs-Check vor der DB-Query — kein Bypass durch URL-Tampering.
 if ($clangId <= 0 || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
@@ -64,7 +64,7 @@ if ($clangId <= 0 || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
 }
 
 // statuses säubern: nur valide Status-Strings akzeptieren.
-$statuses    = [];
+$statuses = [];
 $validStatus = array_flip(Status::values());
 foreach ((array) $statusesInput as $candidate) {
     $candidate = is_string($candidate) ? $candidate : '';
@@ -74,16 +74,16 @@ foreach ((array) $statusesInput as $candidate) {
 }
 
 $namespace = '' === $namespaceInput ? null : $namespaceInput;
-$search    = '' === $searchInput ? null : $searchInput;
+$search = '' === $searchInput ? null : $searchInput;
 
 try {
     $filter = new TranslationListFilter(
-        clangId:   $clangId,
+        clangId: $clangId,
         namespace: $namespace,
-        statuses:  $statuses,
-        search:    $search,
-        page:      $page,
-        pageSize:  $pageSize,
+        statuses: $statuses,
+        search: $search,
+        page: $page,
+        pageSize: $pageSize,
     );
 } catch (InvalidArgumentException $e) {
     echo rex_view::error(rex_i18n::msg('sprog_inbox_filter_invalid', $e->getMessage()));
@@ -91,9 +91,9 @@ try {
     return;
 }
 
-$result   = TranslationListService::create()->query($filter);
-$items    = $result['items'];
-$total    = $result['total'];
+$result = TranslationListService::create()->query($filter);
+$items = $result['items'];
+$total = $result['total'];
 $lastPage = max(1, (int) ceil($total / $pageSize));
 
 /*
@@ -105,7 +105,7 @@ $lastPage = max(1, (int) ceil($total / $pageSize));
  | Das ist der Kern des neuen Akkordeon-Layouts: pro Unit eine Card mit Edit-
  | Inputs für jede definierte clang.
  */
-$units        = new UnitRepository();
+$units = new UnitRepository();
 $translations = new TranslationRepository();
 
 $unitIds = [];
@@ -114,8 +114,8 @@ foreach ($items as $item) {
 }
 $unitIds = array_keys($unitIds);
 
-$unitMap         = $units->findMany($unitIds);
-$translationMap  = $translations->findByUnits($unitIds);
+$unitMap = $units->findMany($unitIds);
+$translationMap = $translations->findByUnits($unitIds);
 
 // Konflikt-Hinweise für Wildcard-Units: falls Context-Splits sich gegenseitig
 // oder einen globalen Punkt-Key überschatten, bekommt jede betroffene Unit
@@ -145,17 +145,17 @@ $statusOptions = [
  | (z.B. nach einem Redirect aus dem Create-Flow).
  */
 $baseParams = [
-    'clang_id'  => $clangId,
+    'clang_id' => $clangId,
     'namespace' => $namespace ?? '',
-    'search'    => $searchInput,
-    'pg'        => $page,
+    'search' => $searchInput,
+    'pg' => $page,
     'page_size' => $pageSize,
 ];
 foreach ($statuses as $i => $st) {
     $baseParams['status[' . $i . ']'] = $st->value;
 }
 
-$jsonEndpoint     = rex_url::currentBackendPage(['func' => 'save'], false);
+$jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
 $endpointUpdateUnit = rex_url::currentBackendPage(['func' => 'update_unit'], false);
 $endpointTransition = rex_url::currentBackendPage(['func' => 'transition'], false);
 
@@ -164,12 +164,11 @@ $endpointTransition = rex_url::currentBackendPage(['func' => 'transition'], fals
 // Deep-Link auf die Editor-Page.
 $canEditUnit = $user->isAdmin() || $user->hasPerm('sprog[unit_edit]');
 
-
 // Gemeinsame Anzeige-Werte für die Toolbar-Cells (Sprache + Quelle).
 // Liegen in der Cell sichtbar — der eigentliche <select> ist absolut darüber
 // transparent, sodass das ganze Pill klickbar bleibt.
-$currentClang          = rex_clang::get($clangId);
-$currentClangLabel     = null !== $currentClang
+$currentClang = rex_clang::get($clangId);
+$currentClangLabel = null !== $currentClang
     ? $currentClang->getCode() . ' · ' . $currentClang->getName()
     : '';
 $currentNamespaceLabel = null !== $namespace
@@ -229,7 +228,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                             </dt>
                             <dd><?= rex_i18n::msg('sprog_inbox_legend_status_' . $st->value) ?></dd>
                         </div>
-                    <?php endforeach; ?>
+                    <?php endforeach ?>
                 </dl>
             </section>
 
@@ -305,7 +304,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                 <?= rex_i18n::msg(1 === $total ? 'sprog_inbox_summary_entry' : 'sprog_inbox_summary_entries') ?>
                 <?php if ($total > $pageSize) : ?>
                     · <?= rex_i18n::msg('sprog_inbox_summary_page', (string) $page, (string) $lastPage) ?>
-                <?php endif; ?>
+                <?php endif ?>
             </p>
 
             <div class="sprog-inbox--list-header-filters">
@@ -325,7 +324,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                             >
                                 <?= rex_escape($clang->getCode()) ?> · <?= rex_escape($clang->getName()) ?>
                             </option>
-                        <?php endforeach; ?>
+                        <?php endforeach ?>
                     </select>
                 </label>
 
@@ -340,7 +339,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                 value="<?= rex_escape($ns) ?>"
                                 <?= $ns === $namespace ? 'selected' : '' ?>
                             ><?= Labels::forNamespace($ns) ?></option>
-                        <?php endforeach; ?>
+                        <?php endforeach ?>
                     </select>
                 </label>
 
@@ -361,7 +360,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                 >
                                 <span><?= Labels::status($status) ?></span>
                             </label>
-                        <?php endforeach; ?>
+                        <?php endforeach ?>
                         <button type="submit" class="sprog-inbox--toolbar-popup-apply">
                             <?= rex_i18n::msg('sprog_inbox_filter_submit') ?>
                         </button>
@@ -381,11 +380,11 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                 }
 
                 $unitTranslations = $translationMap[$unit->id] ?? [];
-                $isOpen           = $openUnit === $unit->id;
+                $isOpen = $openUnit === $unit->id;
 
                 // Coverage über alle clangs: wie viele sind translated/approved?
                 $coverageDone = 0;
-                $coverageAll  = 0;
+                $coverageAll = 0;
                 foreach ($clangs as $cId => $_c) {
                     ++$coverageAll;
                     $t = $unitTranslations[$cId] ?? null;
@@ -398,7 +397,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                 // vom JS bei jedem fetch mitgeschickt.
                 $unitCsrf = rex_csrf_token::factory('sprog_inbox_save_' . $unit->id);
             ?>
-                <?php $conflictHint = $conflictMap[$unit->id] ?? null; ?>
+                <?php $conflictHint = $conflictMap[$unit->id] ?? null ?>
                 <li class="sprog-inbox--card">
                     <details
                         class="sprog-inbox--unit"
@@ -408,7 +407,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         data-unit-key="<?= rex_escape($item->unitKey) ?>"
                         data-unit-context="<?= rex_escape($item->context) ?>"
                         data-unit-notes="<?= rex_escape($item->notes ?? '') ?>"
-                        <?php if (null !== $conflictHint) : ?>data-unit-conflict="<?= rex_escape($conflictHint) ?>"<?php endif; ?>
+                        <?php if (null !== $conflictHint) : ?>data-unit-conflict="<?= rex_escape($conflictHint) ?>"<?php endif ?>
                         data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
                         data-csrf-value="<?= rex_escape($unitCsrf->getValue()) ?>"
                         <?= $isOpen ? 'open' : '' ?>
@@ -422,11 +421,11 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                                 <path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/>
                                             </svg>
                                         </span>
-                                    <?php endif; ?>
+                                    <?php endif ?>
                                     <?php if ('' !== $item->context) : ?>
                                         <span class="sprog-inbox--context" data-role="context-text"><?= rex_escape($item->context) ?></span>
                                         <span class="sprog-inbox--context-sep" aria-hidden="true">/</span>
-                                    <?php endif; ?>
+                                    <?php endif ?>
                                     <span class="sprog-inbox--key" data-role="key-text"><?= rex_escape($item->unitKey) ?></span>
                                     <?php if ($canEditUnit) : ?>
                                         <button
@@ -440,7 +439,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                                 <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.757l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"/>
                                             </svg>
                                         </button>
-                                    <?php endif; ?>
+                                    <?php endif ?>
                                 </div>
                                 <span class="sprog-inbox--value-preview <?= '' === $item->displayValue ? 'is-empty' : '' ?>">
                                     <?= '' === $item->displayValue
@@ -460,15 +459,15 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                 -->
                                 <div class="sprog-inbox--lang-badges">
                                     <?php foreach ($clangs as $cId => $clang) :
-                                        $t      = $unitTranslations[$cId] ?? null;
-                                        $cStat  = null !== $t ? $t->status : Status::Missing;
+                                        $t = $unitTranslations[$cId] ?? null;
+                                        $cStat = null !== $t ? $t->status : Status::Missing;
                                         $tipTxt = $clang->getName() . ' · ' . Labels::status($cStat);
                                     ?>
                                         <span
                                             class="sprog-status sprog-status--<?= rex_escape($cStat->value) ?> sprog-inbox--lang-badge"
                                             title="<?= rex_escape($tipTxt) ?>"
                                         ><?= rex_escape($clang->getCode()) ?></span>
-                                    <?php endforeach; ?>
+                                    <?php endforeach ?>
                                 </div>
                                 <span class="sprog-inbox--coverage"
                                       title="<?= rex_escape(rex_i18n::msg('sprog_inbox_coverage_title', (string) $coverageDone, (string) $coverageAll)) ?>">
@@ -484,15 +483,15 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                     <span class="sprog-inbox--notes-label"><?= rex_i18n::msg('sprog_inbox_notes_label') ?></span>
                                     <?= rex_escape($item->notes) ?>
                                 </p>
-                            <?php endif; ?>
+                            <?php endif ?>
 
                             <?php foreach ($clangs as $cId => $clang) :
-                                $hasPerm  = $user->getComplexPerm('clang')->hasPerm($cId);
-                                $tr       = $unitTranslations[$cId] ?? null;
-                                $value    = null !== $tr ? $tr->value    : '';
-                                $status   = null !== $tr ? $tr->status   : Status::Missing;
+                                $hasPerm = $user->getComplexPerm('clang')->hasPerm($cId);
+                                $tr = $unitTranslations[$cId] ?? null;
+                                $value = null !== $tr ? $tr->value : '';
+                                $status = null !== $tr ? $tr->status : Status::Missing;
                                 $revision = null !== $tr ? $tr->revision : 0;
-                                $isStale  = null !== $tr && null !== $unit->sourceHash
+                                $isStale = null !== $tr && null !== $unit->sourceHash
                                     && $tr->isStaleAgainst($unit->sourceHash);
 
                                 $rowClasses = ['sprog-inbox--row'];
@@ -519,13 +518,13 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                             <span class="sprog-inbox--readonly-hint" title="<?= rex_escape(rex_i18n::msg('sprog_inbox_readonly_hint')) ?>">
                                                 <?= rex_i18n::msg('sprog_inbox_readonly_short') ?>
                                             </span>
-                                        <?php endif; ?>
+                                        <?php endif ?>
                                     </div>
 
                                     <div class="sprog-inbox--row-body">
                                         <?php if ($isStale) : ?>
                                             <p class="sprog-inbox--stale-hint"><?= rex_i18n::msg('sprog_editor_stale_hint') ?></p>
-                                        <?php endif; ?>
+                                        <?php endif ?>
 
                                         <textarea
                                             class="sprog-inbox--textarea"
@@ -549,7 +548,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                          */
                                         if ($hasPerm && null !== $tr) :
                                             $activeTransitions = $status->userActions();
-                                            $workflowButtons   = [
+                                            $workflowButtons = [
                                                 Status::Translated,
                                                 Status::NeedsReview,
                                                 Status::Revise,
@@ -570,18 +569,18 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                                                     >
                                                         → <?= Labels::status($targetStatus) ?>
                                                     </button>
-                                                <?php endforeach; ?>
+                                                <?php endforeach ?>
                                             </div>
-                                        <?php endif; ?>
+                                        <?php endif ?>
 
                                         <p class="sprog-inbox--row-feedback" data-role="feedback" aria-live="polite"></p>
                                     </div>
                                 </div>
-                            <?php endforeach; ?>
+                            <?php endforeach ?>
                         </div>
                     </details>
                 </li>
-            <?php endforeach; ?>
+            <?php endforeach ?>
         </ul>
 
         <?php if ($lastPage > 1) :
@@ -598,7 +597,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                     <span class="sprog-inbox--page-link sprog-inbox--page-link-disabled">
                         <?= rex_i18n::msg('sprog_inbox_pagination_prev') ?>
                     </span>
-                <?php endif; ?>
+                <?php endif ?>
 
                 <span class="sprog-inbox--page-info">
                     <?= rex_i18n::msg('sprog_inbox_pagination_page', (string) $page, (string) $lastPage) ?>
@@ -612,10 +611,10 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                     <span class="sprog-inbox--page-link sprog-inbox--page-link-disabled">
                         <?= rex_i18n::msg('sprog_inbox_pagination_next') ?>
                     </span>
-                <?php endif; ?>
+                <?php endif ?>
             </nav>
-        <?php endif; ?>
-    <?php endif; ?>
+        <?php endif ?>
+    <?php endif ?>
     </form>
 
     <div class="sprog-inbox--toast" data-role="toast" role="status" aria-live="polite" hidden></div>
@@ -631,7 +630,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
         Felder. method="dialog" lässt den nativen Close-Mechanismus
         unangetastet; das eigentliche Save schickt JS als fetch ab.
     -->
-    <?php $createCsrf = rex_csrf_token::factory('sprog_inbox_create'); ?>
+    <?php $createCsrf = rex_csrf_token::factory('sprog_inbox_create') ?>
     <dialog
         class="sprog-inbox--unit-modal"
         data-role="unit-modal"
@@ -722,7 +721,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                     <datalist id="sprog-inbox-context-list">
                         <?php foreach ($existingContexts as $ctx) : ?>
                             <option value="<?= rex_escape($ctx) ?>"></option>
-                        <?php endforeach; ?>
+                        <?php endforeach ?>
                     </datalist>
                     <span class="sprog-inbox--unit-modal-hint">
                         <?= rex_i18n::rawMsg('sprog_inbox_unit_modal_context_hint') ?>

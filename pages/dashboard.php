@@ -11,9 +11,9 @@ if (null === $user) {
     throw new rex_exception('Zugriff verweigert.');
 }
 
-$coverage   = CoverageService::create();
-$overview   = $coverage->overview();
-$totals     = $coverage->totalsByClang();
+$coverage = CoverageService::create();
+$overview = $coverage->overview();
+$totals = $coverage->totalsByClang();
 $hasAnyData = 0 < $coverage->totalUnits();
 
 // Stabile Sortierung der angezeigten Status-Pills.
@@ -47,7 +47,7 @@ $languages = rex_clang::getAll();
                    href="<?= rex_escape(rex_url::backendPage('sprog/migration', [], false)) ?>">
                     <?= rex_i18n::msg('sprog_dashboard_empty_cta') ?>
                 </a>
-            <?php endif; ?>
+            <?php endif ?>
         </section>
     <?php else : ?>
         <?php foreach ($languages as $clangId => $clang) :
@@ -56,8 +56,8 @@ $languages = rex_clang::getAll();
             }
 
             $clangStats = $overview[$clangId] ?? [];
-            $totalStat  = $totals[$clangId] ?? null;
-            $percent    = null !== $totalStat ? $totalStat->percent() : 100;
+            $totalStat = $totals[$clangId] ?? null;
+            $percent = null !== $totalStat ? $totalStat->percent() : 100;
         ?>
             <section class="sprog-dashboard--clang">
                 <header class="sprog-dashboard--clang-head">
@@ -87,7 +87,7 @@ $languages = rex_clang::getAll();
                     <ul class="sprog-dashboard--namespaces" role="list">
                         <?php foreach ($ordered as $namespace => $stat) :
                             $nsPercent = $stat->percent();
-                            $nsTotal   = $stat->total();
+                            $nsTotal = $stat->total();
                         ?>
                             <li class="sprog-dashboard--ns-item">
                                 <header class="sprog-dashboard--ns-head">
@@ -119,13 +119,13 @@ $languages = rex_clang::getAll();
                                             <span class="sprog-dashboard--status-count"><?= rex_escape((string) $count) ?></span>
                                             <span class="sprog-dashboard--status-label"><?= Labels::status($status) ?></span>
                                         </li>
-                                    <?php endforeach; ?>
+                                    <?php endforeach ?>
                                 </ul>
                             </li>
-                        <?php endforeach; ?>
+                        <?php endforeach ?>
                     </ul>
-                <?php endif; ?>
+                <?php endif ?>
             </section>
-        <?php endforeach; ?>
-    <?php endif; ?>
+        <?php endforeach ?>
+    <?php endif ?>
 </article>

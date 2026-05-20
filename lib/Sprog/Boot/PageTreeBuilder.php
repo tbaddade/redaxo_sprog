@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Sprog\Boot;
 
 use rex;
-use rex_addon;
+use rex_addon_interface;
 use rex_be_controller;
 use rex_be_page;
 use rex_clang;
 use rex_config;
 use rex_path;
-use rex_request;
 use rex_sql;
+use rex_url;
 use rex_user;
 use Sprog\Compat\Wildcard;
 
@@ -32,7 +32,7 @@ use Sprog\Compat\Wildcard;
  */
 final class PageTreeBuilder
 {
-    public static function publish(rex_addon $addon): void
+    public static function publish(rex_addon_interface $addon): void
     {
         $user = rex::getUser();
         if (null === $user) {
@@ -94,7 +94,7 @@ final class PageTreeBuilder
         }
     }
 
-    private static function buildWildcardSubpages(rex_user $user, rex_addon $addon): void
+    private static function buildWildcardSubpages(rex_user $user, rex_addon_interface $addon): void
     {
         if (!($user->isAdmin() || $user->hasPerm('sprog[wildcard]'))) {
             return;
@@ -111,7 +111,7 @@ final class PageTreeBuilder
         }
 
         $hrefParams = self::collectWildcardHrefParams();
-        $pidItems   = self::collectWildcardPidItems();
+        $pidItems = self::collectWildcardPidItems();
 
         $currentClangId = (int) str_replace('clang', '', (string) rex_be_controller::getCurrentPagePart(3, ''));
         $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
@@ -137,7 +137,7 @@ final class PageTreeBuilder
                 $hrefParams['pid'] = $pidItems[$id];
             }
             $bePage = new rex_be_page('clang' . $id, $clang->getName());
-            $bePage->setHref(\rex_url::backendPage('sprog/wildcard/clang' . $id, $hrefParams));
+            $bePage->setHref(rex_url::backendPage('sprog/wildcard/clang' . $id, $hrefParams));
             $bePage->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_switch.php'));
             $bePage->setIsActive($id === $currentClangId);
             $page->addSubpage($bePage);
@@ -155,7 +155,7 @@ final class PageTreeBuilder
             $params['search-term'] = $searchTerm;
         }
         if ('edit' === rex_request('func', 'string') && 0 <= rex_request('pid', 'int', 0)) {
-            $params['pid']  = rex_request('pid', 'int', 0);
+            $params['pid'] = rex_request('pid', 'int', 0);
             $params['func'] = 'edit';
         }
         return $params;

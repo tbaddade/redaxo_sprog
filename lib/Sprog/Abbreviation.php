@@ -16,6 +16,4 @@ namespace Sprog;
  *
  * @deprecated since 2.0 — verwende Sprog\Compat\Abbreviation oder den AbbreviationLookupService.
  */
-class Abbreviation extends \Sprog\Compat\Abbreviation
-{
-}
+class Abbreviation extends Compat\Abbreviation {}

@@ -92,8 +92,8 @@ final class AbbreviationLookupService implements TranslationCacheInvalidator
                    AND t.status <> :missing
                    AND t.value <> \'\'',
                 [
-                    'ns'      => self::NAMESPACE_ABBREVIATION,
-                    'clang'   => $clangId,
+                    'ns' => self::NAMESPACE_ABBREVIATION,
+                    'clang' => $clangId,
                     'missing' => Status::Missing->value,
                 ],
             );
@@ -103,7 +103,7 @@ final class AbbreviationLookupService implements TranslationCacheInvalidator
 
         $map = [];
         foreach ($rows as $row) {
-            $key   = (string) $row['unit_key'];
+            $key = (string) $row['unit_key'];
             $value = (string) $row['value'];
             if ('' === $key || '' === trim($value)) {
                 continue;
@@ -131,7 +131,7 @@ final class AbbreviationLookupService implements TranslationCacheInvalidator
 
         $map = [];
         foreach ($rows as $row) {
-            $key   = (string) $row['abbreviation'];
+            $key = (string) $row['abbreviation'];
             $value = (string) $row['text'];
             if ('' === $key || '' === trim($value)) {
                 continue;

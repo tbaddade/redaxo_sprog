@@ -9,6 +9,9 @@ use rex_clang;
 use Sprog\Model\GlossaryEntry;
 use Sprog\Repository\GlossaryRepository;
 
+use function sprintf;
+use function strlen;
+
 /**
  * Glossar — feste Wort-/Phrasen-Bindungen pro Sprachpaar.
  *
@@ -30,8 +33,7 @@ final class GlossaryService
 
     public function __construct(
         private readonly GlossaryRepository $repository,
-    ) {
-    }
+    ) {}
 
     public static function create(): self
     {
@@ -75,12 +77,12 @@ final class GlossaryService
         $this->assertValidNotes($notes);
 
         return $this->repository->save(new GlossaryEntry(
-            id:            null,
+            id: null,
             sourceClangId: $sourceClangId,
             targetClangId: $targetClangId,
-            sourceTerm:    trim($sourceTerm),
-            targetTerm:    trim($targetTerm),
-            notes:         $this->normalizeNotes($notes),
+            sourceTerm: trim($sourceTerm),
+            targetTerm: trim($targetTerm),
+            notes: $this->normalizeNotes($notes),
         ));
     }
 
@@ -105,12 +107,12 @@ final class GlossaryService
         $this->assertValidNotes($notes);
 
         return $this->repository->save(new GlossaryEntry(
-            id:            $existing->id,
+            id: $existing->id,
             sourceClangId: $existing->sourceClangId,
             targetClangId: $existing->targetClangId,
-            sourceTerm:    trim($sourceTerm),
-            targetTerm:    trim($targetTerm),
-            notes:         $this->normalizeNotes($notes),
+            sourceTerm: trim($sourceTerm),
+            targetTerm: trim($targetTerm),
+            notes: $this->normalizeNotes($notes),
         ));
     }
 
@@ -139,11 +141,7 @@ final class GlossaryService
             throw new InvalidArgumentException($argName . ' darf nicht leer sein.');
         }
         if (strlen($trimmed) > self::MAX_TERM_LENGTH) {
-            throw new InvalidArgumentException(sprintf(
-                '%s übersteigt die Maximallänge von %d Zeichen.',
-                $argName,
-                self::MAX_TERM_LENGTH,
-            ));
+            throw new InvalidArgumentException(sprintf('%s übersteigt die Maximallänge von %d Zeichen.', $argName, self::MAX_TERM_LENGTH));
         }
     }
 
@@ -153,10 +151,7 @@ final class GlossaryService
             return;
         }
         if (strlen($notes) > self::MAX_NOTES_LENGTH) {
-            throw new InvalidArgumentException(sprintf(
-                'notes übersteigen die Maximallänge von %d Zeichen.',
-                self::MAX_NOTES_LENGTH,
-            ));
+            throw new InvalidArgumentException(sprintf('notes übersteigen die Maximallänge von %d Zeichen.', self::MAX_NOTES_LENGTH));
         }
     }
 

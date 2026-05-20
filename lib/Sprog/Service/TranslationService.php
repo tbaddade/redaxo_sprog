@@ -15,6 +15,8 @@ use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
 use Sprog\Support\ContentHash;
 
+use function sprintf;
+
 /**
  * Business-Logic für Übersetzungen.
  *
@@ -36,8 +38,7 @@ final class TranslationService
         private readonly UnitRepository $units,
         private readonly ActivityService $activity,
         private readonly ?CacheInvalidationBus $cacheBus = null,
-    ) {
-    }
+    ) {}
 
     /**
      * Convenience-Factory, falls kein DI-Container im Aufrufer existiert.
@@ -81,18 +82,18 @@ final class TranslationService
         }
 
         $fresh = new Translation(
-            id:                       null,
-            unitId:                   $unit->id,
-            clangId:                  $clangId,
-            value:                    '',
-            valueHash:                null,
-            sourceHashAtTranslation:  null,
-            status:                   Status::Missing,
-            mtProvider:               null,
-            mtConfidence:             null,
-            translatorId:             null,
-            reviewerId:               null,
-            revision:                 0,
+            id: null,
+            unitId: $unit->id,
+            clangId: $clangId,
+            value: '',
+            valueHash: null,
+            sourceHashAtTranslation: null,
+            status: Status::Missing,
+            mtProvider: null,
+            mtConfidence: null,
+            translatorId: null,
+            reviewerId: null,
+            revision: 0,
         );
 
         return $this->translations->save($fresh);
@@ -129,7 +130,7 @@ final class TranslationService
                 continue;
             }
             $this->ensureMissing($unit, (int) $clangId);
-            $created++;
+            ++$created;
         }
 
         return $created;
@@ -196,18 +197,18 @@ final class TranslationService
         }
 
         $next = new Translation(
-            id:                       $current->id,
-            unitId:                   $current->unitId,
-            clangId:                  $current->clangId,
-            value:                    $value,
-            valueHash:                '' === $value ? null : ContentHash::of($value),
-            sourceHashAtTranslation:  $unit->sourceHash,
-            status:                   $nextStatus,
-            mtProvider:               $mtProvider,
-            mtConfidence:             $mtConfidence,
-            translatorId:             $userId ?? $current->translatorId,
-            reviewerId:               $current->reviewerId,
-            revision:                 $current->revision,
+            id: $current->id,
+            unitId: $current->unitId,
+            clangId: $current->clangId,
+            value: $value,
+            valueHash: '' === $value ? null : ContentHash::of($value),
+            sourceHashAtTranslation: $unit->sourceHash,
+            status: $nextStatus,
+            mtProvider: $mtProvider,
+            mtConfidence: $mtConfidence,
+            translatorId: $userId ?? $current->translatorId,
+            reviewerId: $current->reviewerId,
+            revision: $current->revision,
         );
 
         $saved = null !== $expectedRevision
@@ -215,24 +216,24 @@ final class TranslationService
             : $this->translations->save($next);
 
         $this->activity->logTranslationUpdated(
-            unitId:        $saved->unitId,
+            unitId: $saved->unitId,
             translationId: (int) $saved->id,
-            userId:        $userId,
-            oldStatus:     $current->status,
-            newStatus:     $saved->status,
-            oldValueHash:  $current->valueHash,
-            newValueHash:  $saved->valueHash,
+            userId: $userId,
+            oldStatus: $current->status,
+            newStatus: $saved->status,
+            oldValueHash: $current->valueHash,
+            newValueHash: $saved->valueHash,
         );
 
         // Wenn die Aktion MT-induziert war, zusätzlich einen MT-Draft-Eintrag.
         // So lässt sich später leicht zählen "wie viele Drafts kamen von Provider X".
         if (null !== $mtProvider && Status::Draft === $saved->status) {
             $this->activity->logMtDraftCreated(
-                unitId:        $saved->unitId,
+                unitId: $saved->unitId,
                 translationId: (int) $saved->id,
-                userId:        $userId,
-                provider:      $mtProvider,
-                confidence:    $mtConfidence,
+                userId: $userId,
+                provider: $mtProvider,
+                confidence: $mtConfidence,
             );
         }
 
@@ -277,18 +278,18 @@ final class TranslationService
         }
 
         $next = new Translation(
-            id:                       $current->id,
-            unitId:                   $current->unitId,
-            clangId:                  $current->clangId,
-            value:                    $current->value,
-            valueHash:                $current->valueHash,
-            sourceHashAtTranslation:  $current->sourceHashAtTranslation,
-            status:                   $newStatus,
-            mtProvider:               $current->mtProvider,
-            mtConfidence:             $current->mtConfidence,
-            translatorId:             $current->translatorId,
-            reviewerId:               $reviewerId,
-            revision:                 $current->revision,
+            id: $current->id,
+            unitId: $current->unitId,
+            clangId: $current->clangId,
+            value: $current->value,
+            valueHash: $current->valueHash,
+            sourceHashAtTranslation: $current->sourceHashAtTranslation,
+            status: $newStatus,
+            mtProvider: $current->mtProvider,
+            mtConfidence: $current->mtConfidence,
+            translatorId: $current->translatorId,
+            reviewerId: $reviewerId,
+            revision: $current->revision,
         );
 
         $saved = null !== $expectedRevision
@@ -296,11 +297,11 @@ final class TranslationService
             : $this->translations->save($next);
 
         $this->activity->logStatusTransition(
-            unitId:        $saved->unitId,
+            unitId: $saved->unitId,
             translationId: (int) $saved->id,
-            userId:        $userId,
-            from:          $current->status,
-            to:            $saved->status,
+            userId: $userId,
+            from: $current->status,
+            to: $saved->status,
         );
 
         $this->cacheBus?->clangChanged($saved->clangId);
@@ -331,10 +332,10 @@ final class TranslationService
         $staleCount = $this->translations->markStaleForUnit($unit->id);
 
         $this->activity->logSourceChanged(
-            unitId:     $unit->id,
-            userId:     $userId,
-            oldHash:    $unit->sourceHash,
-            newHash:    $newSourceHash,
+            unitId: $unit->id,
+            userId: $userId,
+            oldHash: $unit->sourceHash,
+            newHash: $newSourceHash,
             staleCount: $staleCount,
         );
 
@@ -359,11 +360,7 @@ final class TranslationService
             return;
         }
 
-        throw new InvalidArgumentException(sprintf(
-            'Status-Übergang "%s" → "%s" ist nicht erlaubt.',
-            $from->value,
-            $to->value,
-        ));
+        throw new InvalidArgumentException(sprintf('Status-Übergang "%s" → "%s" ist nicht erlaubt.', $from->value, $to->value));
     }
 
     private function autoStatusForUpdate(Status $current, string $value): Status
@@ -377,11 +374,11 @@ final class TranslationService
 
         return match ($current) {
             Status::Missing => Status::Draft,
-            Status::Stale   => Status::Translated,
+            Status::Stale => Status::Translated,
             // Reviewer hat Überarbeitung angefordert — sobald der Übersetzer
             // den Wert antippt, geht's zurück in den aktiven Bearbeitungs-Pfad.
-            Status::Revise  => Status::Draft,
-            default         => $current,
+            Status::Revise => Status::Draft,
+            default => $current,
         };
     }
 }

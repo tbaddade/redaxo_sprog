@@ -22,6 +22,4 @@ namespace Sprog;
  *
  * @deprecated since 2.0 — verwende Sprog\Compat\Wildcard oder Sprog\Service\WildcardLookupService.
  */
-class Wildcard extends \Sprog\Compat\Wildcard
-{
-}
+class Wildcard extends Compat\Wildcard {}

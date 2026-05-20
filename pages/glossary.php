@@ -9,10 +9,10 @@ if (null === $user || !$user->isAdmin()) {
     throw new rex_exception('Zugriff verweigert.');
 }
 
-$csrf          = rex_csrf_token::factory('sprog_glossary');
-$service       = GlossaryService::create();
+$csrf = rex_csrf_token::factory('sprog_glossary');
+$service = GlossaryService::create();
 $flashMessages = [];
-$action        = rex_request('action', 'string', '');
+$action = rex_request('action', 'string', '');
 
 /*
  |---------------------------------------------------------------------------
@@ -54,8 +54,8 @@ if ('add' === $action) {
     } else {
         $sourceTerm = trim((string) rex_request('source_term', 'string', ''));
         $targetTerm = trim((string) rex_request('target_term', 'string', ''));
-        $notesIn    = trim((string) rex_request('notes', 'string', ''));
-        $notes      = '' === $notesIn ? null : $notesIn;
+        $notesIn = trim((string) rex_request('notes', 'string', ''));
+        $notes = '' === $notesIn ? null : $notesIn;
 
         try {
             $service->add($sourceClangId, $targetClangId, $sourceTerm, $targetTerm, $notes);
@@ -139,7 +139,7 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
                             <?= $cid === $sourceClangId ? 'selected' : '' ?>>
                         <?= rex_escape($clang->getCode()) ?> · <?= rex_escape($clang->getName()) ?>
                     </option>
-                <?php endforeach; ?>
+                <?php endforeach ?>
             </select>
         </label>
 
@@ -155,7 +155,7 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
                             <?= $cid === $targetClangId ? 'selected' : '' ?>>
                         <?= rex_escape($clang->getCode()) ?> · <?= rex_escape($clang->getName()) ?>
                     </option>
-                <?php endforeach; ?>
+                <?php endforeach ?>
             </select>
         </label>
 
@@ -188,7 +188,7 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
                         <?= rex_i18n::msg('sprog_glossary_add_source_term') ?>
                         <?php if (null !== $sourceClang) : ?>
                             <span class="sprog-glossary--clang-tag"><?= rex_escape($sourceClang->getCode()) ?></span>
-                        <?php endif; ?>
+                        <?php endif ?>
                     </span>
                     <input type="text"
                            name="source_term"
@@ -204,7 +204,7 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
                         <?= rex_i18n::msg('sprog_glossary_add_target_term') ?>
                         <?php if (null !== $targetClang) : ?>
                             <span class="sprog-glossary--clang-tag"><?= rex_escape($targetClang->getCode()) ?></span>
-                        <?php endif; ?>
+                        <?php endif ?>
                     </span>
                     <input type="text"
                            name="target_term"
@@ -252,7 +252,7 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
 
                         <?php if (null !== $entry->notes) : ?>
                             <p class="sprog-glossary--notes"><?= rex_escape($entry->notes) ?></p>
-                        <?php endif; ?>
+                        <?php endif ?>
 
                         <form method="post"
                               class="sprog-glossary--delete-form"
@@ -268,10 +268,10 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
                             </button>
                         </form>
                     </li>
-                <?php endforeach; ?>
+                <?php endforeach ?>
             </ul>
-        <?php endif; ?>
-    <?php endif; ?>
+        <?php endif ?>
+    <?php endif ?>
 </article>
 
 <script>

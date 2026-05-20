@@ -15,30 +15,24 @@ use Sprog\Filter;
 
 class Limit extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'limit';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
-        if ($arguments == '') {
+        if ('' == $arguments) {
             return $value;
         }
 
         $parts = explode(',', $arguments);
         $limit = (int) $parts[0];
-        $end = isset($parts[1]) ? $parts[1] : '';
+        $end = $parts[1] ?? '';
 
         if (mb_strwidth($value, 'UTF-8') <= $limit) {
             return $value;
         }
-        return rtrim(mb_strimwidth($value, 0, $limit, '', 'UTF-8')).$end;
+        return rtrim(mb_strimwidth($value, 0, $limit, '', 'UTF-8')) . $end;
     }
 }

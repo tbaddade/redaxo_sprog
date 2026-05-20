@@ -16,6 +16,4 @@ namespace Sprog;
  *
  * @deprecated since 2.0 — verwende Sprog\Compat\Foreignword oder den ForeignwordLookupService.
  */
-class Foreignword extends \Sprog\Compat\Foreignword
-{
-}
+class Foreignword extends Compat\Foreignword {}

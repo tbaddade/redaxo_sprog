@@ -15,20 +15,14 @@ use Sprog\Filter;
 
 class Format extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'format';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
-        if ($arguments == '') {
+        if ('' == $arguments) {
             return $value;
         }
 

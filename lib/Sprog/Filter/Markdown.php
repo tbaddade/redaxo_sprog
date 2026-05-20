@@ -11,23 +11,18 @@
 
 namespace Sprog\Filter;
 
+use rex_markdown;
 use Sprog\Filter;
 
 class Markdown extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'markdown';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
-        return \rex_markdown::factory()->parse($value);
+        return rex_markdown::factory()->parse($value);
     }
 }

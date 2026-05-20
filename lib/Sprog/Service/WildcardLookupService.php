@@ -11,6 +11,8 @@ use rex_sql_exception;
 use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
+use function is_array;
+
 /**
  * Frontend-Lookup für Wildcards.
  *
@@ -37,7 +39,7 @@ final class WildcardLookupService implements TranslationCacheInvalidator
     /**
      * Pro effektiver clang_id: zwei Maps.
      *   exact: Units mit context='' (= bisheriges v1-Verhalten)
-     *   ctx:   Units mit context!='', indexiert nach "context.unit_key"
+     *   ctx:   Units mit context!='', indexiert nach "context.unit_key".
      *
      * @var array<int, array{exact: array<string,string>, ctx: array<string,string>}>
      */
@@ -188,8 +190,8 @@ final class WildcardLookupService implements TranslationCacheInvalidator
                    AND t.status <> :missing
                    AND t.value <> \'\'',
                 [
-                    'ns'      => self::NAMESPACE_WILDCARD,
-                    'clang'   => $clangId,
+                    'ns' => self::NAMESPACE_WILDCARD,
+                    'clang' => $clangId,
                     'missing' => Status::Missing->value,
                 ],
             );
@@ -199,11 +201,11 @@ final class WildcardLookupService implements TranslationCacheInvalidator
         }
 
         $exact = [];
-        $ctx   = [];
+        $ctx = [];
         foreach ($rows as $row) {
-            $key     = (string) $row['unit_key'];
+            $key = (string) $row['unit_key'];
             $context = (string) ($row['context'] ?? '');
-            $value   = (string) $row['value'];
+            $value = (string) $row['value'];
             if ('' === $key || '' === trim($value)) {
                 continue;
             }
@@ -243,7 +245,7 @@ final class WildcardLookupService implements TranslationCacheInvalidator
 
         $map = [];
         foreach ($rows as $row) {
-            $key   = (string) $row['wildcard'];
+            $key = (string) $row['wildcard'];
             $value = (string) $row['replace'];
             if ('' === $key || '' === trim($value)) {
                 continue;

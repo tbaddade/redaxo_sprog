@@ -45,11 +45,11 @@ final class NoopProvider implements ProviderInterface
         ?string $context = null,
     ): TranslationResult {
         return new TranslationResult(
-            text:       $text,
+            text: $text,
             confidence: null,
-            provider:   $this->name(),
-            meta:       [
-                'note'        => 'noop provider returned source verbatim',
+            provider: $this->name(),
+            meta: [
+                'note' => 'noop provider returned source verbatim',
                 'source_lang' => $sourceLang,
                 'target_lang' => $targetLang,
             ],

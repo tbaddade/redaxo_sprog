@@ -10,7 +10,8 @@
     "require-dev": {
         "phpstan/phpstan": "^2.0",
         "friendsofphp/php-cs-fixer": "^3.65",
-        "phpunit/phpunit": "^11.5"
+        "phpunit/phpunit": "^11.5",
+        "redaxo/php-cs-fixer-config": "^2.7"
     },
     "scripts": {
         "lint": "php-cs-fixer fix --dry-run --diff",

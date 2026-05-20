@@ -15,31 +15,25 @@ use Sprog\Filter;
 
 class Words extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'words';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
-        if ($arguments == '') {
+        if ('' == $arguments) {
             return $value;
         }
 
         $parts = explode(',', $arguments);
         $words = (int) $parts[0];
-        $end = isset($parts[1]) ? $parts[1] : '';
+        $end = $parts[1] ?? '';
 
-        preg_match('/^\s*+(?:\S++\s*+){1,'.$words.'}/u', $value, $matches);
+        preg_match('/^\s*+(?:\S++\s*+){1,' . $words . '}/u', $value, $matches);
         if (!isset($matches[0]) || mb_strlen($value) === mb_strlen($matches[0])) {
             return $value;
         }
-        return rtrim($matches[0]).$end;
+        return rtrim($matches[0]) . $end;
     }
 }

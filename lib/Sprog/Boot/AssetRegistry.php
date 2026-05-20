@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Sprog\Boot;
 
-use rex_addon;
+use rex_addon_interface;
 use rex_be_controller;
 use rex_view;
+
+use function in_array;
 
 /**
  * Registriert Backend-CSS/JS für die Sprog-Seiten.
@@ -23,7 +25,7 @@ use rex_view;
  */
 final class AssetRegistry
 {
-    public static function publish(rex_addon $addon): void
+    public static function publish(rex_addon_interface $addon): void
     {
         $version = $addon->getVersion();
 
@@ -50,8 +52,8 @@ final class AssetRegistry
         $pagePart2 = rex_be_controller::getCurrentPagePart(2);
         $deferredBundles = [
             'migration' => 'js/sprog.migration.js',
-            'editor'    => 'js/sprog.editor.js',
-            'inbox'     => 'js/sprog.inbox.js',
+            'editor' => 'js/sprog.editor.js',
+            'inbox' => 'js/sprog.inbox.js',
         ];
         if (isset($deferredBundles[$pagePart2])) {
             rex_view::addJsFile(

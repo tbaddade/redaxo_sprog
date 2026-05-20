@@ -7,6 +7,8 @@ namespace Sprog\Migration;
 use DateTimeImmutable;
 use JsonException;
 
+use function is_string;
+
 /**
  * Fortschritt einer einzelnen Migration-Quelle.
  *
@@ -24,19 +26,18 @@ final readonly class MigrationProgress
         public ?string $lastError,
         public ?DateTimeImmutable $startedAt,
         public ?DateTimeImmutable $completedAt,
-    ) {
-    }
+    ) {}
 
     public static function pending(string $source, int $totalRows): self
     {
         return new self(
-            source:          $source,
-            totalRows:       $totalRows,
-            processedRows:   0,
+            source: $source,
+            totalRows: $totalRows,
+            processedRows: 0,
             lastProcessedId: null,
-            lastError:       null,
-            startedAt:       null,
-            completedAt:     null,
+            lastError: null,
+            startedAt: null,
+            completedAt: null,
         );
     }
 
@@ -65,13 +66,13 @@ final readonly class MigrationProgress
     public function toArray(): array
     {
         return [
-            'source'            => $this->source,
-            'total_rows'        => $this->totalRows,
-            'processed_rows'    => $this->processedRows,
+            'source' => $this->source,
+            'total_rows' => $this->totalRows,
+            'processed_rows' => $this->processedRows,
             'last_processed_id' => $this->lastProcessedId,
-            'last_error'        => $this->lastError,
-            'started_at'        => $this->startedAt?->format('Y-m-d H:i:s'),
-            'completed_at'      => $this->completedAt?->format('Y-m-d H:i:s'),
+            'last_error' => $this->lastError,
+            'started_at' => $this->startedAt?->format('Y-m-d H:i:s'),
+            'completed_at' => $this->completedAt?->format('Y-m-d H:i:s'),
         ];
     }
 
@@ -87,13 +88,13 @@ final readonly class MigrationProgress
         }
 
         return new self(
-            source:          $data['source'],
-            totalRows:       isset($data['total_rows']) ? (int) $data['total_rows'] : 0,
-            processedRows:   isset($data['processed_rows']) ? (int) $data['processed_rows'] : 0,
+            source: $data['source'],
+            totalRows: isset($data['total_rows']) ? (int) $data['total_rows'] : 0,
+            processedRows: isset($data['processed_rows']) ? (int) $data['processed_rows'] : 0,
             lastProcessedId: isset($data['last_processed_id']) ? (int) $data['last_processed_id'] : null,
-            lastError:       isset($data['last_error']) && is_string($data['last_error']) ? $data['last_error'] : null,
-            startedAt:       isset($data['started_at']) && is_string($data['started_at']) ? new DateTimeImmutable($data['started_at']) : null,
-            completedAt:     isset($data['completed_at']) && is_string($data['completed_at']) ? new DateTimeImmutable($data['completed_at']) : null,
+            lastError: isset($data['last_error']) && is_string($data['last_error']) ? $data['last_error'] : null,
+            startedAt: isset($data['started_at']) && is_string($data['started_at']) ? new DateTimeImmutable($data['started_at']) : null,
+            completedAt: isset($data['completed_at']) && is_string($data['completed_at']) ? new DateTimeImmutable($data['completed_at']) : null,
         );
     }
 }

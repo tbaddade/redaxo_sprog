@@ -13,6 +13,8 @@ use Sprog\Enum\Status;
 use Sprog\Model\TranslationListFilter;
 use Sprog\Model\TranslationListItem;
 
+use function in_array;
+
 /**
  * Listen-Query für die Translation-Inbox.
  *
@@ -64,9 +66,9 @@ final class TranslationListService
         $items = $total > 0 ? $this->loadUnitItems($filter, $unitWhereSql, $unitParams) : [];
 
         return [
-            'items'    => $items,
-            'total'    => $total,
-            'page'     => $filter->page,
+            'items' => $items,
+            'total' => $total,
+            'page' => $filter->page,
             'pageSize' => $filter->pageSize,
         ];
     }
@@ -96,13 +98,13 @@ final class TranslationListService
      */
     private function loadUnitItems(TranslationListFilter $filter, string $whereSql, array $params): array
     {
-        $unitTable        = rex::getTable('sprog_unit');
+        $unitTable = rex::getTable('sprog_unit');
         $translationTable = rex::getTable('sprog_translation');
 
         // LIMIT/OFFSET via int-cast in den Query-String — siehe Hinweis in
         // TranslationRepository::findByClangAndStatus: nicht alle PDO-Treiber
         // binden Integer-Parameter korrekt an LIMIT.
-        $allParams                  = $params;
+        $allParams = $params;
         $allParams['display_clang'] = $filter->clangId;
 
         try {
@@ -167,11 +169,11 @@ final class TranslationListService
         $unitIdList = implode(',', array_map(static fn ($id) => (int) $id, $unitIds));
 
         $statusPlaceholders = [];
-        $params             = ['exclude_clang' => $excludeClang];
+        $params = ['exclude_clang' => $excludeClang];
         foreach ($statuses as $i => $status) {
-            $key                  = 'match_status_' . $i;
+            $key = 'match_status_' . $i;
             $statusPlaceholders[] = ':' . $key;
-            $params[$key]         = $status->value;
+            $params[$key] = $status->value;
         }
 
         try {
@@ -196,7 +198,7 @@ final class TranslationListService
             if (!isset($byUnit[$unitId])) {
                 $byUnit[$unitId] = [
                     'clang_id' => (int) $row['clang_id'],
-                    'status'   => (string) $row['status'],
+                    'status' => (string) $row['status'],
                 ];
             }
         }
@@ -216,20 +218,20 @@ final class TranslationListService
     {
         $translationTable = rex::getTable('sprog_translation');
 
-        $where  = ['1=1'];
+        $where = ['1=1'];
         $params = [];
 
         if (null !== $filter->namespace) {
-            $where[]             = 'u.namespace = :namespace';
+            $where[] = 'u.namespace = :namespace';
             $params['namespace'] = $filter->namespace;
         }
 
         if ([] !== $filter->statuses) {
             $placeholders = [];
             foreach ($filter->statuses as $i => $status) {
-                $key            = 'status_' . $i;
+                $key = 'status_' . $i;
                 $placeholders[] = ':' . $key;
-                $params[$key]   = $status->value;
+                $params[$key] = $status->value;
             }
             // Unit-weit: mind. eine Translation der Unit hat einen der Status.
             $where[] = 'EXISTS (
@@ -244,7 +246,7 @@ final class TranslationListService
             // mit '%' / '_' das Pattern ausweiten und full-table-scans
             // erzwingen oder unintendiert breitere Ergebnisse bekommen.
             $escaped = rex_sql::factory()->escapeLikeWildcards($filter->search);
-            $like    = '%' . $escaped . '%';
+            $like = '%' . $escaped . '%';
 
             // Suche auf unit_key ODER (Unit-weit) auf irgendeine Translation-Value.
             $where[] = '(
@@ -266,7 +268,7 @@ final class TranslationListService
      */
     private function hydrate(array $row, TranslationListFilter $filter, array $matchByUnit): TranslationListItem
     {
-        $unitId        = (int) $row['unit_id'];
+        $unitId = (int) $row['unit_id'];
         $displayStatus = null !== ($row['display_status'] ?? null)
             ? Status::from((string) $row['display_status'])
             : Status::Missing;
@@ -274,16 +276,16 @@ final class TranslationListService
         // Match-Marker nur setzen, wenn Filter aktiv UND Display-Status nicht
         // selbst im Filter liegt (sonst wäre die Anzeige-Sprache der Match —
         // dann kein extra Hinweis nötig, das Badge zeigt's schon).
-        $matchClangId   = null;
+        $matchClangId = null;
         $matchClangCode = null;
-        $matchStatus    = null;
+        $matchStatus = null;
 
         if ([] !== $filter->statuses && !in_array($displayStatus, $filter->statuses, true)) {
             $match = $matchByUnit[$unitId] ?? null;
             if (null !== $match) {
-                $matchClangId   = $match['clang_id'];
-                $matchStatus    = Status::from($match['status']);
-                $clang          = rex_clang::get($matchClangId);
+                $matchClangId = $match['clang_id'];
+                $matchStatus = Status::from($match['status']);
+                $clang = rex_clang::get($matchClangId);
                 $matchClangCode = null !== $clang ? $clang->getCode() : null;
             }
         }
@@ -292,26 +294,26 @@ final class TranslationListService
         $notes = null !== $notes && '' !== $notes ? (string) $notes : null;
 
         return new TranslationListItem(
-            unitId:               $unitId,
-            namespace:            (string) $row['namespace'],
-            unitKey:              (string) $row['unit_key'],
-            context:              (string) ($row['context'] ?? ''),
-            notes:                $notes,
-            displayClangId:       $filter->clangId,
+            unitId: $unitId,
+            namespace: (string) $row['namespace'],
+            unitKey: (string) $row['unit_key'],
+            context: (string) ($row['context'] ?? ''),
+            notes: $notes,
+            displayClangId: $filter->clangId,
             displayTranslationId: (int) ($row['display_translation_id'] ?? 0),
-            displayValue:         (string) ($row['display_value'] ?? ''),
-            displayStatus:        $displayStatus,
-            displayMtProvider:    isset($row['display_mt_provider']) && '' !== $row['display_mt_provider']
+            displayValue: (string) ($row['display_value'] ?? ''),
+            displayStatus: $displayStatus,
+            displayMtProvider: isset($row['display_mt_provider']) && '' !== $row['display_mt_provider']
                 ? (string) $row['display_mt_provider']
                 : null,
-            displayMtConfidence:  isset($row['display_mt_confidence']) && '' !== $row['display_mt_confidence']
+            displayMtConfidence: isset($row['display_mt_confidence']) && '' !== $row['display_mt_confidence']
                 ? (float) $row['display_mt_confidence']
                 : null,
-            displayRevision:      (int) ($row['display_revision'] ?? 0),
-            displayUpdatedAt:     $this->toDateTime($row['display_updatedate'] ?? null),
-            matchClangId:         $matchClangId,
-            matchClangCode:       $matchClangCode,
-            matchStatus:          $matchStatus,
+            displayRevision: (int) ($row['display_revision'] ?? 0),
+            displayUpdatedAt: $this->toDateTime($row['display_updatedate'] ?? null),
+            matchClangId: $matchClangId,
+            matchClangCode: $matchClangCode,
+            matchStatus: $matchStatus,
         );
     }
 

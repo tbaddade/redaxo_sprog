@@ -15,14 +15,14 @@ namespace Sprog\Enum;
  */
 enum SourceType: string
 {
-    case Wildcard     = 'wildcard';
+    case Wildcard = 'wildcard';
     case Abbreviation = 'abbreviation';
-    case Foreignword  = 'foreignword';
-    case Article      = 'article';
-    case Slice        = 'slice';
-    case YForm        = 'yform';
-    case Media        = 'media';
-    case Custom       = 'custom';
+    case Foreignword = 'foreignword';
+    case Article = 'article';
+    case Slice = 'slice';
+    case YForm = 'yform';
+    case Media = 'media';
+    case Custom = 'custom';
 
     /**
      * @return list<string>

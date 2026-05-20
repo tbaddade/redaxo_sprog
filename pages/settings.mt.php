@@ -9,7 +9,7 @@ if (null === $user || !$user->isAdmin()) {
     throw new rex_exception('Zugriff verweigert.');
 }
 
-$csrf          = rex_csrf_token::factory('sprog_settings_mt');
+$csrf = rex_csrf_token::factory('sprog_settings_mt');
 $flashMessages = [];
 
 /*
@@ -26,9 +26,9 @@ if ('post' === rex_request::requestMethod()) {
     if (!$csrf->isValid()) {
         $flashMessages[] = rex_view::error(rex_i18n::msg('sprog_settings_mt_csrf_invalid'));
     } else {
-        $deeplKeyInput  = trim((string) rex_request('deepl_key', 'string', ''));
+        $deeplKeyInput = trim((string) rex_request('deepl_key', 'string', ''));
         $deeplKeyRemove = 1 === (int) rex_request('deepl_key_remove', 'int', 0);
-        $changed        = 0;
+        $changed = 0;
 
         if ($deeplKeyRemove) {
             rex_config::remove('sprog', 'mt_deepl_key');
@@ -55,7 +55,7 @@ if ('post' === rex_request::requestMethod()) {
  | Aktueller Status — frisch aus rex_config gelesen, nach POST also schon updated.
  |---------------------------------------------------------------------------
  */
-$mtService       = MtService::create();
+$mtService = MtService::create();
 $configuredNames = $mtService->configuredProviderNames();
 
 // Wir definieren die UI-bekannten Provider (alles ausser Noop) explizit als
@@ -63,11 +63,11 @@ $configuredNames = $mtService->configuredProviderNames();
 // als Slot in der UI auftauchen.
 $uiProviders = [
     'deepl' => [
-        'label'            => 'DeepL',
-        'configured'       => in_array('deepl', $configuredNames, true),
-        'key_field'        => 'deepl_key',
-        'remove_field'     => 'deepl_key_remove',
-        'hint_lang_key'    => 'sprog_settings_mt_deepl_key_hint',
+        'label' => 'DeepL',
+        'configured' => in_array('deepl', $configuredNames, true),
+        'key_field' => 'deepl_key',
+        'remove_field' => 'deepl_key_remove',
+        'hint_lang_key' => 'sprog_settings_mt_deepl_key_hint',
     ],
 ];
 
@@ -86,7 +86,7 @@ $uiProviders = [
         <?= $csrf->getHiddenField() ?>
 
         <?php foreach ($uiProviders as $name => $cfg) :
-            $statusKey   = $cfg['configured']
+            $statusKey = $cfg['configured']
                 ? 'sprog_settings_mt_status_configured'
                 : 'sprog_settings_mt_status_not_configured';
             $statusModif = $cfg['configured'] ? 'approved' : 'missing';
@@ -132,9 +132,9 @@ $uiProviders = [
                         >
                         <span><?= rex_i18n::msg('sprog_settings_mt_key_remove') ?></span>
                     </label>
-                <?php endif; ?>
+                <?php endif ?>
             </fieldset>
-        <?php endforeach; ?>
+        <?php endforeach ?>
 
         <div class="sprog-settings-mt--actions">
             <button type="submit" class="sprog-settings-mt--button sprog-settings-mt--button-primary">

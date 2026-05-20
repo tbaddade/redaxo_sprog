@@ -27,7 +27,7 @@ final class GlossaryRepository
      */
     public function find(int $id): ?GlossaryEntry
     {
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT * FROM ' . $this->tableName() . ' WHERE id = :id LIMIT 1',
             ['id' => $id],
@@ -41,13 +41,12 @@ final class GlossaryRepository
     }
 
     /**
-     * @return list<GlossaryEntry>
-     *
      * @throws rex_sql_exception
+     * @return list<GlossaryEntry>
      */
     public function findByPair(int $sourceClangId, int $targetClangId): array
     {
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT * FROM ' . $this->tableName() . '
              WHERE source_clang_id = :source AND target_clang_id = :target
@@ -61,13 +60,12 @@ final class GlossaryRepository
     /**
      * Lookup-Map für die MT-Pipeline: source_term => target_term.
      *
-     * @return array<string, string>
-     *
      * @throws rex_sql_exception
+     * @return array<string, string>
      */
     public function mapForPair(int $sourceClangId, int $targetClangId): array
     {
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT source_term, target_term FROM ' . $this->tableName() . '
              WHERE source_clang_id = :source AND target_clang_id = :target',
@@ -76,7 +74,7 @@ final class GlossaryRepository
 
         $map = [];
         foreach ($rows as $row) {
-            $key   = (string) $row['source_term'];
+            $key = (string) $row['source_term'];
             $value = (string) $row['target_term'];
             if ('' === $key || '' === $value) {
                 continue;
@@ -107,18 +105,14 @@ final class GlossaryRepository
             $sql->insert();
             $newId = (int) $sql->getLastId();
 
-            return $this->find($newId) ?? throw new RuntimeException(
-                'GlossaryEntry ' . $newId . ' nach Insert nicht auffindbar.',
-            );
+            return $this->find($newId) ?? throw new RuntimeException('GlossaryEntry ' . $newId . ' nach Insert nicht auffindbar.');
         }
 
         $sql->addGlobalUpdateFields();
         $sql->setWhere('id = :id', ['id' => $entry->id]);
         $sql->update();
 
-        return $this->find($entry->id) ?? throw new RuntimeException(
-            'GlossaryEntry ' . $entry->id . ' nach Update nicht auffindbar.',
-        );
+        return $this->find($entry->id) ?? throw new RuntimeException('GlossaryEntry ' . $entry->id . ' nach Update nicht auffindbar.');
     }
 
     /**
@@ -144,14 +138,14 @@ final class GlossaryRepository
     private function hydrate(array $row): GlossaryEntry
     {
         return new GlossaryEntry(
-            id:            (int) $row['id'],
+            id: (int) $row['id'],
             sourceClangId: (int) $row['source_clang_id'],
             targetClangId: (int) $row['target_clang_id'],
-            sourceTerm:    (string) $row['source_term'],
-            targetTerm:    (string) $row['target_term'],
-            notes:         isset($row['notes']) && '' !== $row['notes'] ? (string) $row['notes'] : null,
-            createdAt:     $this->toDateTime($row['createdate'] ?? null),
-            updatedAt:     $this->toDateTime($row['updatedate'] ?? null),
+            sourceTerm: (string) $row['source_term'],
+            targetTerm: (string) $row['target_term'],
+            notes: isset($row['notes']) && '' !== $row['notes'] ? (string) $row['notes'] : null,
+            createdAt: $this->toDateTime($row['createdate'] ?? null),
+            updatedAt: $this->toDateTime($row['updatedate'] ?? null),
         );
     }
 

@@ -18,6 +18,10 @@ use Sprog\Service\TranslationService;
 use Sprog\Support\ContentHash;
 use Throwable;
 
+use function count;
+
+use const PHP_INT_MIN;
+
 /**
  * Migriert v1-Abbreviations in das v2-Unit/Translation-Schema.
  *
@@ -51,8 +55,7 @@ final class AbbreviationMigrator implements MigratorInterface
     public function __construct(
         private readonly UnitRepository $units = new UnitRepository(),
         private readonly TranslationRepository $translations = new TranslationRepository(),
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {
@@ -77,7 +80,7 @@ final class AbbreviationMigrator implements MigratorInterface
             return 0;
         }
 
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray('SELECT COUNT(DISTINCT abbreviation) AS cnt FROM ' . $this->v1Table());
 
         return (int) ($rows[0]['cnt'] ?? 0);
@@ -93,12 +96,12 @@ final class AbbreviationMigrator implements MigratorInterface
         }
 
         $v1Table = $this->v1Table();
-        $lastId  = $lastProcessedId ?? PHP_INT_MIN;
+        $lastId = $lastProcessedId ?? PHP_INT_MIN;
 
         // Gruppen-Cursor: pro abbreviation-String den ältesten id-Wert,
         // sortiert nach diesem ältesten id. Bei Resume nimmt das nur
         // Gruppen mit, deren ältester Eintrag jenseits des Cursors liegt.
-        $sql       = rex_sql::factory();
+        $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT abbreviation, MIN(id) AS min_id
              FROM ' . $v1Table . '
@@ -118,7 +121,7 @@ final class AbbreviationMigrator implements MigratorInterface
 
         foreach ($groupRows as $groupRow) {
             $abbrName = trim((string) ($groupRow['abbreviation'] ?? ''));
-            $minId    = (int) $groupRow['min_id'];
+            $minId = (int) $groupRow['min_id'];
 
             // Cursor IMMER fortschreiben — auch wenn die Gruppe geskippt wird;
             // sonst läuft der nächste Aufruf wieder über dieselbe leere/duplikate Gruppe.
@@ -131,7 +134,7 @@ final class AbbreviationMigrator implements MigratorInterface
             }
 
             if (null !== $this->units->findByKey('abbreviation', $abbrName)) {
-                $processed++;
+                ++$processed;
                 continue;
             }
 
@@ -151,33 +154,33 @@ final class AbbreviationMigrator implements MigratorInterface
 
             try {
                 $unit = $this->units->save(new Unit(
-                    id:         null,
-                    namespace:  'abbreviation',
-                    unitKey:    $abbrName,
+                    id: null,
+                    namespace: 'abbreviation',
+                    unitKey: $abbrName,
                     sourceType: SourceType::Abbreviation,
-                    sourceRef:  null,
+                    sourceRef: null,
                     sourceHash: null,
-                    tags:       [],
-                    notes:      null,
+                    tags: [],
+                    notes: null,
                 ));
 
                 foreach ($rows as $row) {
-                    $value  = (string) ($row['text'] ?? '');
+                    $value = (string) ($row['text'] ?? '');
                     $status = '' === $value ? Status::Missing : Status::Translated;
 
                     $this->translations->save(new Translation(
-                        id:                       null,
-                        unitId:                   (int) $unit->id,
-                        clangId:                  (int) $row['clang_id'],
-                        value:                    $value,
-                        valueHash:                '' === $value ? null : ContentHash::of($value),
-                        sourceHashAtTranslation:  null,
-                        status:                   $status,
-                        mtProvider:               null,
-                        mtConfidence:             null,
-                        translatorId:             null,
-                        reviewerId:               null,
-                        revision:                 0,
+                        id: null,
+                        unitId: (int) $unit->id,
+                        clangId: (int) $row['clang_id'],
+                        value: $value,
+                        valueHash: '' === $value ? null : ContentHash::of($value),
+                        sourceHashAtTranslation: null,
+                        status: $status,
+                        mtProvider: null,
+                        mtConfidence: null,
+                        translatorId: null,
+                        reviewerId: null,
+                        revision: 0,
                     ));
                 }
 
@@ -190,7 +193,7 @@ final class AbbreviationMigrator implements MigratorInterface
                 throw $e;
             }
 
-            $processed++;
+            ++$processed;
         }
 
         $done = count($groupRows) < $chunkSize;

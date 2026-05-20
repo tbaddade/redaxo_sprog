@@ -17,6 +17,12 @@ use Sprog\Migration\MigratorInterface;
 use Sprog\Migration\WildcardMigrator;
 use Throwable;
 
+use function is_array;
+use function is_string;
+use function sprintf;
+
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Orchestriert die v1 → v2 Datenmigration.
  *
@@ -37,7 +43,7 @@ use Throwable;
 final class MigrationService
 {
     private const CONFIG_NAMESPACE = 'sprog';
-    private const CONFIG_KEY       = 'migration_state';
+    private const CONFIG_KEY = 'migration_state';
 
     private const MIN_CHUNK_SIZE = 1;
     private const MAX_CHUNK_SIZE = 1000;
@@ -51,9 +57,7 @@ final class MigrationService
     ) {
         foreach ($migrators as $key => $migrator) {
             if (!is_string($key) || $key !== $migrator->name()) {
-                throw new InvalidArgumentException(
-                    'Migrator-Key muss identisch zum Migrator::name() sein.',
-                );
+                throw new InvalidArgumentException('Migrator-Key muss identisch zum Migrator::name() sein.');
             }
         }
     }
@@ -150,12 +154,7 @@ final class MigrationService
     public function runChunk(string $source, int $chunkSize, ?int $userId = null): MigrationProgress
     {
         if ($chunkSize < self::MIN_CHUNK_SIZE || $chunkSize > self::MAX_CHUNK_SIZE) {
-            throw new InvalidArgumentException(sprintf(
-                'chunkSize muss im Bereich [%d, %d] liegen, ist %d.',
-                self::MIN_CHUNK_SIZE,
-                self::MAX_CHUNK_SIZE,
-                $chunkSize,
-            ));
+            throw new InvalidArgumentException(sprintf('chunkSize muss im Bereich [%d, %d] liegen, ist %d.', self::MIN_CHUNK_SIZE, self::MAX_CHUNK_SIZE, $chunkSize));
         }
 
         if (!isset($this->migrators[$source])) {
@@ -167,7 +166,7 @@ final class MigrationService
             throw new RuntimeException('Migrator "' . $source . '" ist in dieser Installation nicht verfügbar.');
         }
 
-        $state    = $this->state();
+        $state = $this->state();
         $progress = $state->for($source);
 
         if (null === $progress) {
@@ -188,49 +187,49 @@ final class MigrationService
             $result = $migrator->migrateChunk($progress->lastProcessedId, $chunkSize);
         } catch (Throwable $e) {
             $errorProgress = new MigrationProgress(
-                source:          $progress->source,
-                totalRows:       $progress->totalRows,
-                processedRows:   $progress->processedRows,
+                source: $progress->source,
+                totalRows: $progress->totalRows,
+                processedRows: $progress->processedRows,
                 lastProcessedId: $progress->lastProcessedId,
-                lastError:       substr($e->getMessage(), 0, 1000),
-                startedAt:       $startedAt,
-                completedAt:     null,
+                lastError: substr($e->getMessage(), 0, 1000),
+                startedAt: $startedAt,
+                completedAt: null,
             );
             $this->persist($state->withProgress($errorProgress));
 
             $this->activity->log('migration.error', null, null, $userId, [
                 'source' => $source,
-                'error'  => substr($e->getMessage(), 0, 200),
+                'error' => substr($e->getMessage(), 0, 200),
             ]);
 
             throw $e;
         }
 
         $nextProcessed = $progress->processedRows + $result->processed;
-        $completedAt   = $result->done ? new DateTimeImmutable() : null;
+        $completedAt = $result->done ? new DateTimeImmutable() : null;
 
         $nextProgress = new MigrationProgress(
-            source:          $progress->source,
-            totalRows:       $progress->totalRows,
-            processedRows:   $nextProcessed,
+            source: $progress->source,
+            totalRows: $progress->totalRows,
+            processedRows: $nextProcessed,
             lastProcessedId: $result->lastProcessedId,
-            lastError:       null,
-            startedAt:       $startedAt,
-            completedAt:     $completedAt,
+            lastError: null,
+            startedAt: $startedAt,
+            completedAt: $completedAt,
         );
 
         $this->persist($state->withProgress($nextProgress));
 
         if ($result->done) {
             $this->activity->log('migration.completed', null, null, $userId, [
-                'source'         => $source,
+                'source' => $source,
                 'processed_rows' => $nextProcessed,
             ]);
         } else {
             $this->activity->log('migration.chunk', null, null, $userId, [
-                'source'    => $source,
+                'source' => $source,
                 'processed' => $result->processed,
-                'total'     => $nextProcessed,
+                'total' => $nextProcessed,
             ]);
         }
 

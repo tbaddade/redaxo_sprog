@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Sprog\Enum;
 
+use function in_array;
+
 /**
  * Workflow-Status einer Übersetzung.
  *
@@ -59,7 +61,7 @@ enum Status: string
      */
     public function isFinal(): bool
     {
-        return $this === self::Approved;
+        return self::Approved === $this;
     }
 
     /**
@@ -89,13 +91,13 @@ enum Status: string
     public function allowedNextStates(): array
     {
         return match ($this) {
-            self::Missing      => [self::Draft, self::Translated],
-            self::Draft        => [self::Translated, self::NeedsReview, self::Missing],
-            self::Translated   => [self::NeedsReview, self::Approved, self::Stale, self::Draft],
-            self::NeedsReview  => [self::Approved, self::Revise, self::Translated, self::Stale, self::Draft],
-            self::Revise       => [self::Draft, self::Translated, self::NeedsReview],
-            self::Approved     => [self::Stale, self::NeedsReview],
-            self::Stale        => [self::Draft, self::Translated, self::NeedsReview],
+            self::Missing => [self::Draft, self::Translated],
+            self::Draft => [self::Translated, self::NeedsReview, self::Missing],
+            self::Translated => [self::NeedsReview, self::Approved, self::Stale, self::Draft],
+            self::NeedsReview => [self::Approved, self::Revise, self::Translated, self::Stale, self::Draft],
+            self::Revise => [self::Draft, self::Translated, self::NeedsReview],
+            self::Approved => [self::Stale, self::NeedsReview],
+            self::Stale => [self::Draft, self::Translated, self::NeedsReview],
         };
     }
 
@@ -118,13 +120,13 @@ enum Status: string
     public function userActions(): array
     {
         return match ($this) {
-            self::Missing      => [],
-            self::Draft        => [self::Translated, self::NeedsReview],
-            self::Translated   => [self::NeedsReview, self::Approved],
-            self::NeedsReview  => [self::Revise, self::Approved],
-            self::Revise       => [self::Translated, self::NeedsReview],
-            self::Approved     => [self::NeedsReview],
-            self::Stale        => [self::Translated, self::NeedsReview],
+            self::Missing => [],
+            self::Draft => [self::Translated, self::NeedsReview],
+            self::Translated => [self::NeedsReview, self::Approved],
+            self::NeedsReview => [self::Revise, self::Approved],
+            self::Revise => [self::Translated, self::NeedsReview],
+            self::Approved => [self::NeedsReview],
+            self::Stale => [self::Translated, self::NeedsReview],
         };
     }
 

@@ -7,6 +7,8 @@ namespace Sprog\Exception;
 use RuntimeException;
 use Throwable;
 
+use function sprintf;
+
 /**
  * Wird geworfen, wenn ein UPDATE auf einer Translation nicht durchgeht,
  * weil die zugrundeliegende Row in der DB inzwischen eine andere Revision

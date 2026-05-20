@@ -42,6 +42,5 @@ final readonly class Unit
         public ?string $notes = null,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
-    ) {
-    }
+    ) {}
 }

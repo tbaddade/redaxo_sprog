@@ -7,6 +7,25 @@ namespace Sprog\Mt;
 use JsonException;
 use Sprog\Exception\ProviderException;
 
+use function in_array;
+use function is_array;
+use function is_string;
+use function sprintf;
+
+use const CURLINFO_HTTP_CODE;
+use const CURLOPT_CONNECTTIMEOUT;
+use const CURLOPT_FOLLOWLOCATION;
+use const CURLOPT_HTTPHEADER;
+use const CURLOPT_POST;
+use const CURLOPT_POSTFIELDS;
+use const CURLOPT_RETURNTRANSFER;
+use const CURLOPT_SSL_VERIFYHOST;
+use const CURLOPT_SSL_VERIFYPEER;
+use const CURLOPT_TIMEOUT;
+use const CURLOPT_URL;
+use const JSON_THROW_ON_ERROR;
+use const PHP_QUERY_RFC3986;
+
 /**
  * MT-Provider für DeepL (https://www.deepl.com/de/docs-api).
  *
@@ -27,15 +46,14 @@ use Sprog\Exception\ProviderException;
 final class DeepLProvider implements ProviderInterface
 {
     private const ENDPOINT_FREE = 'https://api-free.deepl.com/v2/translate';
-    private const ENDPOINT_PRO  = 'https://api.deepl.com/v2/translate';
+    private const ENDPOINT_PRO = 'https://api.deepl.com/v2/translate';
 
     private const CONNECT_TIMEOUT = 10;
     private const REQUEST_TIMEOUT = 30;
 
     public function __construct(
         private readonly string $apiKey,
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {
@@ -78,15 +96,15 @@ final class DeepLProvider implements ProviderInterface
         if ('' === $text) {
             // DeepL würde leere Strings ablehnen — wir kürzen den Roundtrip.
             return new TranslationResult(
-                text:       '',
+                text: '',
                 confidence: null,
-                provider:   $this->name(),
-                meta:       ['note' => 'empty input skipped'],
+                provider: $this->name(),
+                meta: ['note' => 'empty input skipped'],
             );
         }
 
         $params = [
-            'text'        => $text,
+            'text' => $text,
             'source_lang' => strtoupper($sourceLang),
             'target_lang' => strtoupper($targetLang),
         ];
@@ -94,45 +112,35 @@ final class DeepLProvider implements ProviderInterface
         [$httpStatus, $body] = $this->postForm($this->endpoint(), $params);
 
         if (200 !== $httpStatus) {
-            throw new ProviderException(
-                $this->mapHttpError($httpStatus),
-                $this->name(),
-            );
+            throw new ProviderException($this->mapHttpError($httpStatus), $this->name());
         }
 
         try {
             /** @var array<string,mixed> $decoded */
             $decoded = json_decode($body, true, 16, JSON_THROW_ON_ERROR);
         } catch (JsonException $e) {
-            throw new ProviderException(
-                'DeepL-Antwort konnte nicht als JSON gelesen werden.',
-                $this->name(),
-                $e,
-            );
+            throw new ProviderException('DeepL-Antwort konnte nicht als JSON gelesen werden.', $this->name(), $e);
         }
 
         $translations = $decoded['translations'] ?? null;
         if (!is_array($translations) || !isset($translations[0]) || !is_array($translations[0])) {
-            throw new ProviderException(
-                'DeepL-Antwort enthält keine translations.',
-                $this->name(),
-            );
+            throw new ProviderException('DeepL-Antwort enthält keine translations.', $this->name());
         }
 
-        $first    = $translations[0];
+        $first = $translations[0];
         $translated = isset($first['text']) && is_string($first['text']) ? $first['text'] : '';
-        $detected   = isset($first['detected_source_language']) && is_string($first['detected_source_language'])
+        $detected = isset($first['detected_source_language']) && is_string($first['detected_source_language'])
             ? strtolower($first['detected_source_language'])
             : null;
 
         return new TranslationResult(
-            text:       $translated,
+            text: $translated,
             // DeepL gibt keine Confidence-Werte zurück.
             confidence: null,
-            provider:   $this->name(),
-            meta:       [
+            provider: $this->name(),
+            meta: [
                 'detected_source_language' => $detected,
-                'endpoint_tier'            => $this->isFreeTier() ? 'free' : 'pro',
+                'endpoint_tier' => $this->isFreeTier() ? 'free' : 'pro',
             ],
         );
     }
@@ -167,10 +175,10 @@ final class DeepLProvider implements ProviderInterface
         }
 
         curl_setopt_array($ch, [
-            CURLOPT_URL            => $url,
-            CURLOPT_POST           => true,
-            CURLOPT_POSTFIELDS     => http_build_query($params, '', '&', PHP_QUERY_RFC3986),
-            CURLOPT_HTTPHEADER     => [
+            CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query($params, '', '&', PHP_QUERY_RFC3986),
+            CURLOPT_HTTPHEADER => [
                 'Authorization: DeepL-Auth-Key ' . $this->apiKey,
                 'Content-Type: application/x-www-form-urlencoded',
                 'Accept: application/json',
@@ -178,14 +186,14 @@ final class DeepLProvider implements ProviderInterface
             ],
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CONNECTTIMEOUT => self::CONNECT_TIMEOUT,
-            CURLOPT_TIMEOUT        => self::REQUEST_TIMEOUT,
+            CURLOPT_TIMEOUT => self::REQUEST_TIMEOUT,
             CURLOPT_SSL_VERIFYPEER => true,
             CURLOPT_SSL_VERIFYHOST => 2,
             CURLOPT_FOLLOWLOCATION => false,
         ]);
 
-        $body   = curl_exec($ch);
-        $errno  = curl_errno($ch);
+        $body = curl_exec($ch);
+        $errno = curl_errno($ch);
         $errstr = curl_error($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
@@ -194,10 +202,7 @@ final class DeepLProvider implements ProviderInterface
             // Fehlertext sanitisieren — falls cURL aus irgendwelchen Gründen
             // den API-Key ausspuckt (z.B. via debug-output), niemals weiterleiten.
             $clean = $this->sanitizeForLog($errstr);
-            throw new ProviderException(
-                sprintf('Netzwerk-Fehler beim DeepL-Aufruf (cURL #%d): %s', $errno, $clean),
-                $this->name(),
-            );
+            throw new ProviderException(sprintf('Netzwerk-Fehler beim DeepL-Aufruf (cURL #%d): %s', $errno, $clean), $this->name());
         }
 
         return [$status, (string) $body];
@@ -213,7 +218,7 @@ final class DeepLProvider implements ProviderInterface
             429 => 'DeepL-Rate-Limit erreicht (HTTP 429). Bitte später erneut versuchen.',
             456 => 'DeepL-Kontingent aufgebraucht (HTTP 456).',
             500, 503 => 'DeepL nicht erreichbar oder Wartung (HTTP ' . $status . ').',
-            default  => 'DeepL hat HTTP ' . $status . ' geantwortet.',
+            default => 'DeepL hat HTTP ' . $status . ' geantwortet.',
         };
     }
 

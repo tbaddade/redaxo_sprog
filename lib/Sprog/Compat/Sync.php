@@ -11,6 +11,15 @@
 
 namespace Sprog\Compat;
 
+use rex;
+use rex_api_exception;
+use rex_article_cache;
+use rex_sql;
+use rex_sql_exception;
+
+use function count;
+use function in_array;
+
 class Sync
 {
     /**
@@ -21,21 +30,21 @@ class Sync
         try {
             $id = $params['id'];
             $clangId = $params['clang'];
-            $parentId = isset($params['parent_id']) ? $params['parent_id'] : -1;
-            $articleName = isset($params['name']) ? $params['name'] : '';
+            $parentId = $params['parent_id'] ?? -1;
+            $articleName = $params['name'] ?? '';
 
-            if ($articleName != '') {
-                \rex_sql::factory()
-                    ->setTable(\rex::getTable('article'))
+            if ('' != $articleName) {
+                rex_sql::factory()
+                    ->setTable(rex::getTable('article'))
                     ->setWhere('(id = :id OR (parent_id = :parent_id AND startarticle = 0)) AND clang_id = :clang', ['id' => $id, 'parent_id' => $parentId, 'clang' => $clangId])
                     ->setValue('catname', $articleName)
                     ->addGlobalUpdateFields()
                     ->update();
 
-                \rex_article_cache::delete($id, $clangId);
+                rex_article_cache::delete($id, $clangId);
             }
-        } catch (\rex_sql_exception $e) {
-            throw new \rex_api_exception($e);
+        } catch (rex_sql_exception $e) {
+            throw new rex_api_exception($e);
         }
     }
 
@@ -47,20 +56,20 @@ class Sync
         try {
             $id = $params['id'];
             $clangId = $params['clang'];
-            $categoryName = isset($params['data']['catname']) ? $params['data']['catname'] : '';
+            $categoryName = $params['data']['catname'] ?? '';
 
-            if ($categoryName != '') {
-                \rex_sql::factory()
-                    ->setTable(\rex::getTable('article'))
+            if ('' != $categoryName) {
+                rex_sql::factory()
+                    ->setTable(rex::getTable('article'))
                     ->setWhere('id = :id AND clang_id = :clang', ['id' => $id, 'clang' => $clangId])
                     ->setValue('name', $categoryName)
                     ->addGlobalUpdateFields()
                     ->update();
 
-                \rex_article_cache::delete($id, $clangId);
+                rex_article_cache::delete($id, $clangId);
             }
-        } catch (\rex_sql_exception $e) {
-            throw new \rex_api_exception($e);
+        } catch (rex_sql_exception $e) {
+            throw new rex_api_exception($e);
         }
     }
 
@@ -75,16 +84,16 @@ class Sync
             $status = $params['status'];
 
             // ----- Update Article Status
-            \rex_sql::factory()
-                ->setTable(\rex::getTable('article'))
+            rex_sql::factory()
+                ->setTable(rex::getTable('article'))
                 ->setWhere('id = :id AND clang_id != :clang', ['id' => $id, 'clang' => $clangId])
                 ->setValue('status', $status)
                 ->addGlobalUpdateFields()
                 ->update();
 
-            \rex_article_cache::delete($id);
-        } catch (\rex_sql_exception $e) {
-            throw new \rex_api_exception($e);
+            rex_article_cache::delete($id);
+        } catch (rex_sql_exception $e) {
+            throw new rex_api_exception($e);
         }
     }
 
@@ -96,21 +105,21 @@ class Sync
         try {
             $id = $params['id'];
             $clangId = $params['clang'];
-            $templateId = isset($params['template_id']) ? $params['template_id'] : 0;
+            $templateId = $params['template_id'] ?? 0;
 
             // ----- Update Template Id
             if ($templateId > 0) {
-                \rex_sql::factory()
-                    ->setTable(\rex::getTable('article'))
+                rex_sql::factory()
+                    ->setTable(rex::getTable('article'))
                     ->setWhere('id = :id AND clang_id != :clang', ['id' => $id, 'clang' => $clangId])
                     ->setValue('template_id', $templateId)
                     ->addGlobalUpdateFields()
                     ->update();
 
-                \rex_article_cache::delete($id);
+                rex_article_cache::delete($id);
             }
-        } catch (\rex_sql_exception $e) {
-            throw new \rex_api_exception($e);
+        } catch (rex_sql_exception $e) {
+            throw new rex_api_exception($e);
         }
     }
 
@@ -121,7 +130,7 @@ class Sync
     public static function articleMetainfo(array $params, array $fields, int $toClangId = 0): void
     {
         // Check whether field exists in table
-        $sql = \rex_sql::factory()->setQuery('SELECT * FROM '.\rex::getTable('article').' LIMIT 1');
+        $sql = rex_sql::factory()->setQuery('SELECT * FROM ' . rex::getTable('article') . ' LIMIT 1');
         $fieldNames = $sql->getFieldnames();
         foreach ($fields as $index => $field) {
             if (!in_array($field, $fieldNames)) {
@@ -133,29 +142,28 @@ class Sync
             return;
         }
 
-
         $id = $params['id'];
         $clangId = $params['clang'];
-        $saveFields = \rex_sql::factory()
-            ->setTable(\rex::getTable('article'))
+        $saveFields = rex_sql::factory()
+            ->setTable(rex::getTable('article'))
             ->setWhere('id = :id AND clang_id = :clang', ['id' => $id, 'clang' => $clangId])
             ->select(implode(',', $fields))
             ->getArray();
 
-        if (count($saveFields) == 1) {
+        if (1 == count($saveFields)) {
             $saveFields = $saveFields[0];
             try {
                 // ----- Update Category Metainfo
-                \rex_sql::factory()
-                    ->setTable(\rex::getTable('article'))
-                    ->setWhere('id = :id AND clang_id '.($toClangId > 0 ? '=' : '!=').' :clang', ['id' => $id, 'clang' => ($toClangId > 0 ? $toClangId : $clangId)])
+                rex_sql::factory()
+                    ->setTable(rex::getTable('article'))
+                    ->setWhere('id = :id AND clang_id ' . ($toClangId > 0 ? '=' : '!=') . ' :clang', ['id' => $id, 'clang' => ($toClangId > 0 ? $toClangId : $clangId)])
                     ->setValues($saveFields)
                     ->addGlobalUpdateFields()
                     ->update();
 
-                \rex_article_cache::delete($id);
-            } catch (\rex_sql_exception $e) {
-                throw new \rex_api_exception($e);
+                rex_article_cache::delete($id);
+            } catch (rex_sql_exception $e) {
+                throw new rex_api_exception($e);
             }
         }
     }

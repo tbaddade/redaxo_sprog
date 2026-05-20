@@ -17,10 +17,10 @@ use InvalidArgumentException;
 final readonly class TranslationResult
 {
     /**
-     * @param string              $text       Der übersetzte Text.
+     * @param string              $text       der übersetzte Text
      * @param ?float              $confidence Optionaler Confidence-Score 0.0–1.0. NULL, wenn der Provider keine
      *                                        Schätzung liefert (z.B. DeepL gibt das nicht zurück).
-     * @param string              $provider   Provider-Name (siehe ProviderInterface::name()).
+     * @param string              $provider   provider-Name (siehe ProviderInterface::name())
      * @param array<string,mixed> $meta       Provider-spezifische Extras (z.B. detected source lang, used model,
      *                                        token-counts). Wird zu Diagnose-/Audit-Zwecken durchgereicht, nicht
      *                                        zur Anzeige gedacht.

@@ -13,6 +13,11 @@ use RuntimeException;
 use Sprog\Enum\SourceType;
 use Sprog\Model\Unit;
 
+use function is_array;
+use function is_string;
+
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Persistenz-Schicht für sprog_unit.
  *
@@ -49,10 +54,10 @@ final class UnitRepository
      * Wird vom Inbox-Akkordeon genutzt, um pro Page nicht N+1 Selects abzusetzen.
      *
      * @param list<int> $ids
-     * @return array<int, Unit>  id → Unit
      *
      * @throws rex_sql_exception
      * @throws JsonException
+     * @return array<int, Unit>  id → Unit
      */
     public function findMany(array $ids): array
     {
@@ -60,10 +65,10 @@ final class UnitRepository
             return [];
         }
 
-        $ints     = array_map(static fn ($id) => (int) $id, $ids);
+        $ints = array_map(static fn ($id) => (int) $id, $ids);
         $inClause = implode(',', $ints);
 
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray(
             'SELECT * FROM ' . $this->tableName() . ' WHERE id IN (' . $inClause . ')',
         );
@@ -89,9 +94,8 @@ final class UnitRepository
      * genutzt, damit der User beim Anlegen neuer Units bereits bekannte
      * Bereiche schnell auswählen kann.
      *
-     * @return list<string>
-     *
      * @throws rex_sql_exception
+     * @return list<string>
      */
     public function findAllContexts(): array
     {
@@ -120,8 +124,8 @@ final class UnitRepository
              LIMIT 1',
             [
                 'namespace' => $namespace,
-                'context'   => $context,
-                'unit_key'  => $unitKey,
+                'context' => $context,
+                'unit_key' => $unitKey,
             ],
         );
 
@@ -136,10 +140,9 @@ final class UnitRepository
      * Alle Units, die auf eine bestimmte REDAXO-Entität verweisen.
      * Praktisch z.B. für "alle Übersetzungen zu Artikel 42 finden".
      *
-     * @return list<Unit>
-     *
      * @throws rex_sql_exception
      * @throws JsonException
+     * @return list<Unit>
      */
     public function findBySource(SourceType $type, string $ref): array
     {
@@ -183,18 +186,14 @@ final class UnitRepository
             $sql->insert();
             $newId = (int) $sql->getLastId();
 
-            return $this->find($newId) ?? throw new RuntimeException(
-                'Unit ' . $newId . ' nach Insert nicht auffindbar.',
-            );
+            return $this->find($newId) ?? throw new RuntimeException('Unit ' . $newId . ' nach Insert nicht auffindbar.');
         }
 
         $sql->addGlobalUpdateFields();
         $sql->setWhere('id = :id', ['id' => $unit->id]);
         $sql->update();
 
-        return $this->find($unit->id) ?? throw new RuntimeException(
-            'Unit ' . $unit->id . ' nach Update nicht auffindbar.',
-        );
+        return $this->find($unit->id) ?? throw new RuntimeException('Unit ' . $unit->id . ' nach Update nicht auffindbar.');
     }
 
     /**
@@ -258,17 +257,17 @@ final class UnitRepository
         }
 
         return new Unit(
-            id:         (int) $row['id'],
-            namespace:  (string) $row['namespace'],
-            unitKey:    (string) $row['unit_key'],
-            context:    isset($row['context']) ? (string) $row['context'] : '',
+            id: (int) $row['id'],
+            namespace: (string) $row['namespace'],
+            unitKey: (string) $row['unit_key'],
+            context: isset($row['context']) ? (string) $row['context'] : '',
             sourceType: $sourceType,
-            sourceRef:  isset($row['source_ref']) ? (string) $row['source_ref'] : null,
+            sourceRef: isset($row['source_ref']) ? (string) $row['source_ref'] : null,
             sourceHash: isset($row['source_hash']) ? (string) $row['source_hash'] : null,
-            tags:       $tags,
-            notes:      isset($row['notes']) ? (string) $row['notes'] : null,
-            createdAt:  $this->toDateTime($row['createdate'] ?? null),
-            updatedAt:  $this->toDateTime($row['updatedate'] ?? null),
+            tags: $tags,
+            notes: isset($row['notes']) ? (string) $row['notes'] : null,
+            createdAt: $this->toDateTime($row['createdate'] ?? null),
+            updatedAt: $this->toDateTime($row['updatedate'] ?? null),
         );
     }
 

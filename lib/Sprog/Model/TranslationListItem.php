@@ -44,6 +44,5 @@ final readonly class TranslationListItem
         public ?int $matchClangId = null,
         public ?string $matchClangCode = null,
         public ?Status $matchStatus = null,
-    ) {
-    }
+    ) {}
 }

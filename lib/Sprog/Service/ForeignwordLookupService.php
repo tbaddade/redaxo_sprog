@@ -11,6 +11,12 @@ use rex_sql_exception;
 use Sprog\Cache\TranslationCacheInvalidator;
 use Sprog\Enum\Status;
 
+use function is_array;
+use function is_string;
+use function strlen;
+
+use const JSON_THROW_ON_ERROR;
+
 /**
  * Frontend-Lookup für Foreignwords.
  *
@@ -28,8 +34,8 @@ use Sprog\Enum\Status;
 final class ForeignwordLookupService implements TranslationCacheInvalidator
 {
     private const NAMESPACE_FOREIGNWORD = 'foreignword';
-    private const LANG_REGEX            = '/^[a-z]{2}$/';
-    private const LANG_TAG_PREFIX       = 'lang:';
+    private const LANG_REGEX = '/^[a-z]{2}$/';
+    private const LANG_TAG_PREFIX = 'lang:';
 
     /** @var array<int, array<string, string>> */
     private array $cacheByClang = [];
@@ -95,8 +101,8 @@ final class ForeignwordLookupService implements TranslationCacheInvalidator
                    AND t.clang_id = :clang
                    AND t.status <> :missing',
                 [
-                    'ns'      => self::NAMESPACE_FOREIGNWORD,
-                    'clang'   => $clangId,
+                    'ns' => self::NAMESPACE_FOREIGNWORD,
+                    'clang' => $clangId,
                     'missing' => Status::Missing->value,
                 ],
             );

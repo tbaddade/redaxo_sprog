@@ -8,6 +8,8 @@ use InvalidArgumentException;
 use Sprog\Enum\Status;
 use Sprog\Repository\ActivityRepository;
 
+use function strlen;
+
 /**
  * Audit-Log-Schreiber.
  *
@@ -24,15 +26,15 @@ use Sprog\Repository\ActivityRepository;
  */
 final class ActivityService
 {
-    public const ACTION_UNIT_CREATED         = 'unit.created';
-    public const ACTION_UNIT_DELETED         = 'unit.deleted';
-    public const ACTION_SOURCE_CHANGED       = 'source.changed';
-    public const ACTION_TRANSLATION_CREATED  = 'translation.created';
-    public const ACTION_TRANSLATION_UPDATED  = 'translation.updated';
-    public const ACTION_TRANSLATION_DELETED  = 'translation.deleted';
-    public const ACTION_STATUS_TRANSITION    = 'status.transition';
-    public const ACTION_MT_DRAFT_CREATED     = 'mt.draft_created';
-    public const ACTION_BULK                 = 'bulk';
+    public const ACTION_UNIT_CREATED = 'unit.created';
+    public const ACTION_UNIT_DELETED = 'unit.deleted';
+    public const ACTION_SOURCE_CHANGED = 'source.changed';
+    public const ACTION_TRANSLATION_CREATED = 'translation.created';
+    public const ACTION_TRANSLATION_UPDATED = 'translation.updated';
+    public const ACTION_TRANSLATION_DELETED = 'translation.deleted';
+    public const ACTION_STATUS_TRANSITION = 'status.transition';
+    public const ACTION_MT_DRAFT_CREATED = 'mt.draft_created';
+    public const ACTION_BULK = 'bulk';
 
     /**
      * action darf nur a-z0-9_ und Punkte als Trenner enthalten, max 32 Zeichen.
@@ -43,8 +45,7 @@ final class ActivityService
 
     public function __construct(
         private readonly ActivityRepository $repository,
-    ) {
-    }
+    ) {}
 
     public static function create(): self
     {
@@ -74,15 +75,15 @@ final class ActivityService
     {
         return $this->log(self::ACTION_UNIT_CREATED, $unitId, null, $userId, [
             'namespace' => $namespace,
-            'unit_key'  => $unitKey,
+            'unit_key' => $unitKey,
         ]);
     }
 
     public function logSourceChanged(int $unitId, ?int $userId, ?string $oldHash, ?string $newHash, int $staleCount): int
     {
         return $this->log(self::ACTION_SOURCE_CHANGED, $unitId, null, $userId, [
-            'old_hash'    => $oldHash,
-            'new_hash'    => $newHash,
+            'old_hash' => $oldHash,
+            'new_hash' => $newHash,
             'stale_count' => $staleCount,
         ]);
     }
@@ -97,8 +98,8 @@ final class ActivityService
         ?string $newValueHash,
     ): int {
         return $this->log(self::ACTION_TRANSLATION_UPDATED, $unitId, $translationId, $userId, [
-            'old_status'     => $oldStatus->value,
-            'new_status'     => $newStatus->value,
+            'old_status' => $oldStatus->value,
+            'new_status' => $newStatus->value,
             'old_value_hash' => $oldValueHash,
             'new_value_hash' => $newValueHash,
         ]);
@@ -113,7 +114,7 @@ final class ActivityService
     ): int {
         return $this->log(self::ACTION_STATUS_TRANSITION, $unitId, $translationId, $userId, [
             'from' => $from->value,
-            'to'   => $to->value,
+            'to' => $to->value,
         ]);
     }
 
@@ -125,7 +126,7 @@ final class ActivityService
         ?float $confidence,
     ): int {
         return $this->log(self::ACTION_MT_DRAFT_CREATED, $unitId, $translationId, $userId, [
-            'provider'   => $provider,
+            'provider' => $provider,
             'confidence' => $confidence,
         ]);
     }
@@ -133,9 +134,7 @@ final class ActivityService
     private function assertValidAction(string $action): void
     {
         if ('' === $action || strlen($action) > 32 || 1 !== preg_match(self::ACTION_PATTERN, $action)) {
-            throw new InvalidArgumentException(
-                'Ungültiger Action-Name. Erlaubt: a-z, 0-9, "_" und "." als Trenner, max. 32 Zeichen.',
-            );
+            throw new InvalidArgumentException('Ungültiger Action-Name. Erlaubt: a-z, 0-9, "_" und "." als Trenner, max. 32 Zeichen.');
         }
     }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Sprog\Controller\Inbox;
 
 use rex_i18n;
-use rex_request;
 use rex_user;
 use Sprog\Enum\SourceType;
 use Sprog\Http\JsonResponse;
@@ -13,6 +12,9 @@ use Sprog\Model\Unit;
 use Sprog\Repository\UnitRepository;
 use Sprog\Service\TranslationService;
 use Throwable;
+
+use function in_array;
+use function strlen;
 
 /**
  * Endpoint POST ?func=create_unit — Modal-Create aus der Inbox.
@@ -24,9 +26,9 @@ use Throwable;
  */
 final class CreateUnitController
 {
-    private const MAX_KEY_LEN     = 191;
+    private const MAX_KEY_LEN = 191;
     private const MAX_CONTEXT_LEN = 64;
-    private const MAX_NOTES_LEN   = 500;
+    private const MAX_NOTES_LEN = 500;
 
     public function __construct(
         private readonly UnitRepository $units,
@@ -48,10 +50,10 @@ final class CreateUnitController
         JsonResponse::ensureCsrf('sprog_inbox_create', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
-        $unitKeyInput   = trim((string) rex_request('unit_key', 'string', ''));
-        $contextInput   = trim((string) rex_request('context', 'string', ''));
-        $notesInput     = trim((string) rex_request('notes', 'string', ''));
-        $notesValue     = '' === $notesInput ? null : $notesInput;
+        $unitKeyInput = trim((string) rex_request('unit_key', 'string', ''));
+        $contextInput = trim((string) rex_request('context', 'string', ''));
+        $notesInput = trim((string) rex_request('notes', 'string', ''));
+        $notesValue = '' === $notesInput ? null : $notesInput;
 
         if (!in_array($namespaceInput, SourceType::values(), true)) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_namespace_invalid'));
@@ -76,15 +78,15 @@ final class CreateUnitController
         try {
             $sourceType = SourceType::tryFrom($namespaceInput);
             $unit = $this->units->save(new Unit(
-                id:         null,
-                namespace:  $namespaceInput,
-                unitKey:    $unitKeyInput,
-                context:    $contextInput,
+                id: null,
+                namespace: $namespaceInput,
+                unitKey: $unitKeyInput,
+                context: $contextInput,
                 sourceType: $sourceType,
-                sourceRef:  null,
+                sourceRef: null,
                 sourceHash: null,
-                tags:       [],
-                notes:      $notesValue,
+                tags: [],
+                notes: $notesValue,
             ));
 
             // Pro definierter clang eine missing-Row anlegen — spiegelt das

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
+use Sprog\Model\Unit;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
 use Sprog\Service\MtService;
@@ -22,9 +23,9 @@ if ($unitId <= 0) {
     return;
 }
 
-$units        = new UnitRepository();
+$units = new UnitRepository();
 $translations = new TranslationRepository();
-$service      = TranslationService::create();
+$service = TranslationService::create();
 
 $unit = $units->find($unitId);
 if (null === $unit) {
@@ -33,9 +34,9 @@ if (null === $unit) {
     return;
 }
 
-$csrf          = rex_csrf_token::factory('sprog_editor_' . $unitId);
+$csrf = rex_csrf_token::factory('sprog_editor_' . $unitId);
 $flashMessages = [];
-$action        = rex_request('action', 'string', '');
+$action = rex_request('action', 'string', '');
 
 /*
  |---------------------------------------------------------------------------
@@ -46,11 +47,11 @@ if ('save' === $action) {
     if (!$csrf->isValid()) {
         $flashMessages[] = rex_view::error(rex_i18n::msg('sprog_editor_csrf_invalid'));
     } else {
-        $valuesByClang     = (array) rex_request('value', 'array', []);
-        $revisionsByClang  = (array) rex_request('revision', 'array', []);
-        $mtProvidersByClang   = (array) rex_request('mt_provider', 'array', []);
+        $valuesByClang = (array) rex_request('value', 'array', []);
+        $revisionsByClang = (array) rex_request('revision', 'array', []);
+        $mtProvidersByClang = (array) rex_request('mt_provider', 'array', []);
         $mtConfidencesByClang = (array) rex_request('mt_confidence', 'array', []);
-        $saved             = 0;
+        $saved = 0;
 
         // Whitelist gegen die tatsächlich konfigurierten Provider; Werte aus
         // dem Form, die nicht passen, fallen still durch (mt_provider bleibt
@@ -67,7 +68,7 @@ if ('save' === $action) {
             }
 
             $newValue = is_string($valuesByClang[$clangId]) ? $valuesByClang[$clangId] : '';
-            $current  = $translations->findForUnitAndClang($unitId, $clangId);
+            $current = $translations->findForUnitAndClang($unitId, $clangId);
 
             // Keine echte Änderung → keine DB-Aktion, keine Revision-Inkrement.
             if (null !== $current && $current->value === $newValue) {
@@ -85,9 +86,9 @@ if ('save' === $action) {
             // MT-Marker: nur durchreichen, wenn Provider in der Whitelist
             // steht UND die Confidence (falls vorhanden) im erlaubten Range
             // [0.0, 1.0] liegt. Sonst beide auf NULL.
-            $mtProvider   = null;
+            $mtProvider = null;
             $mtConfidence = null;
-            $providerRaw  = isset($mtProvidersByClang[$clangId]) && is_string($mtProvidersByClang[$clangId])
+            $providerRaw = isset($mtProvidersByClang[$clangId]) && is_string($mtProvidersByClang[$clangId])
                 ? trim($mtProvidersByClang[$clangId])
                 : '';
             if ('' !== $providerRaw && in_array($providerRaw, $validMtProviders, true) && 'noop' !== $providerRaw) {
@@ -108,8 +109,8 @@ if ('save' === $action) {
                     $newValue,
                     $user->getId(),
                     expectedRevision: $expectedRevision,
-                    mtProvider:       $mtProvider,
-                    mtConfidence:     $mtConfidence,
+                    mtProvider: $mtProvider,
+                    mtConfidence: $mtConfidence,
                 );
                 ++$saved;
             } catch (OptimisticLockException) {
@@ -144,9 +145,9 @@ if ('transition' === $action) {
     if (!$csrf->isValid()) {
         $flashMessages[] = rex_view::error(rex_i18n::msg('sprog_editor_csrf_invalid'));
     } else {
-        $translationId     = (int) rex_request('translation_id', 'int', 0);
+        $translationId = (int) rex_request('translation_id', 'int', 0);
         $targetStatusInput = (string) rex_request('target_status', 'string', '');
-        $expectedRevision  = (int) rex_request('expected_revision', 'int', 0);
+        $expectedRevision = (int) rex_request('expected_revision', 'int', 0);
 
         if ($translationId <= 0 || !in_array($targetStatusInput, Status::values(), true)) {
             $flashMessages[] = rex_view::error(rex_i18n::msg('sprog_editor_status_invalid'));
@@ -192,19 +193,19 @@ if ('mt' === $action) {
         rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_csrf'),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_csrf'),
         ]);
         exit;
     }
 
-    $targetClangId   = (int) rex_request('clang_id', 'int', 0);
+    $targetClangId = (int) rex_request('clang_id', 'int', 0);
     $providerRequest = trim((string) rex_request('provider', 'string', ''));
 
     if (!rex_clang::exists($targetClangId)) {
         rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_unknown_clang'),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_unknown_clang'),
         ]);
         exit;
     }
@@ -213,7 +214,7 @@ if ('mt' === $action) {
         rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_clang_no_perm'),
+            'error' => rex_i18n::rawMsg('sprog_editor_clang_no_perm'),
         ]);
         exit;
     }
@@ -225,7 +226,7 @@ if ('mt' === $action) {
         rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_same_lang'),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_same_lang'),
         ]);
         exit;
     }
@@ -236,7 +237,7 @@ if ('mt' === $action) {
         rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_unknown_clang'),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_unknown_clang'),
         ]);
         exit;
     }
@@ -246,13 +247,13 @@ if ('mt' === $action) {
         rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_no_source', $sourceClang->getName()),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_no_source', $sourceClang->getName()),
         ]);
         exit;
     }
 
     try {
-        $mt         = MtService::create();
+        $mt = MtService::create();
         $configured = $mt->configuredProviderNames();
 
         // Provider-Auswahl: explizit aus Request, sonst erster echter Provider,
@@ -274,7 +275,7 @@ if ('mt' === $action) {
             rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
             rex_response::sendJson([
                 'success' => false,
-                'error'   => rex_i18n::rawMsg('sprog_editor_mt_no_provider'),
+                'error' => rex_i18n::rawMsg('sprog_editor_mt_no_provider'),
             ]);
             exit;
         }
@@ -287,16 +288,16 @@ if ('mt' === $action) {
         );
 
         rex_response::sendJson([
-            'success'    => true,
-            'text'       => $result->text,
-            'provider'   => $result->provider,
+            'success' => true,
+            'text' => $result->text,
+            'provider' => $result->provider,
             'confidence' => $result->confidence,
         ]);
     } catch (Throwable $e) {
         rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_editor_mt_failed', $e->getMessage()),
+            'error' => rex_i18n::rawMsg('sprog_editor_mt_failed', $e->getMessage()),
         ]);
     }
     exit;
@@ -319,9 +320,9 @@ if ('update_unit' === $action) {
     } elseif (!$csrf->isValid()) {
         $flashMessages[] = rex_view::error(rex_i18n::msg('sprog_editor_csrf_invalid'));
     } else {
-        $newKey      = trim((string) rex_request('unit_key', 'string', ''));
-        $newNotesIn  = trim((string) rex_request('notes', 'string', ''));
-        $newNotes    = '' === $newNotesIn ? null : $newNotesIn;
+        $newKey = trim((string) rex_request('unit_key', 'string', ''));
+        $newNotesIn = trim((string) rex_request('notes', 'string', ''));
+        $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 
         $errors = [];
         if ('' === $newKey) {
@@ -344,16 +345,16 @@ if ('update_unit' === $action) {
 
         if ([] === $errors) {
             try {
-                $unit = $units->save(new \Sprog\Model\Unit(
-                    id:         $unit->id,
-                    namespace:  $unit->namespace,
-                    unitKey:    $newKey,
-                    context:    $unit->context,
+                $unit = $units->save(new Unit(
+                    id: $unit->id,
+                    namespace: $unit->namespace,
+                    unitKey: $newKey,
+                    context: $unit->context,
                     sourceType: $unit->sourceType,
-                    sourceRef:  $unit->sourceRef,
+                    sourceRef: $unit->sourceRef,
                     sourceHash: $unit->sourceHash,
-                    tags:       $unit->tags,
-                    notes:      $newNotes,
+                    tags: $unit->tags,
+                    notes: $newNotes,
                 ));
                 $flashMessages[] = rex_view::success(rex_i18n::msg('sprog_editor_unit_updated'));
             } catch (Throwable $e) {
@@ -372,7 +373,7 @@ if ('update_unit' === $action) {
  | Render: Unit + alle Translations
  |---------------------------------------------------------------------------
  */
-$clangs              = rex_clang::getAll();
+$clangs = rex_clang::getAll();
 $currentTranslations = [];
 foreach ($translations->findByUnit($unitId) as $t) {
     $currentTranslations[$t->clangId] = $t;
@@ -395,14 +396,14 @@ foreach ($translations->findByUnit($unitId) as $t) {
             <span class="sprog-editor--ns"><?= Labels::forNamespace($unit->namespace) ?></span>
             <?php if (null !== $unit->sourceType) : ?>
                 <span class="sprog-editor--source"><?= rex_i18n::msg('sprog_editor_meta_source', Labels::sourceType($unit->sourceType)) ?></span>
-            <?php endif; ?>
+            <?php endif ?>
             <?php if ([] !== $unit->tags) : ?>
                 <span class="sprog-editor--tags">
                     <?php foreach ($unit->tags as $tag) : ?>
                         <span class="sprog-editor--tag"><?= rex_escape((string) $tag) ?></span>
-                    <?php endforeach; ?>
+                    <?php endforeach ?>
                 </span>
-            <?php endif; ?>
+            <?php endif ?>
         </div>
     </header>
 
@@ -459,7 +460,7 @@ foreach ($translations->findByUnit($unitId) as $t) {
                 </div>
             </form>
         </details>
-    <?php endif; ?>
+    <?php endif ?>
 
     <form method="post" class="sprog-editor--form">
         <?= $csrf->getHiddenField() ?>
@@ -469,8 +470,8 @@ foreach ($translations->findByUnit($unitId) as $t) {
             <?php foreach ($clangs as $clangId => $clang) :
                 $hasPerm = $user->getComplexPerm('clang')->hasPerm($clangId);
                 $current = $currentTranslations[$clangId] ?? null;
-                $value   = $current?->value ?? '';
-                $status  = $current?->status ?? Status::Missing;
+                $value = $current?->value ?? '';
+                $status = $current?->status ?? Status::Missing;
                 $isStale = null !== $current && null !== $unit->sourceHash
                     && $current->isStaleAgainst($unit->sourceHash);
 
@@ -498,7 +499,7 @@ foreach ($translations->findByUnit($unitId) as $t) {
                         <p class="sprog-editor--stale-hint">
                             <?= rex_i18n::msg('sprog_editor_stale_hint') ?>
                         </p>
-                    <?php endif; ?>
+                    <?php endif ?>
 
                     <label class="sprog-editor--field">
                         <span class="sprog-editor--label"><?= rex_i18n::msg('sprog_editor_translation_label') ?></span>
@@ -516,23 +517,23 @@ foreach ($translations->findByUnit($unitId) as $t) {
                             name="revision[<?= rex_escape((string) $clangId) ?>]"
                             value="<?= rex_escape((string) $current->revision) ?>"
                         >
-                    <?php endif; ?>
+                    <?php endif ?>
 
                     <?php if (null !== $current && null !== $current->mtProvider) : ?>
                         <p class="sprog-editor--mt">
                             <?= rex_i18n::msg('sprog_editor_mt_suggestion', '<strong>' . rex_escape($current->mtProvider) . '</strong>') ?>
                             <?php if (null !== $current->mtConfidence) : ?>
                                 · <?= rex_i18n::msg('sprog_editor_mt_confidence', number_format($current->mtConfidence, 2)) ?>
-                            <?php endif; ?>
+                            <?php endif ?>
                         </p>
-                    <?php endif; ?>
+                    <?php endif ?>
 
                     <?php if ($hasPerm && $clangId !== rex_clang::getStartId()) :
                         // Initial-Werte für die MT-Marker: nur befüllt, wenn die
                         // aktuelle Translation tatsächlich MT-induziert ist (z.B.
                         // nach einem früheren MT-Save). JS schreibt sie auch zur
                         // Laufzeit, sobald ein MT-Vorschlag akzeptiert wird.
-                        $mtProviderInit   = $current?->mtProvider ?? '';
+                        $mtProviderInit = $current?->mtProvider ?? '';
                         $mtConfidenceInit = null !== $current?->mtConfidence
                             ? (string) $current->mtConfidence
                             : '';
@@ -572,7 +573,7 @@ foreach ($translations->findByUnit($unitId) as $t) {
                                 data-role="mt-confidence"
                             >
                         </div>
-                    <?php endif; ?>
+                    <?php endif ?>
 
                     <?php if (null !== $current && $hasPerm) :
                         $transitions = $status->userActions();
@@ -586,12 +587,12 @@ foreach ($translations->findByUnit($unitId) as $t) {
                                     >
                                         → <?= Labels::status($targetStatus) ?>
                                     </button>
-                                <?php endforeach; ?>
+                                <?php endforeach ?>
                             </div>
                     <?php endif;
-                    endif; ?>
+                    endif ?>
                 </section>
-            <?php endforeach; ?>
+            <?php endforeach ?>
         </div>
 
         <div class="sprog-editor--save-bar">
@@ -625,7 +626,7 @@ foreach ($translations->findByUnit($unitId) as $t) {
             <input type="hidden" name="expected_revision" value="<?= rex_escape((string) $current->revision) ?>">
         </form>
     <?php endforeach;
-    endforeach; ?>
+    endforeach ?>
 </article>
 
 <script>

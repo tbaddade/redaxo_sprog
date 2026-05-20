@@ -6,6 +6,8 @@ namespace Sprog\Matcher;
 
 use Closure;
 
+use function strlen;
+
 /**
  * Multi-Pattern-Matcher für Inhalt-Ersetzungen.
  *
@@ -36,8 +38,7 @@ final class TokenMatcher
     public function __construct(
         private readonly array $patterns,
         private readonly Closure $callback,
-    ) {
-    }
+    ) {}
 
     /**
      * Ersetzt im gesamten Content.

@@ -13,7 +13,7 @@ if (null === $user) {
     throw new rex_exception('Zugriff verweigert.');
 }
 
-$csrf  = rex_csrf_token::factory('sprog_create');
+$csrf = rex_csrf_token::factory('sprog_create');
 $units = new UnitRepository();
 
 $flashMessages = [];
@@ -21,8 +21,8 @@ $flashMessages = [];
 /* Form-Werte aus POST (mit Default-Echo, damit nach einem Validation-Fehler
    die Eingaben nicht verloren gehen). */
 $namespaceInput = trim((string) rex_request('namespace', 'string', 'wildcard'));
-$unitKeyInput   = trim((string) rex_request('unit_key', 'string', ''));
-$notesInput     = trim((string) rex_request('notes', 'string', ''));
+$unitKeyInput = trim((string) rex_request('unit_key', 'string', ''));
+$notesInput = trim((string) rex_request('notes', 'string', ''));
 
 if ('post' === rex_request::requestMethod()) {
     if (!$csrf->isValid()) {
@@ -57,14 +57,14 @@ if ('post' === rex_request::requestMethod()) {
                 $sourceType = SourceType::tryFrom($namespaceInput);
 
                 $unit = $units->save(new Unit(
-                    id:         null,
-                    namespace:  $namespaceInput,
-                    unitKey:    $unitKeyInput,
+                    id: null,
+                    namespace: $namespaceInput,
+                    unitKey: $unitKeyInput,
                     sourceType: $sourceType,
-                    sourceRef:  null,
+                    sourceRef: null,
                     sourceHash: null,
-                    tags:       [],
-                    notes:      '' === $notesInput ? null : $notesInput,
+                    tags: [],
+                    notes: '' === $notesInput ? null : $notesInput,
                 ));
 
                 /*
@@ -118,7 +118,7 @@ if ('post' === rex_request::requestMethod()) {
                         value="<?= rex_escape($ns) ?>"
                         <?= $ns === $namespaceInput ? 'selected' : '' ?>
                     ><?= Labels::forNamespace($ns) ?></option>
-                <?php endforeach; ?>
+                <?php endforeach ?>
             </select>
             <span class="sprog-create--hint"><?= rex_i18n::msg('sprog_create_namespace_hint') ?></span>
         </label>

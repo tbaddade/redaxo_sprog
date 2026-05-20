@@ -15,17 +15,11 @@ use Sprog\Filter;
 
 class Raw extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'raw';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
         return $value;

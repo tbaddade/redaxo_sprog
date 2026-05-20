@@ -6,7 +6,6 @@ namespace Sprog\Controller\Inbox;
 
 use InvalidArgumentException;
 use rex_i18n;
-use rex_request;
 use rex_user;
 use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
@@ -15,6 +14,8 @@ use Sprog\Repository\TranslationRepository;
 use Sprog\Service\TranslationService;
 use Sprog\Support\Labels;
 use Throwable;
+
+use function in_array;
 
 /**
  * Endpoint POST ?func=transition — Status-Übergang einer Übersetzung
@@ -38,10 +39,10 @@ final class TransitionController
 
     public function handle(rex_user $user): never
     {
-        $unitId         = (int) rex_request('unit_id', 'int', 0);
-        $translationId  = (int) rex_request('translation_id', 'int', 0);
+        $unitId = (int) rex_request('unit_id', 'int', 0);
+        $translationId = (int) rex_request('translation_id', 'int', 0);
         $targetStatusIn = (string) rex_request('target_status', 'string', '');
-        $expectedRev    = (int) rex_request('revision', 'int', 0);
+        $expectedRev = (int) rex_request('revision', 'int', 0);
 
         JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
@@ -81,9 +82,9 @@ final class TransitionController
         );
 
         JsonResponse::ok([
-            'revision'             => $saved->revision,
-            'status'               => $saved->status->value,
-            'statusLabel'          => Labels::status($saved->status),
+            'revision' => $saved->revision,
+            'status' => $saved->status->value,
+            'statusLabel' => Labels::status($saved->status),
             'availableTransitions' => $nextAvailable,
         ]);
     }

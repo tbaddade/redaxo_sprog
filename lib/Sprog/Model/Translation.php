@@ -49,8 +49,7 @@ final readonly class Translation
         public int $revision = 0,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
-    ) {
-    }
+    ) {}
 
     /**
      * True, wenn der Quell-Wert sich seit der Übersetzung geändert hat.

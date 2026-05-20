@@ -13,19 +13,15 @@ namespace Sprog\Filter;
 
 use Sprog\Filter;
 
+use const MB_CASE_TITLE;
+
 class Title extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'title';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
         return mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');

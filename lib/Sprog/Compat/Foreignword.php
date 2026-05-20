@@ -11,9 +11,13 @@
 
 namespace Sprog\Compat;
 
+use rex_clang;
 use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Matcher\TokenMatcher;
 use Sprog\Service\ForeignwordLookupService;
+
+use function is_string;
+use function sprintf;
 
 /**
  * Markiert konfigurierte Fremdwörter im HTML-Body mit einem
@@ -53,8 +57,8 @@ class Foreignword
 
     public static function parse(string $content, ?int $clangId = null): string
     {
-        if (null === $clangId || !\rex_clang::exists($clangId)) {
-            $clangId = \rex_clang::getCurrentId();
+        if (null === $clangId || !rex_clang::exists($clangId)) {
+            $clangId = rex_clang::getCurrentId();
         }
 
         $map = self::lookupService()->allForClang($clangId);

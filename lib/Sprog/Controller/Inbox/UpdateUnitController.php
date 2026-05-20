@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Sprog\Controller\Inbox;
 
 use rex_i18n;
-use rex_request;
 use rex_user;
 use Sprog\Http\JsonResponse;
 use Sprog\Model\Unit;
 use Sprog\Repository\UnitRepository;
 use Throwable;
+
+use function strlen;
 
 /**
  * Endpoint POST ?func=update_unit — Inline-Edit des Unit-Key aus dem
@@ -24,9 +25,9 @@ use Throwable;
  */
 final class UpdateUnitController
 {
-    private const MAX_KEY_LEN     = 191;
+    private const MAX_KEY_LEN = 191;
     private const MAX_CONTEXT_LEN = 64;
-    private const MAX_NOTES_LEN   = 500;
+    private const MAX_NOTES_LEN = 500;
 
     public function __construct(
         private readonly UnitRepository $units,
@@ -52,10 +53,10 @@ final class UpdateUnitController
             JsonResponse::notFound(rex_i18n::rawMsg('sprog_inbox_save_unit_missing'));
         }
 
-        $newKey     = trim((string) rex_request('unit_key', 'string', ''));
+        $newKey = trim((string) rex_request('unit_key', 'string', ''));
         $newContext = trim((string) rex_request('context', 'string', ''));
         $newNotesIn = trim((string) rex_request('notes', 'string', ''));
-        $newNotes   = '' === $newNotesIn ? null : $newNotesIn;
+        $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 
         if ('' === $newKey) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_key_empty'));
@@ -81,15 +82,15 @@ final class UpdateUnitController
 
         try {
             $this->units->save(new Unit(
-                id:         $unit->id,
-                namespace:  $unit->namespace,
-                unitKey:    $newKey,
-                context:    $newContext,
+                id: $unit->id,
+                namespace: $unit->namespace,
+                unitKey: $newKey,
+                context: $newContext,
                 sourceType: $unit->sourceType,
-                sourceRef:  $unit->sourceRef,
+                sourceRef: $unit->sourceRef,
                 sourceHash: $unit->sourceHash,
-                tags:       $unit->tags,
-                notes:      $newNotes,
+                tags: $unit->tags,
+                notes: $newNotes,
             ));
         } catch (Throwable $e) {
             JsonResponse::internalError($e->getMessage());
@@ -97,8 +98,8 @@ final class UpdateUnitController
 
         JsonResponse::ok([
             'unit_key' => $newKey,
-            'context'  => $newContext,
-            'notes'    => $newNotes,
+            'context' => $newContext,
+            'notes' => $newNotes,
         ]);
     }
 }

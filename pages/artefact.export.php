@@ -14,16 +14,16 @@ use Sprog\Export\CsvExport;
 
 $addon = rex_addon::get('sprog');
 
-$csrfToken = \rex_csrf_token::factory('sprog-settings');
+$csrfToken = rex_csrf_token::factory('sprog-settings');
 
 $func = rex_request('func', 'string');
 
-if ($func == 'export' && !$csrfToken->isValid()) {
-    echo \rex_view::error(\rex_i18n::msg('csrf_token_invalid'));
-} elseif ($func == 'export') {
+if ('export' == $func && !$csrfToken->isValid()) {
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+} elseif ('export' == $func) {
     rex_response::cleanOutputBuffers();
     $sql = rex_sql::factory();
-    $items = $sql->getArray('SELECT `id`, `clang_id`, `wildcard`, `replace` FROM '.rex::getTable('sprog_wildcard').' ORDER BY `wildcard`, `clang_id`');
+    $items = $sql->getArray('SELECT `id`, `clang_id`, `wildcard`, `replace` FROM ' . rex::getTable('sprog_wildcard') . ' ORDER BY `wildcard`, `clang_id`');
 
     $rows = [];
     $data = [];
@@ -60,22 +60,22 @@ if ($func == 'export' && !$csrfToken->isValid()) {
 
 $formElements = [];
 $n = [];
-$n['field'] = '<button class="btn btn-save" type="submit" name="send" value="1">'.rex_i18n::msg('sprog_export').'</button>';
+$n['field'] = '<button class="btn btn-save" type="submit" name="send" value="1">' . rex_i18n::msg('sprog_export') . '</button>';
 $formElements[] = $n;
 
-$fragment = new \rex_fragment();
+$fragment = new rex_fragment();
 $fragment->setVar('elements', $formElements, false);
 $buttons = $fragment->parse('core/form/submit.php');
 
 $panelBody = '
     <fieldset>
         <input type="hidden" name="func" value="export" />
-        '.$csrfToken->getHiddenField().'
-        <h3>'.rex_i18n::msg('sprog_export_heading').'</h3>
-        <p>'.rex_i18n::msg('sprog_export_description').'</p>
+        ' . $csrfToken->getHiddenField() . '
+        <h3>' . rex_i18n::msg('sprog_export_heading') . '</h3>
+        <p>' . rex_i18n::msg('sprog_export_description') . '</p>
     </fieldset>';
 
-$fragment = new \rex_fragment();
+$fragment = new rex_fragment();
 $fragment->setVar('class', 'edit', false);
 $fragment->setVar('title', rex_i18n::msg('sprog_export_title'), false);
 $fragment->setVar('body', $panelBody, false);
@@ -83,7 +83,7 @@ $fragment->setVar('buttons', $buttons, false);
 $section = $fragment->parse('core/page/section.php');
 
 echo '
-    <form action="'.\rex_url::currentBackendPage().'" method="post">
-        '.$section.'
+    <form action="' . rex_url::currentBackendPage() . '" method="post">
+        ' . $section . '
     </form>
 ';

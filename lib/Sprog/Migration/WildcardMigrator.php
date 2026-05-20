@@ -18,6 +18,10 @@ use Sprog\Service\TranslationService;
 use Sprog\Support\ContentHash;
 use Throwable;
 
+use function count;
+
+use const PHP_INT_MIN;
+
 /**
  * Migriert v1-Wildcards in das v2-Unit/Translation-Schema.
  *
@@ -51,8 +55,7 @@ final class WildcardMigrator implements MigratorInterface
     public function __construct(
         private readonly UnitRepository $units = new UnitRepository(),
         private readonly TranslationRepository $translations = new TranslationRepository(),
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {
@@ -77,7 +80,7 @@ final class WildcardMigrator implements MigratorInterface
             return 0;
         }
 
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray('SELECT COUNT(DISTINCT id) AS cnt FROM ' . $this->v1Table());
 
         return (int) ($rows[0]['cnt'] ?? 0);
@@ -93,12 +96,12 @@ final class WildcardMigrator implements MigratorInterface
         }
 
         $v1Table = $this->v1Table();
-        $lastId  = $lastProcessedId ?? PHP_INT_MIN;
+        $lastId = $lastProcessedId ?? PHP_INT_MIN;
 
         // Nur DISTINCT id verarbeiten (eine Gruppe pro Wildcard).
         // chunkSize wird (int)-cast, weil PDO-LIMIT mit named params
         // treiberabhängig ist (siehe TranslationRepository::findByClangAndStatus).
-        $sql    = rex_sql::factory();
+        $sql = rex_sql::factory();
         $idRows = $sql->getArray(
             'SELECT DISTINCT id FROM ' . $v1Table . '
              WHERE id > :last_id
@@ -115,7 +118,7 @@ final class WildcardMigrator implements MigratorInterface
         $newLastId = $lastProcessedId;
 
         foreach ($idRows as $idRow) {
-            $groupId   = (int) $idRow['id'];
+            $groupId = (int) $idRow['id'];
             $newLastId = $groupId;
 
             $groupRows = rex_sql::factory()->getArray(
@@ -138,7 +141,7 @@ final class WildcardMigrator implements MigratorInterface
 
             // Idempotenz: bereits migriert? Überspringen.
             if (null !== $this->units->findByKey('wildcard', $wildcardName)) {
-                $processed++;
+                ++$processed;
                 continue;
             }
 
@@ -150,33 +153,33 @@ final class WildcardMigrator implements MigratorInterface
 
             try {
                 $unit = $this->units->save(new Unit(
-                    id:         null,
-                    namespace:  'wildcard',
-                    unitKey:    $wildcardName,
+                    id: null,
+                    namespace: 'wildcard',
+                    unitKey: $wildcardName,
                     sourceType: SourceType::Wildcard,
-                    sourceRef:  null,
+                    sourceRef: null,
                     sourceHash: null,
-                    tags:       [],
-                    notes:      null,
+                    tags: [],
+                    notes: null,
                 ));
 
                 foreach ($groupRows as $row) {
-                    $value  = (string) ($row['replace'] ?? '');
+                    $value = (string) ($row['replace'] ?? '');
                     $status = '' === $value ? Status::Missing : Status::Translated;
 
                     $this->translations->save(new Translation(
-                        id:                       null,
-                        unitId:                   (int) $unit->id,
-                        clangId:                  (int) $row['clang_id'],
-                        value:                    $value,
-                        valueHash:                '' === $value ? null : ContentHash::of($value),
-                        sourceHashAtTranslation:  null,
-                        status:                   $status,
-                        mtProvider:               null,
-                        mtConfidence:             null,
-                        translatorId:             null,
-                        reviewerId:               null,
-                        revision:                 0,
+                        id: null,
+                        unitId: (int) $unit->id,
+                        clangId: (int) $row['clang_id'],
+                        value: $value,
+                        valueHash: '' === $value ? null : ContentHash::of($value),
+                        sourceHashAtTranslation: null,
+                        status: $status,
+                        mtProvider: null,
+                        mtConfidence: null,
+                        translatorId: null,
+                        reviewerId: null,
+                        revision: 0,
                     ));
                 }
 
@@ -190,7 +193,7 @@ final class WildcardMigrator implements MigratorInterface
                 throw $e;
             }
 
-            $processed++;
+            ++$processed;
         }
 
         // done, wenn dieser Chunk weniger Einheiten lieferte als angefordert

@@ -8,6 +8,9 @@ use rex;
 use rex_sql;
 use rex_sql_exception;
 
+use function count;
+use function sprintf;
+
 /**
  * Erkennt Konflikte zwischen Wildcard-Units, die im Frontend auf
  * denselben Template-Tag aufgelöst würden.
@@ -60,18 +63,18 @@ final class WildcardConflictService
         // tagToUnits[$templateTag] = [['id' => int, 'context' => string, 'key' => string], ...]
         $tagToUnits = [];
         foreach ($rows as $row) {
-            $id      = (int) $row['id'];
+            $id = (int) $row['id'];
             $context = (string) ($row['context'] ?? '');
-            $key     = (string) $row['unit_key'];
+            $key = (string) $row['unit_key'];
 
             // Effektiver Template-Tag, auf den der Frontend-Parser dieses
             // Eintrag matchen würde.
             $tag = '' === $context ? $key : $context . '.' . $key;
 
             $tagToUnits[$tag][] = [
-                'id'      => $id,
+                'id' => $id,
                 'context' => $context,
-                'key'     => $key,
+                'key' => $key,
             ];
         }
 
@@ -82,7 +85,7 @@ final class WildcardConflictService
             }
 
             // Trennen: gibt es einen exact-Match (context='') in der Gruppe?
-            $exactEntries   = array_values(array_filter($group, static fn (array $e) => '' === $e['context']));
+            $exactEntries = array_values(array_filter($group, static fn (array $e) => '' === $e['context']));
             $contextEntries = array_values(array_filter($group, static fn (array $e) => '' !== $e['context']));
 
             // Typ A: shadowed-by-exact — exact-Match überschattet eine oder

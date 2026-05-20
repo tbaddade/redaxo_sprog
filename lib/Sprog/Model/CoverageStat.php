@@ -22,8 +22,7 @@ final readonly class CoverageStat
         public int $clangId,
         public string $namespace,
         public array $countByStatus,
-    ) {
-    }
+    ) {}
 
     public function count(Status $status): int
     {

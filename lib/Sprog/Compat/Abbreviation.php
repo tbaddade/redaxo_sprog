@@ -11,9 +11,13 @@
 
 namespace Sprog\Compat;
 
+use rex_clang;
 use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Matcher\TokenMatcher;
 use Sprog\Service\AbbreviationLookupService;
+
+use function is_string;
+use function sprintf;
 
 class Abbreviation
 {
@@ -50,8 +54,8 @@ class Abbreviation
      */
     public static function parse(string $content, ?int $clangId = null): string
     {
-        if (null === $clangId || !\rex_clang::exists($clangId)) {
-            $clangId = \rex_clang::getCurrentId();
+        if (null === $clangId || !rex_clang::exists($clangId)) {
+            $clangId = rex_clang::getCurrentId();
         }
 
         $map = self::lookupService()->allForClang($clangId);

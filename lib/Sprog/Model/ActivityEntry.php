@@ -32,6 +32,5 @@ final readonly class ActivityEntry
         public string $action,
         public array $payload,
         public DateTimeImmutable $createdAt,
-    ) {
-    }
+    ) {}
 }

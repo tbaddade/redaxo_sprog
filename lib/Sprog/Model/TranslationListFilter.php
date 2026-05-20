@@ -7,6 +7,9 @@ namespace Sprog\Model;
 use InvalidArgumentException;
 use Sprog\Enum\Status;
 
+use function sprintf;
+use function strlen;
+
 /**
  * Validierte Filter-Eingabe für die Translation-Inbox.
  *
@@ -17,7 +20,7 @@ use Sprog\Enum\Status;
  */
 final readonly class TranslationListFilter
 {
-    public const MAX_PAGE_SIZE     = 200;
+    public const MAX_PAGE_SIZE = 200;
     public const DEFAULT_PAGE_SIZE = 50;
     public const MAX_SEARCH_LENGTH = 200;
     public const MAX_NAMESPACE_LEN = 64;
@@ -61,10 +64,7 @@ final readonly class TranslationListFilter
             throw new InvalidArgumentException('page muss >= 1 sein.');
         }
         if ($pageSize < 1 || $pageSize > self::MAX_PAGE_SIZE) {
-            throw new InvalidArgumentException(sprintf(
-                'pageSize muss im Bereich [1, %d] liegen.',
-                self::MAX_PAGE_SIZE,
-            ));
+            throw new InvalidArgumentException(sprintf('pageSize muss im Bereich [1, %d] liegen.', self::MAX_PAGE_SIZE));
         }
     }
 

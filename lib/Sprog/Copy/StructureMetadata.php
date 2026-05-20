@@ -2,7 +2,15 @@
 
 namespace Sprog\Copy;
 
+use rex;
+use rex_addon;
+use rex_article_cache;
+use rex_article_content;
+use rex_clang;
+use rex_sql;
 use Sprog\Compat\Sync;
+
+use function count;
 
 class StructureMetadata extends Copy
 {
@@ -26,9 +34,9 @@ class StructureMetadata extends Copy
     public static function getArticleIds(): array
     {
         $articles = [];
-        if (\rex_addon::get('structure')->isAvailable()) {
-            $sql = \rex_sql::factory();
-            $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');
+        if (rex_addon::get('structure')->isAvailable()) {
+            $sql = rex_sql::factory();
+            $items = $sql->getArray('SELECT `id` FROM ' . rex::getTable('article') . ' GROUP BY `id`');
 
             foreach ($items as $item) {
                 $articles[] = (int) $item['id'];
@@ -47,13 +55,13 @@ class StructureMetadata extends Copy
         $articles = self::getArticleIds();
 
         $items = [];
-        if (count($articles) > 0 && \rex_clang::count() > 0) {
+        if (count($articles) > 0 && rex_clang::count() > 0) {
             foreach ($articles as $article) {
-                $items[] = [$article, \rex_clang::getStartId()];
+                $items[] = [$article, rex_clang::getStartId()];
             }
         }
 
-        $chunkedItems = self::chunk($items, (int) \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
+        $chunkedItems = self::chunk($items, (int) rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
         return ['count' => count($items), 'params' => rex_request('params', 'array', 0), 'items' => $chunkedItems];
     }
 
@@ -65,7 +73,7 @@ class StructureMetadata extends Copy
      */
     public static function fire(array $items, array $params): array
     {
-        if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
+        if (rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
             foreach ($items as $item) {
                 $syncParams = [
                     'id' => $item[0],
@@ -75,14 +83,14 @@ class StructureMetadata extends Copy
                 Sync::articleMetainfo($syncParams, $syncFields, $params['clangTo']);
 
                 // generate content
-                $article = new \rex_article_content($item[0], $params['clangTo']);
+                $article = new rex_article_content($item[0], $params['clangTo']);
                 $content = $article->getArticle();
 
                 // generate meta
-                \rex_article_cache::generateMeta($item[0], $params['clangTo']);
+                rex_article_cache::generateMeta($item[0], $params['clangTo']);
 
                 // generate lists
-                \rex_article_cache::generateLists($item[0]);
+                rex_article_cache::generateLists($item[0]);
             }
         }
         return $items;

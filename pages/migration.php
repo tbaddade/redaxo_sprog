@@ -3,15 +3,16 @@
 declare(strict_types=1);
 
 use Sprog\Service\MigrationService;
+use Sprog\Support\Labels;
 
 $user = rex::getUser();
 if (null === $user || !$user->isAdmin()) {
     throw new rex_exception('Zugriff verweigert.');
 }
 
-$csrf    = rex_csrf_token::factory('sprog_migration');
+$csrf = rex_csrf_token::factory('sprog_migration');
 $service = MigrationService::create();
-$func    = rex_request('func', 'string', '');
+$func = rex_request('func', 'string', '');
 
 /*
  |---------------------------------------------------------------------------
@@ -27,19 +28,19 @@ if ('chunk' === $func) {
         rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
         rex_response::sendJson([
             'success' => false,
-            'error'   => rex_i18n::rawMsg('sprog_migration_ajax_csrf'),
+            'error' => rex_i18n::rawMsg('sprog_migration_ajax_csrf'),
         ]);
         exit;
     }
 
-    $source    = (string) rex_request('source', 'string', '');
+    $source = (string) rex_request('source', 'string', '');
     $chunkSize = (int) rex_request('chunk_size', 'int', 50);
 
     try {
         $progress = $service->runChunk($source, $chunkSize, $user->getId());
         rex_response::sendJson([
-            'success'   => true,
-            'progress'  => $progress->toArray(),
+            'success' => true,
+            'progress' => $progress->toArray(),
             'completed' => $progress->isCompleted(),
         ]);
     } catch (Throwable $e) {
@@ -47,7 +48,7 @@ if ('chunk' === $func) {
         rex_response::sendJson([
             'success' => false,
             // Nur die Message, kein Stack-Trace — der wandert ins Activity-Log.
-            'error'   => $e->getMessage(),
+            'error' => $e->getMessage(),
         ]);
     }
     exit;
@@ -77,8 +78,8 @@ if ('reset' === $func) {
  | HTML-Render
  |---------------------------------------------------------------------------
  */
-$state          = $service->state();
-$migrators      = $service->migrators();
+$state = $service->state();
+$migrators = $service->migrators();
 $availableNames = [];
 foreach ($migrators as $name => $migrator) {
     if ($migrator->isAvailable()) {
@@ -93,13 +94,13 @@ foreach ($availableNames as $name) {
     $progress = $state->for($name);
     if (null === $progress) {
         $jsState[$name] = [
-            'source'            => $name,
-            'total_rows'        => $migrators[$name]->totalCount(),
-            'processed_rows'    => 0,
+            'source' => $name,
+            'total_rows' => $migrators[$name]->totalCount(),
+            'processed_rows' => 0,
             'last_processed_id' => null,
-            'last_error'        => null,
-            'started_at'        => null,
-            'completed_at'      => null,
+            'last_error' => null,
+            'started_at' => null,
+            'completed_at' => null,
         ];
     } else {
         $jsState[$name] = $progress->toArray();
@@ -120,10 +121,10 @@ echo $flashMessage;
     <?php else : ?>
         <ul class="sprog-migration--list" role="list">
             <?php foreach ($availableNames as $name) :
-                $p           = $jsState[$name];
+                $p = $jsState[$name];
                 $isCompleted = null !== $p['completed_at'];
-                $hasError    = null !== $p['last_error'] && '' !== $p['last_error'];
-                $stateClass  = $isCompleted
+                $hasError = null !== $p['last_error'] && '' !== $p['last_error'];
+                $stateClass = $isCompleted
                     ? 'is-completed'
                     : ($hasError ? 'has-error' : 'is-idle');
 
@@ -144,7 +145,7 @@ echo $flashMessage;
                     data-error="<?= rex_escape((string) ($p['last_error'] ?? '')) ?>"
                 >
                     <header class="sprog-migration--item-head">
-                        <h2 class="sprog-migration--item-title"><?= \Sprog\Support\Labels::forNamespace($name) ?></h2>
+                        <h2 class="sprog-migration--item-title"><?= Labels::forNamespace($name) ?></h2>
                         <span class="sprog-migration--badge" data-role="status">
                             <?= rex_i18n::msg($badgeKey) ?>
                         </span>
@@ -181,7 +182,7 @@ echo $flashMessage;
                         </button>
                     </footer>
                 </li>
-            <?php endforeach; ?>
+            <?php endforeach ?>
         </ul>
 
         <form method="post" class="sprog-migration--reset" data-confirm="<?= rex_i18n::msg('sprog_migration_reset_confirm') ?>">
@@ -195,7 +196,7 @@ echo $flashMessage;
             </button>
             <span class="sprog-migration--hint"><?= rex_i18n::msg('sprog_migration_reset_hint') ?></span>
         </form>
-    <?php endif; ?>
+    <?php endif ?>
 </article>
 
 <script>

@@ -12,6 +12,10 @@ use Sprog\Mt\NoopProvider;
 use Sprog\Mt\ProviderInterface;
 use Sprog\Mt\TranslationResult;
 
+use function is_string;
+use function sprintf;
+use function strlen;
+
 /**
  * Orchestrator für Machine-Translation-Provider.
  *
@@ -48,9 +52,7 @@ final class MtService
     ) {
         foreach ($providers as $key => $provider) {
             if (!is_string($key) || $key !== $provider->name()) {
-                throw new InvalidArgumentException(
-                    'Provider-Registry-Key muss dem name() des Providers entsprechen.',
-                );
+                throw new InvalidArgumentException('Provider-Registry-Key muss dem name() des Providers entsprechen.');
             }
         }
     }
@@ -64,12 +66,12 @@ final class MtService
     {
         $providers = [];
 
-        $noop                    = new NoopProvider();
+        $noop = new NoopProvider();
         $providers[$noop->name()] = $noop;
 
         $deeplKey = (string) rex_config::get('sprog', 'mt_deepl_key', '');
         if ('' !== trim($deeplKey)) {
-            $deepl                    = new DeepLProvider($deeplKey);
+            $deepl = new DeepLProvider($deeplKey);
             $providers[$deepl->name()] = $deepl;
         }
 
@@ -99,38 +101,21 @@ final class MtService
             throw new InvalidArgumentException('sourceLang und targetLang sind identisch.');
         }
         if (null !== $context && strlen($context) > self::MAX_CONTEXT_LENGTH) {
-            throw new InvalidArgumentException(sprintf(
-                'context übersteigt die Maximallänge von %d Zeichen.',
-                self::MAX_CONTEXT_LENGTH,
-            ));
+            throw new InvalidArgumentException(sprintf('context übersteigt die Maximallänge von %d Zeichen.', self::MAX_CONTEXT_LENGTH));
         }
         $this->assertValidGlossary($glossary);
 
-        $name     = $providerName ?? $this->defaultProvider;
+        $name = $providerName ?? $this->defaultProvider;
         $provider = $this->providers[$name] ?? null;
 
         if (null === $provider) {
-            throw new ProviderException(
-                sprintf('MT-Provider "%s" ist nicht registriert.', $name),
-                $name,
-            );
+            throw new ProviderException(sprintf('MT-Provider "%s" ist nicht registriert.', $name), $name);
         }
         if (!$provider->isConfigured()) {
-            throw new ProviderException(
-                sprintf('MT-Provider "%s" ist nicht konfiguriert (z.B. fehlender API-Key).', $name),
-                $name,
-            );
+            throw new ProviderException(sprintf('MT-Provider "%s" ist nicht konfiguriert (z.B. fehlender API-Key).', $name), $name);
         }
         if (!$provider->supports($sourceLang, $targetLang)) {
-            throw new ProviderException(
-                sprintf(
-                    'MT-Provider "%s" unterstützt die Sprachrichtung %s → %s nicht.',
-                    $name,
-                    $sourceLang,
-                    $targetLang,
-                ),
-                $name,
-            );
+            throw new ProviderException(sprintf('MT-Provider "%s" unterstützt die Sprachrichtung %s → %s nicht.', $name, $sourceLang, $targetLang), $name);
         }
 
         return $provider->translate($text, $sourceLang, $targetLang, $glossary, $context);
@@ -173,11 +158,7 @@ final class MtService
     private function assertValidLang(string $code, string $argName): void
     {
         if (1 !== preg_match(self::LANG_REGEX, $code)) {
-            throw new InvalidArgumentException(sprintf(
-                '%s "%s" ist kein ISO-639-1-Code (zwei Kleinbuchstaben erwartet).',
-                $argName,
-                $code,
-            ));
+            throw new InvalidArgumentException(sprintf('%s "%s" ist kein ISO-639-1-Code (zwei Kleinbuchstaben erwartet).', $argName, $code));
         }
     }
 
@@ -188,22 +169,15 @@ final class MtService
     {
         foreach ($glossary as $source => $target) {
             if (!is_string($source) || !is_string($target)) {
-                throw new InvalidArgumentException(
-                    'Glossar muss eine string=>string-Map sein.',
-                );
+                throw new InvalidArgumentException('Glossar muss eine string=>string-Map sein.');
             }
             if ('' === $source || '' === $target) {
-                throw new InvalidArgumentException(
-                    'Glossar-Einträge dürfen weder leeren Schlüssel noch leeren Wert haben.',
-                );
+                throw new InvalidArgumentException('Glossar-Einträge dürfen weder leeren Schlüssel noch leeren Wert haben.');
             }
             if (strlen($source) > self::MAX_GLOSSARY_TERM_LENGTH
                 || strlen($target) > self::MAX_GLOSSARY_TERM_LENGTH
             ) {
-                throw new InvalidArgumentException(sprintf(
-                    'Glossar-Einträge dürfen je maximal %d Zeichen lang sein.',
-                    self::MAX_GLOSSARY_TERM_LENGTH,
-                ));
+                throw new InvalidArgumentException(sprintf('Glossar-Einträge dürfen je maximal %d Zeichen lang sein.', self::MAX_GLOSSARY_TERM_LENGTH));
             }
         }
     }

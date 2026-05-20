@@ -2,6 +2,18 @@
 
 namespace Sprog\Copy;
 
+use rex;
+use rex_addon;
+use rex_article_cache;
+use rex_article_content;
+use rex_clang;
+use rex_extension;
+use rex_extension_point;
+use rex_sql;
+use rex_sql_util;
+
+use function count;
+
 class StructureContent extends Copy
 {
     /**
@@ -24,36 +36,36 @@ class StructureContent extends Copy
     public static function getArticleIds(?int $startingArticleId = null): array
     {
         $articles = [];
-        if (\rex_addon::get('structure')->isAvailable()) {
-            $sql = \rex_sql::factory();
-            
-            if($startingArticleId == null) {
-                $items = $sql->getArray('SELECT `id` FROM '.\rex::getTable('article').' GROUP BY `id`');	
+        if (rex_addon::get('structure')->isAvailable()) {
+            $sql = rex_sql::factory();
+
+            if (null == $startingArticleId) {
+                $items = $sql->getArray('SELECT `id` FROM ' . rex::getTable('article') . ' GROUP BY `id`');
             } else {
-                $tableArticle = \rex::getTable('article');
-                
-                $clang_id = \rex_clang::getStartId();
+                $tableArticle = rex::getTable('article');
+
+                $clang_id = rex_clang::getStartId();
                 $query = <<<EOM
-                    WITH RECURSIVE articles(id, name, parent_id) as (
-                        SELECT a.id, a.name, a.parent_id
-                            FROM $tableArticle a
-                            WHERE a.id = :article_id AND a.clang_id = :clang_id
-                        UNION ALL
-                        SELECT a.id, a.name, a.parent_id
-                            FROM $tableArticle a
-                            INNER JOIN articles cte
-                                ON a.parent_id = cte.id
-                            WHERE a.clang_id = :clang_id
-                    )
-                    SELECT id FROM articles        	
-EOM;
-                
+                                        WITH RECURSIVE articles(id, name, parent_id) as (
+                                            SELECT a.id, a.name, a.parent_id
+                                                FROM $tableArticle a
+                                                WHERE a.id = :article_id AND a.clang_id = :clang_id
+                                            UNION ALL
+                                            SELECT a.id, a.name, a.parent_id
+                                                FROM $tableArticle a
+                                                INNER JOIN articles cte
+                                                    ON a.parent_id = cte.id
+                                                WHERE a.clang_id = :clang_id
+                                        )
+                                        SELECT id FROM articles        	
+                    EOM;
+
                 $items = $sql->getArray($query, [
                     'clang_id' => $clang_id,
-                    'article_id' => $startingArticleId
+                    'article_id' => $startingArticleId,
                 ]);
             }
-            
+
             foreach ($items as $item) {
                 $articles[] = (int) $item['id'];
             }
@@ -71,13 +83,13 @@ EOM;
         $articles = self::getArticleIds($startingArticleId);
 
         $items = [];
-        if (count($articles) > 0 && \rex_clang::count() > 0) {
+        if (count($articles) > 0 && rex_clang::count() > 0) {
             foreach ($articles as $article) {
-                $items[] = [$article, \rex_clang::getStartId()];
+                $items[] = [$article, rex_clang::getStartId()];
             }
         }
 
-        $chunkedItems = self::chunk($items, (int) \rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
+        $chunkedItems = self::chunk($items, (int) rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
         return ['count' => count($items), 'params' => rex_request('params', 'array', 0), 'items' => $chunkedItems];
     }
 
@@ -89,19 +101,19 @@ EOM;
      */
     public static function fire(array $items, array $params): array
     {
-        if (\rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
+        if (rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
             foreach ($items as $item) {
                 self::copyContent($item[0], $item[0], $params['clangFrom'], $params['clangTo']);
 
                 // generate content
-                $article = new \rex_article_content($item[0], $params['clangTo']);
+                $article = new rex_article_content($item[0], $params['clangTo']);
                 $content = $article->getArticle();
 
                 // generate meta
-                \rex_article_cache::generateMeta($item[0], $params['clangTo']);
+                rex_article_cache::generateMeta($item[0], $params['clangTo']);
 
                 // generate lists
-                \rex_article_cache::generateLists($item[0]);
+                rex_article_cache::generateLists($item[0]);
             }
         }
         return $items;
@@ -124,77 +136,77 @@ EOM;
             return false;
         }
 
-        $gc = \rex_sql::factory();
+        $gc = rex_sql::factory();
         $gc->setQuery(
-            'SELECT * FROM '.\rex::getTable('article_slice').' WHERE `article_id` = :from_id AND `clang_id` = :from_clang AND `revision` = :revision',
-            ['from_id' => $from_id, 'from_clang' => $from_clang, 'revision' => $revision]
+            'SELECT * FROM ' . rex::getTable('article_slice') . ' WHERE `article_id` = :from_id AND `clang_id` = :from_clang AND `revision` = :revision',
+            ['from_id' => $from_id, 'from_clang' => $from_clang, 'revision' => $revision],
         );
 
         if ($gc->getRows() > 0) {
-            \rex_extension::registerPoint(new \rex_extension_point('ART_SLICES_COPY', '', [
+            rex_extension::registerPoint(new rex_extension_point('ART_SLICES_COPY', '', [
                 'article_id' => $to_id,
                 'clang_id' => $to_clang,
                 'slice_revision' => $revision,
             ]));
 
-            $ins = \rex_sql::factory();
-            //$ins->setDebug();
+            $ins = rex_sql::factory();
+            // $ins->setDebug();
             $ctypes = [];
 
-            $cols = \rex_sql::factory();
-            //$cols->setDebug();
-            $cols->setQuery('SHOW COLUMNS FROM '.\rex::getTablePrefix().'article_slice');
+            $cols = rex_sql::factory();
+            // $cols->setDebug();
+            $cols->setQuery('SHOW COLUMNS FROM ' . rex::getTablePrefix() . 'article_slice');
 
-            $max = \rex_sql::factory();
+            $max = rex_sql::factory();
             $max->setQuery(
-                'SELECT MAX(`priority`) as max FROM '.\rex::getTable('article_slice').' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
-                ['to_id' => $to_id, 'to_clang' => $to_clang, 'revision' => $revision]
+                'SELECT MAX(`priority`) as max FROM ' . rex::getTable('article_slice') . ' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
+                ['to_id' => $to_id, 'to_clang' => $to_clang, 'revision' => $revision],
             );
-            $maxPriority = ($max->getRows() == 1) ? (int) $max->getValue('max') : 0;
+            $maxPriority = (1 == $max->getRows()) ? (int) $max->getValue('max') : 0;
 
-            $user = \rex::isBackend() ? null : 'frontend';
+            $user = rex::isBackend() ? null : 'frontend';
 
             foreach ($gc as $slice) {
                 foreach ($cols as $col) {
                     $colname = (string) $col->getValue('Field');
-                    if ($colname == 'clang_id') {
+                    if ('clang_id' == $colname) {
                         $value = $to_clang;
-                    } elseif ($colname == 'article_id') {
+                    } elseif ('article_id' == $colname) {
                         $value = $to_id;
-                    } elseif ($colname == 'priority') {
+                    } elseif ('priority' == $colname) {
                         $value = $maxPriority + (int) $slice->getValue($colname);
                     } else {
                         $value = $slice->getValue($colname);
                     }
 
                     // collect all affected ctypes
-                    if ($colname == 'ctype_id') {
-                        $ctypeId          = (int) $value;
+                    if ('ctype_id' == $colname) {
+                        $ctypeId = (int) $value;
                         $ctypes[$ctypeId] = $ctypeId;
                     }
 
-                    if ($colname != 'id') {
+                    if ('id' != $colname) {
                         $ins->setValue($colname, $value);
                     }
                 }
 
                 $ins->addGlobalUpdateFields($user);
                 $ins->addGlobalCreateFields($user);
-                $ins->setTable(\rex::getTablePrefix().'article_slice');
+                $ins->setTable(rex::getTablePrefix() . 'article_slice');
                 $ins->insert();
             }
 
             foreach ($ctypes as $ctype) {
                 // reorg slices
-                \rex_sql_util::organizePriorities(
-                    \rex::getTable('article_slice'),
+                rex_sql_util::organizePriorities(
+                    rex::getTable('article_slice'),
                     'priority',
-                    'article_id='.$to_id.' AND clang_id='.$to_clang.' AND ctype_id='.$ctype.' AND revision='.$revision,
-                    'priority, updatedate'
+                    'article_id=' . $to_id . ' AND clang_id=' . $to_clang . ' AND ctype_id=' . $ctype . ' AND revision=' . $revision,
+                    'priority, updatedate',
                 );
             }
 
-            \rex_article_cache::deleteContent($to_id, $to_clang);
+            rex_article_cache::deleteContent($to_id, $to_clang);
             return true;
         }
 

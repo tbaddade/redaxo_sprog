@@ -20,6 +20,5 @@ final readonly class ChunkResult
         public int $processed,
         public ?int $lastProcessedId,
         public bool $done,
-    ) {
-    }
+    ) {}
 }

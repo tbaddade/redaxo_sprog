@@ -1,6 +1,8 @@
 <?php
 
 declare(strict_types=1);
+use Sprog\Schema\V1Schema;
+use Sprog\Schema\V2Schema;
 
 /*
  * Sprog Schema-Setup.
@@ -22,5 +24,5 @@ declare(strict_types=1);
  * verwenden können.
  */
 
-\Sprog\Schema\V1Schema::ensure();
-\Sprog\Schema\V2Schema::ensure();
+V1Schema::ensure();
+V2Schema::ensure();

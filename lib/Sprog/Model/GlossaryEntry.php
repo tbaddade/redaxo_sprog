@@ -29,6 +29,5 @@ final readonly class GlossaryEntry
         public ?string $notes = null,
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
-    ) {
-    }
+    ) {}
 }

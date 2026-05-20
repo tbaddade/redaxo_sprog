@@ -2,6 +2,11 @@
 
 namespace Sprog\Copy;
 
+use rex_extension;
+use rex_extension_point;
+
+use function count;
+
 class Copy
 {
     /**
@@ -23,7 +28,7 @@ class Copy
      */
     public static function clearOutput(): void
     {
-        \rex_extension::register('OUTPUT_FILTER', static function (\rex_extension_point $ep): void {
+        rex_extension::register('OUTPUT_FILTER', static function (rex_extension_point $ep): void {
             $ep->setSubject(false);
         });
     }

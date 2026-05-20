@@ -11,6 +11,7 @@
 
 namespace Sprog\Export;
 
+use rex_response;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 class CsvExport
@@ -67,8 +68,8 @@ class CsvExport
         }
 
         header('Content-Disposition: attachment; filename="' . $fileName . '"; charset=utf-8');
-        \rex_response::sendContent($this->getStream(), 'text/csv');
-        exit();
+        rex_response::sendContent($this->getStream(), 'text/csv');
+        exit;
     }
 
     public function getStream(): string

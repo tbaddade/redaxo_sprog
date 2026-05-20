@@ -22,11 +22,11 @@ final class InboxRouter
     public static function dispatch(string $func, rex_user $user): void
     {
         match ($func) {
-            'save'        => SaveTranslationController::create()->handle($user),
+            'save' => SaveTranslationController::create()->handle($user),
             'update_unit' => UpdateUnitController::create()->handle($user),
             'create_unit' => CreateUnitController::create()->handle($user),
-            'transition'  => TransitionController::create()->handle($user),
-            default       => null,
+            'transition' => TransitionController::create()->handle($user),
+            default => null,
         };
     }
 }

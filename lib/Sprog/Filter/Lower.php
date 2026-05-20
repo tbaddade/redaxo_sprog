@@ -15,17 +15,11 @@ use Sprog\Filter;
 
 class Lower extends Filter
 {
-    /**
-     * {@inheritdoc}
-     */
     public function name()
     {
         return 'lower';
     }
 
-    /**
-     * {@inheritdoc}
-     */
     public function fire($value, $arguments)
     {
         return mb_strtolower($value, 'UTF-8');

@@ -11,43 +11,51 @@
 
 namespace Sprog;
 
+use rex;
+use rex_addon;
+use rex_clang;
+use rex_extension_point;
+use rex_sql;
+use rex_sql_exception;
 use Sprog\Compat\Abbreviation;
 use Sprog\Compat\Foreignword;
 use Sprog\Compat\Sync;
 use Sprog\Compat\Wildcard;
 
+use function count;
+
 class Extension
 {
     /**
-     * @param \rex_extension_point<string> $ep
+     * @param rex_extension_point<string> $ep
      */
-    public static function replaceAbbreviations(\rex_extension_point $ep): void
+    public static function replaceAbbreviations(rex_extension_point $ep): void
     {
         $ep->setSubject(Abbreviation::parse($ep->getSubject(), null));
     }
 
     /**
-     * @param \rex_extension_point<string> $ep
+     * @param rex_extension_point<string> $ep
      */
-    public static function replaceWildcards(\rex_extension_point $ep): void
+    public static function replaceWildcards(rex_extension_point $ep): void
     {
         $ep->setSubject(Wildcard::parse($ep->getSubject(), null));
     }
 
     /**
-     * @param \rex_extension_point<string> $ep
+     * @param rex_extension_point<string> $ep
      */
-    public static function replaceForeignwords(\rex_extension_point $ep): void
+    public static function replaceForeignwords(rex_extension_point $ep): void
     {
         $ep->setSubject(Foreignword::parse($ep->getSubject(), null));
     }
 
     /**
-     * @param \rex_extension_point<mixed> $ep
+     * @param rex_extension_point<mixed> $ep
      */
-    public static function articleUpdated(\rex_extension_point $ep): void
+    public static function articleUpdated(rex_extension_point $ep): void
     {
-        $addon = \rex_addon::get('sprog');
+        $addon = rex_addon::get('sprog');
 
         if ($addon->getConfig('sync_structure_article_name_to_category_name')) {
             Sync::articleNameToCategoryName($ep->getParams());
@@ -63,11 +71,11 @@ class Extension
     }
 
     /**
-     * @param \rex_extension_point<mixed> $ep
+     * @param rex_extension_point<mixed> $ep
      */
-    public static function articleMetadataUpdated(\rex_extension_point $ep): void
+    public static function articleMetadataUpdated(rex_extension_point $ep): void
     {
-        $addon = \rex_addon::get('sprog');
+        $addon = rex_addon::get('sprog');
         $fields = $addon->getConfig('sync_metainfo_art', []);
         if (count($fields)) {
             Sync::articleMetainfo($ep->getParams(), $fields);
@@ -75,11 +83,11 @@ class Extension
     }
 
     /**
-     * @param \rex_extension_point<mixed> $ep
+     * @param rex_extension_point<mixed> $ep
      */
-    public static function categoryUpdated(\rex_extension_point $ep): void
+    public static function categoryUpdated(rex_extension_point $ep): void
     {
-        $addon = \rex_addon::get('sprog');
+        $addon = rex_addon::get('sprog');
 
         if ($addon->getConfig('sync_structure_category_name_to_article_name')) {
             Sync::categoryNameToArticleName($ep->getParams());
@@ -95,22 +103,14 @@ class Extension
         }
     }
 
-    /*
-     * Medienpool ist noch nicht mehrsprachig
-    public static function mediaUpdated(\rex_extension_point $ep)
-    {
-        $addon = \rex_addon::get('sprog');
-
-        if (count($addon->getConfig('sync_metainfo_med'))) {
-            Sync::mediaMetainfo($ep->getParams(), $addon->getConfig('sync_metainfo_med'));
-        }
-    }
-    */
+    // mediaUpdated()-EP-Handler wurde entfernt — Medienpool ist nicht
+    // mehrsprachig, die korrespondierenden MEDIA_*-Registrierungen sind in
+    // boot.php auskommentiert.
 
     /**
-     * @param \rex_extension_point<mixed> $ep
+     * @param rex_extension_point<mixed> $ep
      */
-    public static function clangAdded(\rex_extension_point $ep): void
+    public static function clangAdded(rex_extension_point $ep): void
     {
         $clangId = $ep->getParam('clang')->getId();
 
@@ -119,14 +119,14 @@ class Extension
     }
 
     /**
-     * @param \rex_extension_point<mixed> $ep
+     * @param rex_extension_point<mixed> $ep
      */
-    public static function clangDeleted(\rex_extension_point $ep): void
+    public static function clangDeleted(rex_extension_point $ep): void
     {
         $clangId = $ep->getParam('clang')->getId();
 
-        $deleteLang = \rex_sql::factory();
-        $deleteLang->setQuery('DELETE FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [$clangId]);
+        $deleteLang = rex_sql::factory();
+        $deleteLang->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [$clangId]);
 
         self::clangDeletedV2($clangId);
     }
@@ -138,20 +138,20 @@ class Extension
      */
     private static function clangAddedV1(int $clangId): void
     {
-        $firstLang = \rex_sql::factory();
-        $firstLang->setQuery('SELECT * FROM '.\rex::getTable('sprog_wildcard').' WHERE clang_id=?', [\rex_clang::getStartId()]);
+        $firstLang = rex_sql::factory();
+        $firstLang->setQuery('SELECT * FROM ' . rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [rex_clang::getStartId()]);
         $fields = $firstLang->getFieldnames();
 
-        $newLang = \rex_sql::factory();
+        $newLang = rex_sql::factory();
         $newLang->setDebug(false);
         foreach ($firstLang as $firstLangEntry) {
-            $newLang->setTable(\rex::getTable('sprog_wildcard'));
+            $newLang->setTable(rex::getTable('sprog_wildcard'));
 
             foreach ($fields as $key => $value) {
-                if ($value == 'pid') {
+                if ('pid' == $value) {
                     continue;
                 }
-                if ($value == 'clang_id') {
+                if ('clang_id' == $value) {
                     $newLang->setValue('clang_id', $clangId);
                 } else {
                     $newLang->setValue($value, $firstLangEntry->getValue($value));
@@ -178,16 +178,16 @@ class Extension
     private static function clangAddedV2(int $clangId): void
     {
         try {
-            \rex_sql::factory()->setQuery(
-                'INSERT IGNORE INTO '.\rex::getTable('sprog_translation').'
+            rex_sql::factory()->setQuery(
+                'INSERT IGNORE INTO ' . rex::getTable('sprog_translation') . '
                     (unit_id, clang_id, value, value_hash, source_hash_at_translation,
                      status, revision, createdate, createuser, updatedate, updateuser)
                  SELECT u.id, :clang_id, \'\', NULL, NULL, \'missing\', 0,
                         NOW(), \'system\', NOW(), \'system\'
-                 FROM '.\rex::getTable('sprog_unit').' u',
+                 FROM ' . rex::getTable('sprog_unit') . ' u',
                 ['clang_id' => $clangId],
             );
-        } catch (\rex_sql_exception) {
+        } catch (rex_sql_exception) {
             // v2-Schema noch nicht installiert — kein Sync nötig.
         }
     }
@@ -199,19 +199,19 @@ class Extension
     private static function clangDeletedV2(int $clangId): void
     {
         try {
-            \rex_sql::factory()->setQuery(
-                'DELETE FROM '.\rex::getTable('sprog_translation').' WHERE clang_id = :clang_id',
+            rex_sql::factory()->setQuery(
+                'DELETE FROM ' . rex::getTable('sprog_translation') . ' WHERE clang_id = :clang_id',
                 ['clang_id' => $clangId],
             );
-        } catch (\rex_sql_exception) {
+        } catch (rex_sql_exception) {
             // v2-Schema noch nicht installiert — keine v2-Daten vorhanden.
         }
     }
 
     /**
-     * @param \rex_extension_point<array<string, mixed>> $ep
+     * @param rex_extension_point<array<string, mixed>> $ep
      */
-    public static function wildcardFormControlElement(\rex_extension_point $ep): void
+    public static function wildcardFormControlElement(rex_extension_point $ep): void
     {
         $subject = $ep->getSubject();
         $subject['delete'] = '';

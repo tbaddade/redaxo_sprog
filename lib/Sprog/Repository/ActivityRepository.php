@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace Sprog\Repository;
 
 use DateTimeImmutable;
+use InvalidArgumentException;
 use JsonException;
 use rex;
 use rex_sql;
 use rex_sql_exception;
 use RuntimeException;
 use Sprog\Model\ActivityEntry;
+
+use function is_array;
+
+use const JSON_THROW_ON_ERROR;
 
 /**
  * Persistenz-Schicht für sprog_activity (append-only Audit-Log).
@@ -69,10 +74,9 @@ final class ActivityRepository
     }
 
     /**
-     * @return list<ActivityEntry>
-     *
      * @throws rex_sql_exception
      * @throws JsonException
+     * @return list<ActivityEntry>
      */
     public function recentForUnit(int $unitId, int $limit, int $offset = 0): array
     {
@@ -80,10 +84,9 @@ final class ActivityRepository
     }
 
     /**
-     * @return list<ActivityEntry>
-     *
      * @throws rex_sql_exception
      * @throws JsonException
+     * @return list<ActivityEntry>
      */
     public function recentForTranslation(int $translationId, int $limit, int $offset = 0): array
     {
@@ -116,15 +119,14 @@ final class ActivityRepository
     /**
      * @param array<string, mixed> $params
      *
-     * @return list<ActivityEntry>
-     *
      * @throws rex_sql_exception
      * @throws JsonException
+     * @return list<ActivityEntry>
      */
     private function recentBy(string $where, array $params, int $limit, int $offset): array
     {
         if ($limit <= 0 || $offset < 0) {
-            throw new \InvalidArgumentException('limit muss > 0 und offset >= 0 sein.');
+            throw new InvalidArgumentException('limit muss > 0 und offset >= 0 sein.');
         }
 
         $sql = rex_sql::factory();
@@ -164,13 +166,13 @@ final class ActivityRepository
         }
 
         return new ActivityEntry(
-            id:            (int) $row['id'],
-            unitId:        isset($row['unit_id']) ? (int) $row['unit_id'] : null,
+            id: (int) $row['id'],
+            unitId: isset($row['unit_id']) ? (int) $row['unit_id'] : null,
             translationId: isset($row['translation_id']) ? (int) $row['translation_id'] : null,
-            userId:        isset($row['user_id']) ? (int) $row['user_id'] : null,
-            action:        (string) $row['action'],
-            payload:       $payload,
-            createdAt:     new DateTimeImmutable((string) $row['created_at']),
+            userId: isset($row['user_id']) ? (int) $row['user_id'] : null,
+            action: (string) $row['action'],
+            payload: $payload,
+            createdAt: new DateTimeImmutable((string) $row['created_at']),
         );
     }
 }

@@ -18,6 +18,10 @@ use Sprog\Service\TranslationService;
 use Sprog\Support\ContentHash;
 use Throwable;
 
+use function count;
+
+use const PHP_INT_MIN;
+
 /**
  * Migriert v1-Foreignwords in das v2-Unit/Translation-Schema.
  *
@@ -50,8 +54,7 @@ final class ForeignwordMigrator implements MigratorInterface
     public function __construct(
         private readonly UnitRepository $units = new UnitRepository(),
         private readonly TranslationRepository $translations = new TranslationRepository(),
-    ) {
-    }
+    ) {}
 
     public function name(): string
     {
@@ -76,7 +79,7 @@ final class ForeignwordMigrator implements MigratorInterface
             return 0;
         }
 
-        $sql  = rex_sql::factory();
+        $sql = rex_sql::factory();
         $rows = $sql->getArray('SELECT COUNT(DISTINCT foreignword) AS cnt FROM ' . $this->v1Table());
 
         return (int) ($rows[0]['cnt'] ?? 0);
@@ -92,9 +95,9 @@ final class ForeignwordMigrator implements MigratorInterface
         }
 
         $v1Table = $this->v1Table();
-        $lastId  = $lastProcessedId ?? PHP_INT_MIN;
+        $lastId = $lastProcessedId ?? PHP_INT_MIN;
 
-        $sql       = rex_sql::factory();
+        $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT foreignword, MIN(id) AS min_id
              FROM ' . $v1Table . '
@@ -114,7 +117,7 @@ final class ForeignwordMigrator implements MigratorInterface
 
         foreach ($groupRows as $groupRow) {
             $foreignWord = trim((string) ($groupRow['foreignword'] ?? ''));
-            $minId       = (int) $groupRow['min_id'];
+            $minId = (int) $groupRow['min_id'];
 
             if (null === $newLastId || $minId > $newLastId) {
                 $newLastId = $minId;
@@ -125,7 +128,7 @@ final class ForeignwordMigrator implements MigratorInterface
             }
 
             if (null !== $this->units->findByKey('foreignword', $foreignWord)) {
-                $processed++;
+                ++$processed;
                 continue;
             }
 
@@ -158,14 +161,14 @@ final class ForeignwordMigrator implements MigratorInterface
 
             try {
                 $unit = $this->units->save(new Unit(
-                    id:         null,
-                    namespace:  'foreignword',
-                    unitKey:    $foreignWord,
+                    id: null,
+                    namespace: 'foreignword',
+                    unitKey: $foreignWord,
                     sourceType: SourceType::Foreignword,
-                    sourceRef:  null,
+                    sourceRef: null,
                     sourceHash: null,
-                    tags:       $unitTags,
-                    notes:      null,
+                    tags: $unitTags,
+                    notes: null,
                 ));
 
                 foreach ($rows as $row) {
@@ -174,22 +177,22 @@ final class ForeignwordMigrator implements MigratorInterface
                     // ist die Markierung. Wir legen pro clang eine Translation
                     // mit value=foreignword an, damit das v2-Modell konsistent
                     // bleibt (jede Unit hat ihre Translations pro clang).
-                    $value  = $foreignWord;
+                    $value = $foreignWord;
                     $status = Status::Translated;
 
                     $this->translations->save(new Translation(
-                        id:                       null,
-                        unitId:                   (int) $unit->id,
-                        clangId:                  (int) $row['clang_id'],
-                        value:                    $value,
-                        valueHash:                ContentHash::of($value),
-                        sourceHashAtTranslation:  null,
-                        status:                   $status,
-                        mtProvider:               null,
-                        mtConfidence:             null,
-                        translatorId:             null,
-                        reviewerId:               null,
-                        revision:                 0,
+                        id: null,
+                        unitId: (int) $unit->id,
+                        clangId: (int) $row['clang_id'],
+                        value: $value,
+                        valueHash: ContentHash::of($value),
+                        sourceHashAtTranslation: null,
+                        status: $status,
+                        mtProvider: null,
+                        mtConfidence: null,
+                        translatorId: null,
+                        reviewerId: null,
+                        revision: 0,
                     ));
                 }
 
@@ -202,7 +205,7 @@ final class ForeignwordMigrator implements MigratorInterface
                 throw $e;
             }
 
-            $processed++;
+            ++$processed;
         }
 
         $done = count($groupRows) < $chunkSize;

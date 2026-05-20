@@ -43,7 +43,7 @@ interface ProviderInterface
     /**
      * Übersetzt einen Text-Block.
      *
-     * @param string                $text       Quell-Text, beliebig lang im Rahmen der Provider-Limits.
+     * @param string                $text       quell-Text, beliebig lang im Rahmen der Provider-Limits
      * @param string                $sourceLang ISO-639-1, z.B. 'de'.
      * @param string                $targetLang ISO-639-1, z.B. 'en'.
      * @param array<string, string> $glossary   Optionale Glossar-Pairs (Source-Term => Target-Term).
@@ -54,7 +54,7 @@ interface ProviderInterface
      *                                          im Footer", „rechtlicher Text"). Wird von DeepL ignoriert,
      *                                          von LLM-Providern in den Prompt aufgenommen.
      *
-     * @throws ProviderException bei Provider-Fehlern (HTTP, Quota, ungültige Antwort, fehlende Konfiguration).
+     * @throws ProviderException bei Provider-Fehlern (HTTP, Quota, ungültige Antwort, fehlende Konfiguration)
      */
     public function translate(
         string $text,

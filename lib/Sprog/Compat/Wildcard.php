@@ -12,10 +12,19 @@
 namespace Sprog\Compat;
 
 use rex;
+use rex_addon;
 use rex_clang;
+use rex_config;
+use rex_fragment;
+use rex_plugin;
 use rex_sql;
+use rex_url;
 use Sprog\Cache\CacheInvalidationBus;
 use Sprog\Service\WildcardLookupService;
+
+use function count;
+
+use const PREG_SET_ORDER;
 
 class Wildcard
 {
@@ -49,22 +58,22 @@ class Wildcard
 
     public static function getOpenTag(): string
     {
-        return (string) \rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
+        return (string) rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
     }
 
     public static function getCloseTag(): string
     {
-        return (string) \rex_config::get('sprog', 'wildcard_close_tag', ' }}');
+        return (string) rex_config::get('sprog', 'wildcard_close_tag', ' }}');
     }
 
     public static function getRegexp(string $value = '.*?'): string
     {
-        return '@(?<complete>'.preg_quote(trim(self::getOpenTag())).'\s*(?<wildcard>'.$value.')\s*((\|(?<filter>\s*[a-z]+)\(?(?<arguments>.*?)?\)?))?\s*'.preg_quote(trim(self::getCloseTag())).')@';
+        return '@(?<complete>' . preg_quote(trim(self::getOpenTag())) . '\s*(?<wildcard>' . $value . ')\s*((\|(?<filter>\s*[a-z]+)\(?(?<arguments>.*?)?\)?))?\s*' . preg_quote(trim(self::getCloseTag())) . ')@';
     }
 
     public static function isClangSwitchMode(): bool
     {
-        return (\rex_config::get('sprog', 'wildcard_clang_switch', '1') == 1) ? true : false;
+        return (1 == rex_config::get('sprog', 'wildcard_clang_switch', '1')) ? true : false;
     }
 
     /**
@@ -80,12 +89,12 @@ class Wildcard
      */
     public static function get($wildcard, $clang_id = null)
     {
-        if (trim($wildcard) == '') {
+        if ('' == trim($wildcard)) {
             return $wildcard;
         }
 
         if (!$clang_id) {
-            $clang_id = \rex_clang::getCurrentId();
+            $clang_id = rex_clang::getCurrentId();
         }
 
         // Lookup geht über den v2-Service: zuerst sprog_unit/sprog_translation,
@@ -110,7 +119,7 @@ class Wildcard
      */
     public static function parse($content, $clang_id = null)
     {
-        if (trim($content) == '') {
+        if ('' == trim($content)) {
             return $content;
         }
 
@@ -120,7 +129,7 @@ class Wildcard
         }
 
         if (!$clang_id) {
-            $clang_id = \rex_clang::getCurrentId();
+            $clang_id = rex_clang::getCurrentId();
         }
 
         // Eine Query für alle Wildcards der Sprache; v2 zuerst, sonst v1.
@@ -130,7 +139,7 @@ class Wildcard
             return $content;
         }
 
-        $filters = \rex::getProperty('SPROG_FILTER', []);
+        $filters = rex::getProperty('SPROG_FILTER', []);
         $search = [];
         $replace = [];
         foreach ($matches as $match) {
@@ -140,7 +149,7 @@ class Wildcard
             }
             if (isset($match['filter']) && isset($filters[trim($match['filter'])])) {
                 $filter = $filters[trim($match['filter'])];
-                $arguments = isset($match['arguments']) ? $match['arguments'] : '';
+                $arguments = $match['arguments'] ?? '';
                 $value = $filter->fire($value, $arguments);
             } else {
                 $value = self::replace($match['wildcard'], $value);
@@ -153,14 +162,14 @@ class Wildcard
     }
 
     /**
-     * @return array<string, array{wildcard: string, url: string}>|false false wenn structure-Addon nicht verfügbar.
+     * @return array<string, array{wildcard: string, url: string}>|false false wenn structure-Addon nicht verfügbar
      */
     public static function getMissingWildcards()
     {
         $wildcards = [];
 
-        if (\rex_addon::get('structure')->isAvailable() && \rex_plugin::get('structure', 'content')->isAvailable()) {
-            $sql = \rex_sql::factory();
+        if (rex_addon::get('structure')->isAvailable() && rex_plugin::get('structure', 'content')->isAvailable()) {
+            $sql = rex_sql::factory();
 
             // Slices der Artikel durchsuchen
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,10 +182,10 @@ class Wildcard
             foreach ($fields as $field => $numbers) {
                 $concatFields = [];
                 foreach ($numbers as $number) {
-                    $concatFields[] = $field.$number;
-                    $searchFields[] = $field.$number.' RLIKE '.$sql->escape(preg_quote(trim(self::getOpenTag())).'.*'.preg_quote(trim(self::getCloseTag())));
+                    $concatFields[] = $field . $number;
+                    $searchFields[] = $field . $number . ' RLIKE ' . $sql->escape(preg_quote(trim(self::getOpenTag())) . '.*' . preg_quote(trim(self::getCloseTag())));
                 }
-                $selectFields[] = 'CONCAT_WS("|", '.implode(',', $concatFields).') AS subject';
+                $selectFields[] = 'CONCAT_WS("|", ' . implode(',', $concatFields) . ') AS subject';
             }
 
             $fields = $searchFields;
@@ -184,12 +193,12 @@ class Wildcard
             $sql_query = ' SELECT       s.article_id AS id,
                                         s.clang_id,
                                         s.ctype_id,
-                                        '.implode(', ', $selectFields).'
-                            FROM        '.\rex::getTable('article_slice').' AS s
+                                        ' . implode(', ', $selectFields) . '
+                            FROM        ' . rex::getTable('article_slice') . ' AS s
                                 LEFT JOIN
-                                        '.\rex::getTable('article').' AS a
+                                        ' . rex::getTable('article') . ' AS a
                                     ON  (s.article_id = a.id AND s.clang_id = a.clang_id)
-                            WHERE       '.implode(' OR ', $fields).'
+                            WHERE       ' . implode(' OR ', $fields) . '
                             ';
 
             $sql->setDebug(false);
@@ -204,14 +213,14 @@ class Wildcard
                     foreach ($matchesSubject as $match) {
                         $wildcard = (string) $match['wildcard'];
                         $wildcards[$wildcard]['wildcard'] = $wildcard;
-                        $wildcards[$wildcard]['url'] = \rex_url::backendController(
+                        $wildcards[$wildcard]['url'] = rex_url::backendController(
                             [
-                                  'page' => 'content/edit',
-                                  'article_id' => $item['id'],
-                                  'mode' => 'edit',
-                                  'clang' => $item['clang_id'],
-                                  'ctype' => $item['ctype_id'],
-                            ]
+                                'page' => 'content/edit',
+                                'article_id' => $item['id'],
+                                'mode' => 'edit',
+                                'clang' => $item['clang_id'],
+                                'ctype' => $item['ctype_id'],
+                            ],
                         );
                     }
                 }
@@ -219,13 +228,13 @@ class Wildcard
 
             // Alle bereits angelegten Platzhalter entfernen
             if (count($wildcards)) {
-                $sql = \rex_sql::factory();
+                $sql = rex_sql::factory();
                 $sql->setDebug(false);
                 $sql->setQuery('
                     SELECT  wildcard
-                    FROM    '.\rex::getTable('sprog_wildcard').'
+                    FROM    ' . rex::getTable('sprog_wildcard') . '
                     WHERE   clang_id = :clang_id',
-                    ['clang_id' => \rex_clang::getStartId()]
+                    ['clang_id' => rex_clang::getStartId()],
                 );
 
                 if ($sql->getRows() >= 1) {
@@ -257,8 +266,8 @@ class Wildcard
                <thead>
                    <tr>
                        <th class="rex-table-icon"></th>
-                       <th>'.\rex_addon::get('sprog')->i18n('wildcard').'</th>
-                       <th class="rex-table-action" colspan="2">'.\rex_addon::get('sprog')->i18n('function').'</th>
+                       <th>' . rex_addon::get('sprog')->i18n('wildcard') . '</th>
+                       <th class="rex-table-action" colspan="2">' . rex_addon::get('sprog')->i18n('function') . '</th>
                    </tr>
                </thead>
                <tbody>
@@ -268,9 +277,9 @@ class Wildcard
             $content .= '
                        <tr>
                            <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
-                           <td data-title="'.\rex_addon::get('sprog')->i18n('wildcard').'">'.$name.'</td>
-                           <td class="rex-table-action"><a href="'.\rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]).'"><i class="rex-icon rex-icon-edit"></i> '.\rex_addon::get('sprog')->i18n('function_add').'</a></td>
-                           <td class="rex-table-action"><a href="'.$params['url'].'"><i class="rex-icon rex-icon-article"></i> '.\rex_addon::get('sprog')->i18n('wildcard_go_to_the_article').'</a></td>
+                           <td data-title="' . rex_addon::get('sprog')->i18n('wildcard') . '">' . $name . '</td>
+                           <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' . rex_addon::get('sprog')->i18n('function_add') . '</a></td>
+                           <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . rex_addon::get('sprog')->i18n('wildcard_go_to_the_article') . '</a></td>
                        </tr>';
         }
 
@@ -278,8 +287,8 @@ class Wildcard
                </tbody>
            </table>';
 
-        $fragment = new \rex_fragment();
-        $fragment->setVar('title', \rex_addon::get('sprog')->i18n('wildcard_caption_missing', \rex_addon::get('structure')->i18n('title_structure')), false);
+        $fragment = new rex_fragment();
+        $fragment->setVar('title', rex_addon::get('sprog')->i18n('wildcard_caption_missing', rex_addon::get('structure')->i18n('title_structure')), false);
         $fragment->setVar('content', $content, false);
 
         return (string) $fragment->parse('core/page/section.php');
@@ -293,7 +302,7 @@ class Wildcard
         return nl2br($replace);
     }
 
-    public static function  checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary(): void
+    public static function checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary(): void
     {
         $sql = rex_sql::factory();
         $records = $sql->getArray('SELECT * FROM ' . rex::getTable('sprog_wildcard') . ' ORDER BY id, clang_id');

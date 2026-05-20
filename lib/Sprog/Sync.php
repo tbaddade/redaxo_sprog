@@ -17,6 +17,4 @@ namespace Sprog;
  * @deprecated since 2.0 — verwende Sprog\Compat\Sync; in v3.0 wird die Sync-
  *             Logik vom neuen Source-Layer (Sprog\Source\*) ersetzt.
  */
-class Sync extends \Sprog\Compat\Sync
-{
-}
+class Sync extends Compat\Sync {}
