@@ -83,21 +83,25 @@ page:
 pages:
     sprog.copy.structure_content_popup:
         title: 'translate:copy_structure_content_popup'
+        perm: admin[]
         main: true
         popup: true
         hidden: true
     sprog.copy.structure_content_generate:
         title: 'translate:copy_structure_content_generate'
+        perm: admin[]
         main: true
         hasLayout: false
         hidden: true
     sprog.copy.structure_metadata_popup:
         title: 'translate:copy_structure_metadata_popup'
+        perm: admin[]
         main: true
         popup: true
         hidden: true
     sprog.copy.structure_metadata_generate:
         title: 'translate:copy_structure_metadata_generate'
+        perm: admin[]
         main: true
         hasLayout: false
         hidden: true

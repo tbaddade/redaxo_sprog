@@ -1,7 +1,4 @@
 
-# Coder/Reviewer-Pattern: Feedback wird nicht versioniert
-review/feedback.md
-
 # PHPUnit-Cache (Result-Cache, Coverage-Cache)
 /var/
 /.php-cs-fixer.cache
@@ -9,7 +6,7 @@ review/feedback.md
 # Lokale PHPUnit-Overrides
 /phpunit.xml
 
-# Coder/Reviewer-Pattern
+# Coder/Reviewer-Pattern: review/ ist ein Symlink auf den Reviewer-Worktree
 review
 
 # vendor/: nur Production-Deps sind committed (symfony/serializer + Transitive
