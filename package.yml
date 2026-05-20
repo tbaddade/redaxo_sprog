@@ -38,6 +38,7 @@ page:
             perm: admin[]
         wildcard:
             title: 'translate:wildcard'
+            perm: sprog[wildcard]
         abbreviation:
             title: 'translate:abbreviations'
             perm: sprog[abbreviation]
