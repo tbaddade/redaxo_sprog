@@ -11,6 +11,11 @@
 
 use Sprog\Copy\StructureMetadata;
 
+if (!rex_csrf_token::factory('sprog-copy-metadata')->isValid()) {
+    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+    return;
+}
+
 // generate page cache
 $articles = rex_get('articles', 'string');
 $params = rex_get('params', 'array');
