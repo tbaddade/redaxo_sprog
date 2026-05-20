@@ -12,6 +12,7 @@
 use Sprog\Boot\AssetRegistry;
 use Sprog\Boot\FilterRegistry;
 use Sprog\Boot\PageTreeBuilder;
+use Sprog\Extension;
 
 $addon = rex_addon::get('sprog');
 
@@ -28,32 +29,26 @@ require_once __DIR__ . '/functions/sprog.php';
 
 FilterRegistry::publish($addon->getProperty('filter'));
 
-// TODO(v2-review NIT, boot.php:34ff): EP-Callbacks unten sind als String-FQNs
-// ('\Sprog\Extension::replaceWildcards' …) registriert. Konsequent zur
-// v2-Modernisierung wäre `[\Sprog\Extension::class, 'replaceWildcards']`
-// (oder `use Sprog\Extension;` + `[Extension::class, 'replaceWildcards']`).
-// Vorteile: IDE-Navigation, Refactor-Rename greift, PHPStan löst den
-// Callback auf. Funktional gleichwertig, daher nur NIT.
 if (!rex::isBackend()) {
-    rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceWildcards', rex_extension::NORMAL);
-    rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceAbbreviations', rex_extension::NORMAL);
-    rex_extension::register('OUTPUT_FILTER', '\Sprog\Extension::replaceForeignwords', rex_extension::NORMAL);
+    rex_extension::register('OUTPUT_FILTER', [Extension::class, 'replaceWildcards'], rex_extension::NORMAL);
+    rex_extension::register('OUTPUT_FILTER', [Extension::class, 'replaceAbbreviations'], rex_extension::NORMAL);
+    rex_extension::register('OUTPUT_FILTER', [Extension::class, 'replaceForeignwords'], rex_extension::NORMAL);
 }
 
 if (rex::isBackend() && rex::getUser()) {
     // ART_*/CAT_*-Hooks: LATE, damit MetaInfo seine Daten zuerst persistiert.
-    rex_extension::register('ART_STATUS', '\Sprog\Extension::articleUpdated');
-    rex_extension::register('ART_UPDATED', '\Sprog\Extension::articleUpdated');
-    rex_extension::register('ART_META_UPDATED', '\Sprog\Extension::articleMetadataUpdated', rex_extension::LATE);
-    rex_extension::register('CAT_STATUS', '\Sprog\Extension::categoryUpdated');
-    rex_extension::register('CAT_UPDATED', '\Sprog\Extension::categoryUpdated', rex_extension::LATE);
+    rex_extension::register('ART_STATUS', [Extension::class, 'articleUpdated']);
+    rex_extension::register('ART_UPDATED', [Extension::class, 'articleUpdated']);
+    rex_extension::register('ART_META_UPDATED', [Extension::class, 'articleMetadataUpdated'], rex_extension::LATE);
+    rex_extension::register('CAT_STATUS', [Extension::class, 'categoryUpdated']);
+    rex_extension::register('CAT_UPDATED', [Extension::class, 'categoryUpdated'], rex_extension::LATE);
 
     // Medienpool ist noch nicht mehrsprachig — MEDIA_* daher bewusst aus.
-    // rex_extension::register('MEDIA_ADDED', '\Sprog\Extension::mediaUpdated', rex_extension::LATE);
-    // rex_extension::register('MEDIA_UPDATED', '\Sprog\Extension::mediaUpdated', rex_extension::LATE);
+    // rex_extension::register('MEDIA_ADDED', [Extension::class, 'mediaUpdated'], rex_extension::LATE);
+    // rex_extension::register('MEDIA_UPDATED', [Extension::class, 'mediaUpdated'], rex_extension::LATE);
 
-    rex_extension::register('CLANG_ADDED', '\Sprog\Extension::clangAdded');
-    rex_extension::register('CLANG_DELETED', '\Sprog\Extension::clangDeleted');
+    rex_extension::register('CLANG_ADDED', [Extension::class, 'clangAdded']);
+    rex_extension::register('CLANG_DELETED', [Extension::class, 'clangDeleted']);
 
     rex_extension::register('PAGES_PREPARED', static function () use ($addon): void {
         PageTreeBuilder::publish($addon);
