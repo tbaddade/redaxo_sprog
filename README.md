@@ -3,6 +3,11 @@ Sprog
 
 **AddOn für Sprachen**
 
+## Voraussetzungen
+
+- REDAXO `^5.21`
+- PHP `^8.4` (Minimum PHP 8.4)
+
 ## Platzhalter
  
 - einfaches Erstellen von Platzhaltern und deren Ersetzungen
