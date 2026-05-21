@@ -349,6 +349,7 @@ sprog_glossary_add_success = Eintrag „{0}“ → „{1}“ hinzugefügt.
 sprog_glossary_add_duplicate = Eintrag „{0}“ existiert bereits für dieses Sprachpaar.
 sprog_glossary_add_error = Fehler beim Anlegen: {0}
 sprog_glossary_delete_confirm = Eintrag wirklich löschen?
+sprog_noscript_confirm_warning = Achtung: JavaScript ist deaktiviert. Die Sicherheitsabfrage vor Löschvorgängen entfällt — bitte JavaScript aktivieren.
 sprog_glossary_delete_button = Löschen
 sprog_glossary_delete_success = Eintrag gelöscht.
 sprog_glossary_count_one = 1 Eintrag

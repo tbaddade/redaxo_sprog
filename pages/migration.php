@@ -185,6 +185,9 @@ echo $flashMessage;
             <?php endforeach ?>
         </ul>
 
+        <noscript>
+            <p class="rex-alert rex-alert-warning"><?= rex_i18n::msg('sprog_noscript_confirm_warning') ?></p>
+        </noscript>
         <form method="post" class="sprog-migration--reset" data-confirm="<?= rex_i18n::msg('sprog_migration_reset_confirm') ?>">
             <?= $csrf->getHiddenField() ?>
             <input type="hidden" name="func" value="reset">

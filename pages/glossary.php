@@ -248,6 +248,9 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
         <?php if ([] === $entries) : ?>
             <p class="sprog-glossary--empty"><?= rex_i18n::msg('sprog_glossary_empty') ?></p>
         <?php else : ?>
+            <noscript>
+                <p class="rex-alert rex-alert-warning"><?= rex_i18n::msg('sprog_noscript_confirm_warning') ?></p>
+            </noscript>
             <ul class="sprog-glossary--list" role="list">
                 <?php foreach ($entries as $entry) : ?>
                     <li class="sprog-glossary--card">
