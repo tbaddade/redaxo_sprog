@@ -60,11 +60,13 @@ final class V2Schema
      */
     private static function ensureUnitTable(): void
     {
-        // Alten UNIQUE-Index aus v2.0-Frühzeit droppen, falls vorhanden.
-        // Wurde durch unit_namespace_context_key abgelöst — ohne den Drop
-        // würde der alte Index die Mehrfach-Verwendung gleicher unit_keys in
-        // unterschiedlichen `context`-Werten blockieren. Idempotent: existiert
-        // der Index nicht (mehr), schluckt der Try den Fehler.
+        // TODO(v3): Diesen ALTER-Schnipsel raus oder in eine versionierte
+        // Schema-Migration umziehen — er ist ein einmaliger v2.0-Frühzeit-Fix,
+        // läuft aber bei jedem ensure() versuchsweise mit. Alten UNIQUE-Index
+        // droppen, falls vorhanden: wurde durch unit_namespace_context_key
+        // abgelöst, sonst würde er die Mehrfach-Verwendung gleicher unit_keys
+        // in unterschiedlichen `context`-Werten blockieren. Idempotent:
+        // existiert der Index nicht (mehr), schluckt der Try den Fehler.
         try {
             rex_sql::factory()->setQuery(
                 'ALTER TABLE ' . rex::getTable('sprog_unit') . ' DROP INDEX unit_namespace_key',
