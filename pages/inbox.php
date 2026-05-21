@@ -144,16 +144,18 @@ $statusOptions = [
  | Wird genutzt, um Deep-Links auf eine geöffnete Unit zu erzeugen
  | (z.B. nach einem Redirect aus dem Create-Flow).
  */
+// status als nativer Array-Wert — http_build_query (intern in
+// rex_url::currentBackendPage) serialisiert das als status[0]=…&status[1]=…
+// Vorher haben wir die Bracket-Indizes manuell als String-Keys gesetzt; das
+// wäre an Refactorings an rex_url::* zerbrechen können.
 $baseParams = [
     'clang_id' => $clangId,
     'namespace' => $namespace ?? '',
     'search' => $searchInput,
     'pg' => $page,
     'page_size' => $pageSize,
+    'status' => array_map(static fn (Status $st) => $st->value, $statuses),
 ];
-foreach ($statuses as $i => $st) {
-    $baseParams['status[' . $i . ']'] = $st->value;
-}
 
 $jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
 $endpointUpdateUnit = rex_url::currentBackendPage(['func' => 'update_unit'], false);
