@@ -23,8 +23,13 @@ $clangs = rex_clang::getAll();
 
 $defaultSource = rex_clang::getStartId();
 $defaultTarget = 0;
+$clangPerm = $user->getComplexPerm('clang');
 foreach ($clangs as $cid => $_clang) {
-    if ($cid !== $defaultSource) {
+    // Nur clangs vorschlagen, auf die der User Perm hat — sonst landet die
+    // Page bei pairIsValid=false und zeigt eine irreführende Meldung („Quell-
+    // und Zielsprache identisch") für einen Default, den der User gar nicht
+    // ausgesucht hat.
+    if ($cid !== $defaultSource && $clangPerm->hasPerm($cid)) {
         $defaultTarget = $cid;
         break;
     }
