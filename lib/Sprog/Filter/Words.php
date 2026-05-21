@@ -15,12 +15,12 @@ use Sprog\Filter;
 
 class Words extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'words';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         if ('' == $arguments) {
             return $value;

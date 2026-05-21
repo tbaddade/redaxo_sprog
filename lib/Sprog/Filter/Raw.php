@@ -15,12 +15,12 @@ use Sprog\Filter;
 
 class Raw extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'raw';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         return $value;
     }

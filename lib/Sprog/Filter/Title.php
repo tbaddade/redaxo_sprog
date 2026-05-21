@@ -17,12 +17,12 @@ use const MB_CASE_TITLE;
 
 class Title extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'title';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         return mb_convert_case($value, MB_CASE_TITLE, 'UTF-8');
     }

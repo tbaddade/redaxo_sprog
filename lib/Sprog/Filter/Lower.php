@@ -15,12 +15,12 @@ use Sprog\Filter;
 
 class Lower extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'lower';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         return mb_strtolower($value, 'UTF-8');
     }
