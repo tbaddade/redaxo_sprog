@@ -67,10 +67,12 @@ if ('add' === $action) {
         } catch (InvalidArgumentException $e) {
             $flashMessages[] = rex_view::error(rex_escape($e->getMessage()));
         } catch (rex_sql_exception $e) {
-            // UNIQUE-Constraint-Verstoss landet hier — sauberer wäre ein eigener
-            // ErrorCode aus dem SQLState, aber das Message-Match reicht für die
-            // einzige Constraint auf der Tabelle.
-            if (false !== stripos($e->getMessage(), 'duplicate')) {
+            // UNIQUE-Constraint-Verstoss landet hier. rex_sql_exception::getErrorCode()
+            // liefert den MySQL-native Error-Code aus der gewrappten PDOException;
+            // 1062 = ER_DUP_ENTRY. Stabiler als Message-Match, weil lokalisierte
+            // MySQL/MariaDB-Installs den Fehlertext übersetzen
+            // („Schlüsseldopplung" o.ä.) und der stripos-Treffer dann fehlschlägt.
+            if (1062 === $e->getErrorCode()) {
                 $flashMessages[] = rex_view::error(rex_i18n::msg(
                     'sprog_glossary_add_duplicate',
                     $sourceTerm,
