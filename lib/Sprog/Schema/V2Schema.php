@@ -23,37 +23,11 @@ use rex_sql_table;
  */
 final class V2Schema
 {
-    /**
-     * Erlaubte Werte der Spalte sprog_translation.status.
-     *
-     * Bewusst kein MySQL-ENUM: Statuswerte erweitern wir voraussichtlich
-     * im Lauf von v2.x, ENUM-Änderungen sind teure ALTERs. Die Validierung
-     * passiert PHP-seitig im Service-Layer.
-     */
-    public const STATUS_VALUES = [
-        'missing',
-        'draft',
-        'translated',
-        'needs_review',
-        'approved',
-        'stale',
-    ];
-
-    /**
-     * Erlaubte Werte der Spalte sprog_unit.source_type. Wird vom Service-Layer
-     * validiert; jede TranslationSource registriert sich mit einem dieser Typen
-     * oder einem additiv ergänzten Wert.
-     */
-    public const SOURCE_TYPES = [
-        'wildcard',
-        'abbreviation',
-        'foreignword',
-        'article',
-        'slice',
-        'yform',
-        'media',
-        'custom',
-    ];
+    // Die Spalten sprog_translation.status und sprog_unit.source_type sind
+    // bewusst kein MySQL-ENUM (additive Erweiterung in v2.x soll keine teuren
+    // ALTERs auslösen). Whitelist und Single-Source-of-Truth sind die Enums
+    // Sprog\Enum\Status und Sprog\Enum\SourceType — Validierung läuft
+    // PHP-seitig im Service- und Repository-Layer via ::from() / ::tryFrom().
 
     public static function ensure(): void
     {
@@ -105,7 +79,7 @@ final class V2Schema
 
             // Kategorie der Einheit / Replacement-Provider, z.B. 'wildcard',
             // 'article.name', 'slice.text'. Bestimmt, WIE der Wert beim Output
-            // ersetzt wird. Whitelist via V2Schema::SOURCE_TYPES.
+            // ersetzt wird. Whitelist: Sprog\Enum\SourceType.
             ->ensureColumn(new rex_sql_column('namespace', 'varchar(64)'))
 
             // User-definierter Kontext / Bereich, z.B. "page.about", "form.contact".
@@ -173,7 +147,7 @@ final class V2Schema
             // Übersetzung. Differenz zu sprog_unit.source_hash => "stale".
             ->ensureColumn(new rex_sql_column('source_hash_at_translation', 'char(64)', true))
 
-            // Workflow-Status; Whitelist via V2Schema::STATUS_VALUES.
+            // Workflow-Status; Whitelist: Sprog\Enum\Status.
             ->ensureColumn(new rex_sql_column('status', 'varchar(32)', false, 'missing'))
 
             // MT-Metadaten: welcher Provider hat den Draft erzeugt und mit welcher
