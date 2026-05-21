@@ -122,30 +122,24 @@ class StructureContent extends Copy
     /**
      * Kopiert die Inhalte eines Artikels in einen anderen Artikel.
      *
-     * @param int $from_id    ArtikelId des Artikels, aus dem kopiert werden (Quell ArtikelId)
-     * @param int $to_id      ArtikelId des Artikel, in den kopiert werden sollen (Ziel ArtikelId)
-     * @param int $from_clang ClangId des Artikels, aus dem kopiert werden soll (Quell ClangId)
-     * @param int $to_clang   ClangId des Artikels, in den kopiert werden soll (Ziel ClangId)
-     * @param int $revision
-     *
      * @return bool TRUE bei Erfolg, sonst FALSE
      */
-    public static function copyContent($from_id, $to_id, $from_clang = 1, $to_clang = 1, $revision = 0)
+    public static function copyContent(int $fromId, int $toId, int $fromClang = 1, int $toClang = 1, int $revision = 0): bool
     {
-        if ($from_id == $to_id && $from_clang == $to_clang) {
+        if ($fromId == $toId && $fromClang == $toClang) {
             return false;
         }
 
         $gc = rex_sql::factory();
         $gc->setQuery(
             'SELECT * FROM ' . rex::getTable('article_slice') . ' WHERE `article_id` = :from_id AND `clang_id` = :from_clang AND `revision` = :revision',
-            ['from_id' => $from_id, 'from_clang' => $from_clang, 'revision' => $revision],
+            ['from_id' => $fromId, 'from_clang' => $fromClang, 'revision' => $revision],
         );
 
         if ($gc->getRows() > 0) {
             rex_extension::registerPoint(new rex_extension_point('ART_SLICES_COPY', '', [
-                'article_id' => $to_id,
-                'clang_id' => $to_clang,
+                'article_id' => $toId,
+                'clang_id' => $toClang,
                 'slice_revision' => $revision,
             ]));
 
@@ -160,7 +154,7 @@ class StructureContent extends Copy
             $max = rex_sql::factory();
             $max->setQuery(
                 'SELECT MAX(`priority`) as max FROM ' . rex::getTable('article_slice') . ' WHERE `article_id` = :to_id AND `clang_id` = :to_clang AND `revision` = :revision',
-                ['to_id' => $to_id, 'to_clang' => $to_clang, 'revision' => $revision],
+                ['to_id' => $toId, 'to_clang' => $toClang, 'revision' => $revision],
             );
             $maxPriority = (1 == $max->getRows()) ? (int) $max->getValue('max') : 0;
 
@@ -170,9 +164,9 @@ class StructureContent extends Copy
                 foreach ($cols as $col) {
                     $colname = (string) $col->getValue('Field');
                     if ('clang_id' == $colname) {
-                        $value = $to_clang;
+                        $value = $toClang;
                     } elseif ('article_id' == $colname) {
-                        $value = $to_id;
+                        $value = $toId;
                     } elseif ('priority' == $colname) {
                         $value = $maxPriority + (int) $slice->getValue($colname);
                     } else {
@@ -201,12 +195,12 @@ class StructureContent extends Copy
                 rex_sql_util::organizePriorities(
                     rex::getTable('article_slice'),
                     'priority',
-                    'article_id=' . $to_id . ' AND clang_id=' . $to_clang . ' AND ctype_id=' . $ctype . ' AND revision=' . $revision,
+                    'article_id=' . $toId . ' AND clang_id=' . $toClang . ' AND ctype_id=' . $ctype . ' AND revision=' . $revision,
                     'priority, updatedate',
                 );
             }
 
-            rex_article_cache::deleteContent($to_id, $to_clang);
+            rex_article_cache::deleteContent($toId, $toClang);
             return true;
         }
 
