@@ -22,6 +22,7 @@ $statusOrder = [
     Status::Translated,
     Status::NeedsReview,
     Status::Draft,
+    Status::Revise,
     Status::Stale,
     Status::Missing,
 ];
