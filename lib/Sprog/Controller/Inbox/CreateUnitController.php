@@ -10,6 +10,7 @@ use Sprog\Enum\SourceType;
 use Sprog\Http\JsonResponse;
 use Sprog\Model\Unit;
 use Sprog\Repository\UnitRepository;
+use Sprog\Service\ActivityService;
 use Sprog\Service\TranslationService;
 use Throwable;
 
@@ -33,20 +34,16 @@ final class CreateUnitController
     public function __construct(
         private readonly UnitRepository $units,
         private readonly TranslationService $translations,
+        private readonly ActivityService $activity,
     ) {}
 
     public static function create(): self
     {
-        return new self(new UnitRepository(), TranslationService::create());
+        return new self(new UnitRepository(), TranslationService::create(), ActivityService::create());
     }
 
     public function handle(rex_user $user): never
     {
-        // $user wird derzeit nicht referenziert — Aufrufer geht aber durch den
-        // Page-Permission-Check vor dem Dispatch, daher Parameter aus Signatur
-        // bleibt einheitlich zu den anderen Inbox-Controllern.
-        unset($user);
-
         JsonResponse::ensureCsrf('sprog_inbox_create', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
@@ -92,6 +89,8 @@ final class CreateUnitController
             // Pro definierter clang eine missing-Row anlegen — spiegelt das
             // Verhalten von pages/create.php (siehe TranslationService::ensureRowsForUnit).
             $this->translations->ensureRowsForUnit($unit);
+
+            $this->activity->logUnitCreated((int) $unit->id, $user->getId(), $unit->namespace, $unit->unitKey);
         } catch (Throwable $e) {
             JsonResponse::internalError($e->getMessage());
         }
