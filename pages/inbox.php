@@ -345,7 +345,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                     </select>
                 </label>
 
-                <details class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--dropdown" tabindex="0">
+                <details class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_status_aria')) ?>">
                     <summary class="sprog-inbox--toolbar-cell-summary" tabindex="-1">
                         <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_status') ?></span>
                         <span class="sprog-inbox--toolbar-cell-value"><?= rex_escape($statusSummaryText) ?></span>
@@ -403,6 +403,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                 <li class="sprog-inbox--card">
                     <details
                         class="sprog-inbox--unit"
+                        aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_unit_card_aria', $item->unitKey)) ?>"
                         data-unit-id="<?= rex_escape((string) $unit->id) ?>"
                         data-unit-namespace="<?= rex_escape($item->namespace) ?>"
                         data-unit-namespace-label="<?= rex_escape(Labels::forNamespace($item->namespace)) ?>"
