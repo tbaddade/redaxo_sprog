@@ -15,12 +15,12 @@ use Sprog\Filter;
 
 class Format extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'format';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         if ('' == $arguments) {
             return $value;

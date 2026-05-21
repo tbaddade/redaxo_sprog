@@ -15,12 +15,12 @@ use Sprog\Filter;
 
 class Upper extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'upper';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         return mb_strtoupper($value, 'UTF-8');
     }

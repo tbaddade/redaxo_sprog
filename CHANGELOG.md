@@ -2,6 +2,16 @@
 Sprog - Changelog
 ================================================================================
 
+## Version 2.0.0 (in Entwicklung)
+
+### Breaking Changes
+
+- `Sprog\Filter` (Abstract-Klasse) hat jetzt typisierte Signaturen:
+  `name(): string` und `fire(string $value, string $arguments): string`.
+  Drittaddon-Filter, die von `Sprog\Filter` erben, müssen ihre Methoden
+  entsprechend typen, sonst greift PHPs LSP-Check und es gibt einen
+  Fatal Error.
+
 ## Version 1.3.0 - 19.11.2021
 
 ### Neu

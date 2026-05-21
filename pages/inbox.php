@@ -54,7 +54,7 @@ $statusesInput = rex_request('status', 'array', []);
 $searchInput = trim((string) rex_request('search', 'string', ''));
 $page = max(1, (int) rex_request('pg', 'int', 1));
 $pageSize = (int) rex_request('page_size', 'int', TranslationListFilter::DEFAULT_PAGE_SIZE);
-$openUnit = (int) rex_request('open', 'int', 0);
+$openUnit = (int) rex_request('open_unit', 'int', 0);
 
 // Per-Sprache Berechtigungs-Check vor der DB-Query — kein Bypass durch URL-Tampering.
 if ($clangId <= 0 || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
@@ -139,7 +139,7 @@ $statusOptions = [
 
 /*
  |---------------------------------------------------------------------------
- | URL-Builder: aktuelle Filter beibehalten, nur "open" tauschen
+ | URL-Builder: aktuelle Filter beibehalten, nur "open_unit" tauschen
  |---------------------------------------------------------------------------
  | Wird genutzt, um Deep-Links auf eine geöffnete Unit zu erzeugen
  | (z.B. nach einem Redirect aus dem Create-Flow).

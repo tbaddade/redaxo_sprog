@@ -16,12 +16,12 @@ use Sprog\Filter;
 
 class Markdown extends Filter
 {
-    public function name()
+    public function name(): string
     {
         return 'markdown';
     }
 
-    public function fire($value, $arguments)
+    public function fire(string $value, string $arguments): string
     {
         return rex_markdown::factory()->parse($value);
     }

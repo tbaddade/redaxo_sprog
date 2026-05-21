@@ -110,4 +110,4 @@ pages:
 default_config:
     wildcard_open_tag: '{{ '
     wildcard_close_tag: ' }}'
-    chunkSizeArticles: 4
+    chunk_size_articles: 4

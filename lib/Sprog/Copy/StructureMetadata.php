@@ -61,7 +61,7 @@ class StructureMetadata extends Copy
             }
         }
 
-        $chunkedItems = self::chunk($items, (int) rex_addon::get('sprog')->getConfig('chunkSizeArticles'));
+        $chunkedItems = self::chunk($items, (int) rex_addon::get('sprog')->getConfig('chunk_size_articles'));
         return ['count' => count($items), 'params' => rex_request('params', 'array', 0), 'items' => $chunkedItems];
     }
 
