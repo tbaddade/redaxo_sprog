@@ -672,9 +672,9 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         name="namespace"
                         hidden
                     >
-                        <option value="wildcard"><?= Labels::forNamespace('wildcard') ?></option>
-                        <option value="abbreviation"><?= Labels::forNamespace('abbreviation') ?></option>
-                        <option value="foreignword"><?= Labels::forNamespace('foreignword') ?></option>
+                        <?php foreach (SourceType::userCreatable() as $ns) : ?>
+                            <option value="<?= rex_escape($ns) ?>"><?= Labels::forNamespace($ns) ?></option>
+                        <?php endforeach ?>
                     </select>
                     <span class="sprog-inbox--unit-modal-hint">
                         <?= rex_i18n::msg('sprog_inbox_unit_modal_namespace_hint') ?>

@@ -52,7 +52,13 @@ final class CreateUnitController
         $notesInput = trim((string) rex_request('notes', 'string', ''));
         $notesValue = '' === $notesInput ? null : $notesInput;
 
-        if (!in_array($namespaceInput, SourceType::values(), true)) {
+        // Whitelist gegen SourceType::userCreatable() — UI-Modal bietet bewusst
+        // nur wildcard/abbreviation/foreignword an; Article/Slice/YForm/Media/
+        // Custom werden über den Sync angelegt und brauchen eine source_ref,
+        // die das Modal nicht liefern kann. Wer per JS-Konsole oder curl einen
+        // anderen namespace schickt, würde sonst eine orphan Article-Unit
+        // ohne source_ref hinterlassen.
+        if (!in_array($namespaceInput, SourceType::userCreatable(), true)) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_namespace_invalid'));
         }
         if ('' === $unitKeyInput) {
