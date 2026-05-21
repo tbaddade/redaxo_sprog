@@ -10,6 +10,7 @@ use Sprog\Repository\UnitRepository;
 use Sprog\Service\MtService;
 use Sprog\Service\TranslationService;
 use Sprog\Support\Labels;
+use Sprog\Validator\UnitValidator;
 
 $user = rex::getUser();
 if (null === $user) {
@@ -324,24 +325,12 @@ if ('update_unit' === $action) {
         $newNotesIn = trim((string) rex_request('notes', 'string', ''));
         $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 
-        $errors = [];
-        if ('' === $newKey) {
-            $errors[] = rex_i18n::msg('sprog_create_key_empty');
-        } elseif (strlen($newKey) > 191) {
-            $errors[] = rex_i18n::msg('sprog_create_key_too_long');
-        }
-        if (null !== $newNotes && strlen($newNotes) > 500) {
-            $errors[] = rex_i18n::msg('sprog_create_notes_too_long');
-        }
-
-        // UNIQUE-Vorprüfung nur bei tatsächlichem Key-Wechsel — sonst würde
-        // unser eigener Eintrag als „Duplikat" gewertet.
-        if ([] === $errors && $newKey !== $unit->unitKey) {
-            $existing = $units->findByKey($unit->namespace, $newKey);
-            if (null !== $existing && $existing->id !== $unit->id) {
-                $errors[] = rex_i18n::msg('sprog_editor_unit_edit_duplicate', $newKey, $unit->namespace);
-            }
-        }
+        // Längen-Checks + UNIQUE-Vorprüfung über UnitValidator — dieselbe
+        // Validierung läuft im UpdateUnitController (Inbox-Modal). Editor
+        // editiert context nicht: $unit->context geht unverändert rein,
+        // damit der UNIQUE-Check (namespace, context, unit_key) korrekt
+        // greift (DB-Index lautet so, kein (namespace, unit_key)).
+        $errors = UnitValidator::create()->validateUpdate($unit, $newKey, $unit->context, $newNotes);
 
         if ([] === $errors) {
             try {
