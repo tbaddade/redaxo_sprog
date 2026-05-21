@@ -283,10 +283,28 @@ if ('mt' === $action) {
             exit;
         }
 
+        // Pre-Check der Sprach-Codes — MtService akzeptiert nur ISO-639-1
+        // (zwei Kleinbuchstaben). Locale-Codes wie de_AT, pt-BR brechen sonst
+        // mit einer technischen InvalidArgumentException; hier eine klarere
+        // UX-Meldung. Sobald MT Locales unterstützt (s. MtService-NIT), kann
+        // dieser Block entfernt werden.
+        $sourceCode = strtolower($sourceClang->getCode());
+        $targetCode = strtolower($targetClang->getCode());
+        foreach ([$sourceCode, $targetCode] as $code) {
+            if (1 !== preg_match('/^[a-z]{2}$/', $code)) {
+                rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
+                rex_response::sendJson([
+                    'success' => false,
+                    'error' => rex_i18n::msg('sprog_editor_mt_locale_unsupported', $code),
+                ]);
+                exit;
+            }
+        }
+
         $result = $mt->translate(
             $sourceTranslation->value,
-            strtolower($sourceClang->getCode()),
-            strtolower($targetClang->getCode()),
+            $sourceCode,
+            $targetCode,
             $useProvider,
         );
 

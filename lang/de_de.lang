@@ -298,6 +298,7 @@ sprog_editor_mt_no_target = Ziel-Sprache unbekannt oder ungültig.
 sprog_editor_mt_no_provider = Kein MT-Provider konfiguriert. Siehe Einstellungen → Machine Translation.
 sprog_editor_mt_csrf = CSRF-Token ungültig.
 sprog_editor_mt_failed = MT-Aufruf fehlgeschlagen: {0}
+sprog_editor_mt_locale_unsupported = MT unterstützt aktuell nur einfache ISO-639-1-Codes (zwei Kleinbuchstaben). Sprach-Code „{0}“ enthält Locale-Anteile oder Sonderzeichen.
 sprog_editor_mt_same_lang = Quell- und Ziel-Sprache sind identisch.
 sprog_editor_mt_unknown_clang = Sprache nicht gefunden.
 sprog_editor_mt_discard_button = MT verwerfen

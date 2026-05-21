@@ -280,6 +280,7 @@ sprog_editor_mt_no_target = Target language unknown or invalid.
 sprog_editor_mt_no_provider = No MT provider configured. See Settings → Machine Translation.
 sprog_editor_mt_csrf = CSRF token invalid.
 sprog_editor_mt_failed = MT call failed: {0}
+sprog_editor_mt_locale_unsupported = MT currently supports simple ISO-639-1 codes only (two lowercase letters). Language code „{0}" contains locale parts or special characters.
 sprog_editor_mt_same_lang = Source and target language are identical.
 sprog_editor_mt_unknown_clang = Language not found.
 sprog_editor_mt_discard_button = Discard MT
