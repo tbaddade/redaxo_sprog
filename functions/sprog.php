@@ -1,5 +1,16 @@
 <?php
 
+/**
+ * Globale v1-Helfer für Templates und Module: sprogarray, sprogvalue,
+ * sprogfield, sprogdown, sprogcard.
+ *
+ * Signaturen sind bewusst untypisiert — BC-zwingend für Bestandscode in
+ * Modulen und Templates, der diese Helfer mit gemischten Argumenten aufruft.
+ * In v3 wird das durch typisierte Service-/Repository-Aufrufe ersetzt
+ * (Sprog\Service\WildcardLookupService etc.); die globalen Funktionen sollen
+ * dann als @deprecated markiert werden.
+ */
+
 use Sprog\Compat\Wildcard;
 
 /**
