@@ -257,6 +257,11 @@ final class V2Schema
 
             ->ensureIndex(new rex_sql_index('activity_unit', ['unit_id', 'created_at']))
             ->ensureIndex(new rex_sql_index('activity_translation', ['translation_id', 'created_at']))
+            // Standalone-Index auf created_at: ActivityRepository::deleteOlderThan()
+            // läuft als DELETE … WHERE created_at < :threshold. Sobald ein Retention-
+            // Cronjob aktiv wird, hält der Index die DELETE-Laufzeit kurz und
+            // verhindert eine längere Sperre der Audit-Tabelle.
+            ->ensureIndex(new rex_sql_index('activity_created_at', ['created_at']))
             ->ensure();
     }
 }
