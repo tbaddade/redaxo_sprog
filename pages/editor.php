@@ -220,8 +220,10 @@ if ('mt' === $action) {
         exit;
     }
 
-    // Quelltext kommt aus der Start-Clang. Per-Unit override (z.B. ein anderer
-    // "Source-Lang"-Setter) ist eine Idee für eine spätere Tranche.
+    // Quelltext kommt aus der Start-Clang.
+    // TODO(v3): Per-Unit override (z.B. ein anderer "Source-Lang"-Setter) —
+    // braucht eine UI-Schwelle und eine zusätzliche Spalte/Konvention auf
+    // sprog_unit. Aktuell ist die Start-Clang implizit immer Quelle.
     $sourceClangId = rex_clang::getStartId();
     if ($sourceClangId === $targetClangId) {
         rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
