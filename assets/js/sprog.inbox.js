@@ -447,10 +447,10 @@
                 }
 
                 if ('create' === modalMode) {
-                    // Reload mit `?open=<neue_id>` damit die frische Card im
+                    // Reload mit `?open_unit=<neue_id>` damit die frische Card im
                     // Akkordeon direkt aufgeklappt erscheint.
                     const url = new URL(window.location.href);
-                    url.searchParams.set('open', String(data.unit_id));
+                    url.searchParams.set('open_unit', String(data.unit_id));
                     window.location.href = url.toString();
                     return;
                 }
