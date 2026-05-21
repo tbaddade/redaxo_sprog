@@ -22,8 +22,11 @@ use Throwable;
  * inline mit cleanOutputBuffers/setStatus/sendJson/exit zusammengeklebt war,
  * läuft jetzt über JsonResponse mit einheitlichem Envelope { ok, error?, … }.
  *
- * CSRF-Token ist pro Unit gebunden (sprog_inbox_save_<unit_id>), damit ein
- * gestohlenes Token nicht für andere Units missbraucht werden kann.
+ * CSRF-Token ist pro Unit gebunden (sprog_inbox_save_<unit_id>) und wird
+ * von Save/Update/Transition gemeinsam genutzt — derselbe Token deckt also
+ * alle drei Operations auf derselben Unit ab. Cross-Unit ist er nicht
+ * verwendbar, was die Standard-Token-Reuse-Sorge (Token aus Unit A wandert
+ * gegen Unit B) ausschließt.
  */
 final class SaveTranslationController
 {
