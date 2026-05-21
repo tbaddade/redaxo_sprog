@@ -188,7 +188,9 @@ final class V2Schema
             ->ensureColumn(new rex_sql_column('source_term', 'varchar(191)'))
             ->ensureColumn(new rex_sql_column('target_term', 'varchar(191)'))
 
-            ->ensureColumn(new rex_sql_column('notes', 'text', true))
+            // notes auf 500 Zeichen begrenzt, deckungsgleich mit
+            // GlossaryService::MAX_NOTES_LENGTH (PHP-seitige Validierung).
+            ->ensureColumn(new rex_sql_column('notes', 'varchar(500)', true))
 
             ->ensureGlobalColumns()
 
