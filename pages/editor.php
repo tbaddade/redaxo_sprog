@@ -329,9 +329,10 @@ if ('mt' === $action) {
  | POST: unit_key / notes der Einheit aktualisieren
  |---------------------------------------------------------------------------
  | Eigene Permission `sprog[unit_edit]`. Admin geht immer durch.
- | namespace, source_type, source_ref, tags bleiben unverändert — nur key
- | und notes sind bewusst editierbar (alles andere ist strukturell oder
- * wird durch die Inhalt-Synchronisation gesetzt).
+ | namespace, context, source_type, source_ref, tags bleiben unverändert
+ | — nur key und notes sind hier bewusst editierbar. context wird im
+ | Inbox-Modal gepflegt; alles andere ist strukturell oder wird durch die
+ | Inhalt-Synchronisation gesetzt.
  */
 $canEditUnit = $user->isAdmin() || $user->hasPerm('sprog[unit_edit]');
 
