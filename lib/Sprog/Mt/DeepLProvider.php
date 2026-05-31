@@ -103,6 +103,9 @@ final class DeepLProvider implements ProviderInterface
             );
         }
 
+        // $glossary: TODO(v3) — DeepL glossary_ids-Endpoint binden. Heute landen
+        // Glossar-Einträge nur im Provider-neutralen NoopProvider-Pfad.
+        // $context: nicht weitergereicht — DeepL hat kein äquivalentes Feld.
         $params = [
             'text' => $text,
             'source_lang' => strtoupper($sourceLang),
