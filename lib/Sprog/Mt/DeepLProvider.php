@@ -42,6 +42,15 @@ use const PHP_QUERY_RFC3986;
  *     nicht beliebig lang.
  *   - SSL-Verify ist explizit aktiv (cURL-Default, hier zusätzlich gesetzt).
  *   - Response wird mit JSON_THROW_ON_ERROR + Depth-Limit 16 geparst.
+ *
+ * Offene Feature-Lücken (TODO v3):
+ *   - **Bulk-Pfad**: translate() schickt pro Aufruf genau einen text=-Wert.
+ *     DeepL unterstützt bis zu 50 text=-Parameter pro Request. Bei
+ *     200 missing-Translations → 4 Roundtrips statt 200. Braucht Erweiterung
+ *     im ProviderInterface (translateBatch(list<string>): list<TranslationResult>).
+ *   - **formality**-Parameter (default/more/less/prefer_more/prefer_less)
+ *     fehlt — relevant für deutsche Pro-Inhalte (Sie/du). Sobald MT-Settings
+ *     pro Sprache UI-seitig ausgebaut werden, hier anbinden.
  */
 final class DeepLProvider implements ProviderInterface
 {
