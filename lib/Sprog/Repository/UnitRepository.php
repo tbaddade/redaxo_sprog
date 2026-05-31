@@ -214,6 +214,11 @@ final class UnitRepository
     }
 
     /**
+     * Löscht ausschließlich die Unit-Row. Caller-Verantwortung: zugehörige
+     * Translation-Rows separat über TranslationRepository::deleteByUnit($id)
+     * löschen — REDAXO bietet keine DB-Cascades, ein Cleanup-Schritt im
+     * Service-Layer ist die Konvention.
+     *
      * @throws rex_sql_exception
      */
     public function delete(int $id): void
