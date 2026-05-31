@@ -39,7 +39,7 @@ final class UpdateUnitController
     {
         $unitId = (int) rex_request('unit_id', 'int', 0);
 
-        JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
+        JsonResponse::ensureCsrf('sprog_inbox_save', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         if (!($user->isAdmin() || $user->hasPerm('sprog[unit_edit]'))) {
             JsonResponse::forbidden(rex_i18n::rawMsg('sprog_editor_unit_edit_no_perm'));

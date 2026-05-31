@@ -181,6 +181,12 @@ $currentNamespaceLabel = null !== $namespace
 // GitHub-Octicon "chevron-down". `currentColor` damit es Themes mit-rendert.
 $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.78 6.22a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L3.22 7.28a.75.75 0 1 1 1.06-1.06L8 9.94l3.72-3.72a.75.75 0 0 1 1.06 0Z"/></svg>';
 
+// Page-globaler CSRF-Token für Save / UpdateUnit / Transition. Per-Unit-
+// Token wäre Resource-Scope, hier reicht der Operation-Scope: das Token
+// ist Session-gebunden, eine Unit-Querverweis-Attacke ist außerhalb der
+// Session ohnehin nicht möglich (CSRF schützt das Session-Cookie-Risiko).
+$inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
+
 ?>
 <article
     class="sprog-inbox"
@@ -189,6 +195,8 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
     data-endpoint-update-unit="<?= rex_escape($endpointUpdateUnit) ?>"
     data-endpoint-transition="<?= rex_escape($endpointTransition) ?>"
     data-can-edit-unit="<?= $canEditUnit ? '1' : '0' ?>"
+    data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
+    data-csrf-value="<?= rex_escape($inboxSaveCsrf->getValue()) ?>"
 >
     <header class="sprog-inbox--intro">
         <h1 class="sprog-inbox--heading"><?= rex_i18n::msg('sprog_inbox_heading') ?></h1>
@@ -394,10 +402,6 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         ++$coverageDone;
                     }
                 }
-
-                // CSRF pro Unit erzeugen — Token wandert ins data-attr und wird
-                // vom JS bei jedem fetch mitgeschickt.
-                $unitCsrf = rex_csrf_token::factory('sprog_inbox_save_' . $unit->id);
             ?>
                 <?php $conflictHint = $conflictMap[$unit->id] ?? null ?>
                 <li class="sprog-inbox--card">
@@ -411,8 +415,6 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         data-unit-context="<?= rex_escape($item->context) ?>"
                         data-unit-notes="<?= rex_escape($item->notes ?? '') ?>"
                         <?php if (null !== $conflictHint) : ?>data-unit-conflict="<?= rex_escape($conflictHint) ?>"<?php endif ?>
-                        data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
-                        data-csrf-value="<?= rex_escape($unitCsrf->getValue()) ?>"
                         <?= $isOpen ? 'open' : '' ?>
                     >
                         <summary class="sprog-inbox--unit-summary">

@@ -44,7 +44,7 @@ final class TransitionController
         $targetStatusIn = (string) rex_request('target_status', 'string', '');
         $expectedRev = (int) rex_request('revision', 'int', 0);
 
-        JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
+        JsonResponse::ensureCsrf('sprog_inbox_save', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         if ($translationId <= 0 || !in_array($targetStatusIn, Status::values(), true)) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_inbox_save_bad_request'));
