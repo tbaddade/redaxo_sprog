@@ -102,6 +102,12 @@ final class ForeignwordMigrator implements MigratorInterface
         $v1Table = $this->v1Table();
         $lastId = $lastProcessedId ?? PHP_INT_MIN;
 
+        // TODO(v3): Cursor speichert MIN(id) der letzten Gruppe, WHERE filtert
+        // pro Row (id > :last_id). Beim Resume sehen wir Spät-Rows bereits
+        // verarbeiteter Gruppen erneut; Idempotenz-Check fängt das ab, aber
+        // GROUP BY läuft jedes Mal mit. Alternativen:
+        //   (a) MAX(id) pro Gruppe als Cursor — id-filter wird sauber, oder
+        //   (b) Cursor auf foreignword-String selbst, ORDER BY foreignword.
         $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT foreignword, MIN(id) AS min_id

@@ -106,6 +106,12 @@ final class AbbreviationMigrator implements MigratorInterface
         // Gruppen-Cursor: pro abbreviation-String den ältesten id-Wert,
         // sortiert nach diesem ältesten id. Bei Resume nimmt das nur
         // Gruppen mit, deren ältester Eintrag jenseits des Cursors liegt.
+        //
+        // TODO(v3): Resume-Phase trifft Spät-Rows bereits verarbeiteter
+        // Gruppen erneut (id-Liste pro Gruppe nicht zusammenhängend).
+        // Idempotenz-Check fängt es ab, aber GROUP BY läuft jedes Mal mit.
+        // Alternativen: (a) MAX(id)-Cursor statt MIN(id); (b) Cursor auf
+        // abbreviation-String selbst (ORDER BY abbreviation).
         $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT abbreviation, MIN(id) AS min_id
