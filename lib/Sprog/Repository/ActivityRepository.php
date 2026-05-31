@@ -23,6 +23,11 @@ use const JSON_THROW_ON_ERROR;
  * Bewusst kein update(), kein delete(id). Activity-Einträge sind
  * immutabel — wenn Bereinigung nötig wird (Retention nach n Tagen),
  * passiert das über eine eigene, klar benannte Cleanup-Methode.
+ *
+ * Schema-Abweichung: die Tabelle folgt nicht der REDAXO-Global-Fields-
+ * Konvention (createdate/createuser/updatedate/updateuser). Stattdessen
+ * nur ein created_at-Feld — Audit-Logs sind append-only, ein update*-
+ * Feld wäre semantisch falsch.
  */
 final class ActivityRepository
 {
@@ -48,7 +53,10 @@ final class ActivityRepository
         $sql->setValue('user_id', $userId);
         $sql->setValue('action', $action);
         $sql->setValue('payload', [] === $payload ? null : json_encode($payload, JSON_THROW_ON_ERROR));
-        $sql->setValue('created_at', date('Y-m-d H:i:s'));
+        // created_at über DB-NOW() statt PHP-Server-date(). Bei getrennten
+        // App-/DB-Containern können beide Zeitzonen abweichen — der Audit-Log
+        // soll konsistent in der DB-Zeitzone laufen.
+        $sql->setRawValue('created_at', 'NOW()');
         $sql->insert();
 
         return (int) $sql->getLastId();
