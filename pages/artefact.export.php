@@ -14,7 +14,7 @@ use Sprog\Export\CsvExport;
 
 $addon = rex_addon::get('sprog');
 
-$csrfToken = rex_csrf_token::factory('sprog-settings');
+$csrfToken = rex_csrf_token::factory('sprog_settings');
 
 $func = rex_request('func', 'string');
 

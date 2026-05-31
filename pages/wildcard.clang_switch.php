@@ -12,7 +12,7 @@
 
 use Sprog\Compat\Wildcard;
 
-$csrfToken = rex_csrf_token::factory('sprog-clang-switch');
+$csrfToken = rex_csrf_token::factory('sprog_clang_switch');
 
 $content = '';
 $message = '';

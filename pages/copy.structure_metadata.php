@@ -9,7 +9,7 @@
  * file that was distributed with this source code.
  */
 
-$csrfToken = rex_csrf_token::factory('sprog-copy-metadata');
+$csrfToken = rex_csrf_token::factory('sprog_copy_metadata');
 
 $sections = '';
 

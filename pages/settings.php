@@ -23,7 +23,7 @@ use rex_view;
 
 use function count;
 
-$csrfToken = rex_csrf_token::factory('sprog-settings');
+$csrfToken = rex_csrf_token::factory('sprog_settings');
 
 $sections = '';
 
@@ -171,7 +171,7 @@ $panelElements .= '<fieldset><legend>' . $this->i18n('settings_sync_metainfo') .
 $query = 'SELECT title, name FROM ' . rex::getTable('metainfo_field') . ' WHERE name LIKE :name AND type_id != :type_id ORDER BY name';
 $catOptions = rex_sql::factory()->getArray($query, ['name' => 'cat_%', 'type_id' => '12']);
 $artOptions = rex_sql::factory()->getArray($query, ['name' => 'art_%', 'type_id' => '12']);
-// $medOptions = \rex_sql::factory()->getArray($query, ['name' => 'med_%', 'type_id' => '12']);
+// $medOptions = rex_sql::factory()->getArray($query, ['name' => 'med_%', 'type_id' => '12']);
 
 $sizeSelectMax = 10;
 $sizeSelectPlus = 2;
