@@ -34,6 +34,12 @@ final class MtService
     /**
      * ISO 639-1: genau zwei lowercase Buchstaben. Strenger als nötig (es gibt
      * 3-Buchstaben-Codes), aber das ist v2-Scope; Erweiterung später möglich.
+     *
+     * TODO(v3): Locale-Codes (de_AT, pt-BR, zh-CN, …) zulassen, damit DeepL
+     * regionale Varianten und Editor mit nicht-trivialen REDAXO-Clang-Codes
+     * funktionieren. Bis dahin fängt pages/editor.php Locale-Codes vorab ab
+     * (sprog_editor_mt_locale_unsupported), damit die UX nicht im generic
+     * mt_failed-Pfad landet.
      */
     private const LANG_REGEX = '/^[a-z]{2}$/';
 
