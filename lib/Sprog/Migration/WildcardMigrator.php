@@ -196,6 +196,11 @@ final class WildcardMigrator implements MigratorInterface
 
                 // Fehlende clangs (in v1 nie befüllt) mit missing-Rows auffüllen,
                 // damit jede Unit für alle clangs eine Row hat — Inbox-Filter konsistent.
+                // TODO(v3 perf): TranslationService einmal vor der Loop bauen
+                // (Constructor-DI) statt pro Iteration; zusätzlich einen Bulk-Pfad
+                // TranslationRepository::ensureMissingForUnit(int, list<int>) via
+                // INSERT IGNORE … SELECT clang_id FROM rex_clang einziehen.
+                // Heute: 10k Wildcards × 5 clangs × 2 = 100k Roundtrips.
                 TranslationService::create()->ensureRowsForUnit($unit);
 
                 $tx->commit();

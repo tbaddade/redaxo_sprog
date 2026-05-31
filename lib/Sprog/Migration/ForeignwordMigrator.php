@@ -202,6 +202,8 @@ final class ForeignwordMigrator implements MigratorInterface
                 }
 
                 // Fehlende clangs mit missing-Rows auffüllen (siehe WildcardMigrator).
+                // TODO(v3 perf): siehe WildcardMigrator — Service vor der Loop
+                // instanziieren + Bulk-Pfad für ensureRowsForUnit.
                 TranslationService::create()->ensureRowsForUnit($unit);
 
                 $tx->commit();
