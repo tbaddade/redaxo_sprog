@@ -62,15 +62,20 @@ final class WildcardMigrator implements MigratorInterface
         return 'wildcard';
     }
 
+    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
+    private ?bool $availableCache = null;
+
     public function isAvailable(): bool
     {
+        if (null !== $this->availableCache) {
+            return $this->availableCache;
+        }
         try {
             $sql = rex_sql::factory();
             $sql->setQuery('SHOW TABLES LIKE :name', ['name' => $this->v1Table()]);
-
-            return $sql->getRows() > 0;
+            return $this->availableCache = $sql->getRows() > 0;
         } catch (rex_sql_exception) {
-            return false;
+            return $this->availableCache = false;
         }
     }
 
