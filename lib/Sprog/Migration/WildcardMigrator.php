@@ -47,6 +47,12 @@ use const PHP_INT_MIN;
  * Idempotenz: vor jedem Gruppen-Insert prüfen wir, ob eine Unit mit
  * (namespace='wildcard', unit_key=$wildcardName) bereits existiert.
  * Falls ja, überspringen — bereits migriert.
+ *
+ * TODO(v3): Konstruktor, isAvailable(), migrateChunk()-Loop-Skelett,
+ * Transaktions-Wrapping und ensureRowsForUnit() teilen ~80% Struktur mit
+ * AbbreviationMigrator und ForeignwordMigrator. Ein AbstractMigrator mit
+ * Template-Methoden loadGroupCursor(), mapToUnit(), mapToTranslation()
+ * würde die drei Klassen auf je ~50 LOC fachliche Differenz reduzieren.
  */
 final class WildcardMigrator implements MigratorInterface
 {
