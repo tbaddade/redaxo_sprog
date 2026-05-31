@@ -25,7 +25,9 @@ use function is_array;
  *
  * Caching pro Request:
  *   Die Map "wildcard => replacement" pro effektiver clang_id wird in
- *   einer Singleton-Instanz vorgehalten. So macht parse() bei 30 Wildcards
+ *   einer Instanz-Property vorgehalten (instanz-lokal, kein Service-
+ *   Singleton — der Caller, typischerweise Sprog\Compat\Wildcard, hält
+ *   request-weit genau eine Instanz). So macht parse() bei 30 Wildcards
  *   im HTML genau einen DB-Roundtrip, statt 30. Persistenter Cache
  *   (rex_cache) folgt erst, wenn die Schreib-Pfade gegen v2 laufen
  *   und gezielte Invalidation möglich ist (eigene Tranche).
