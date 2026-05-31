@@ -74,6 +74,9 @@ final class DeepLProvider implements ProviderInterface
      */
     public function supports(string $sourceLang, string $targetLang): bool
     {
+        // Stand 2025-Q4. Bei DeepL-Neusprachen (ar, he, …) hier nachziehen.
+        // Dynamische Auflösung über /languages-Endpoint wäre möglich, lohnt
+        // sich aber erst, wenn die Liste tatsächlich öfter wechselt.
         static $supported = [
             'bg', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr',
             'hu', 'id', 'it', 'ja', 'ko', 'lt', 'lv', 'nb', 'nl', 'pl',
