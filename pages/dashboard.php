@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Sprog\Enum\SourceType;
 use Sprog\Enum\Status;
 use Sprog\Service\CoverageService;
 use Sprog\Support\Labels;
@@ -22,12 +23,15 @@ $statusOrder = [
     Status::Translated,
     Status::NeedsReview,
     Status::Draft,
+    Status::Revise,
     Status::Stale,
     Status::Missing,
 ];
 
-// Anzeige-Reihenfolge der Namespaces im Backend.
-$namespaceOrder = ['wildcard', 'abbreviation', 'foreignword', 'article', 'slice', 'yform', 'media'];
+// Anzeige-Reihenfolge der Namespaces im Backend — folgt der Reihenfolge der
+// SourceType-Enum-Cases, damit künftig erweiterte SourceTypes automatisch
+// im Dashboard auftauchen (single source of truth).
+$namespaceOrder = SourceType::values();
 
 $languages = rex_clang::getAll();
 

@@ -23,37 +23,11 @@ use rex_sql_table;
  */
 final class V2Schema
 {
-    /**
-     * Erlaubte Werte der Spalte sprog_translation.status.
-     *
-     * Bewusst kein MySQL-ENUM: Statuswerte erweitern wir voraussichtlich
-     * im Lauf von v2.x, ENUM-Änderungen sind teure ALTERs. Die Validierung
-     * passiert PHP-seitig im Service-Layer.
-     */
-    public const STATUS_VALUES = [
-        'missing',
-        'draft',
-        'translated',
-        'needs_review',
-        'approved',
-        'stale',
-    ];
-
-    /**
-     * Erlaubte Werte der Spalte sprog_unit.source_type. Wird vom Service-Layer
-     * validiert; jede TranslationSource registriert sich mit einem dieser Typen
-     * oder einem additiv ergänzten Wert.
-     */
-    public const SOURCE_TYPES = [
-        'wildcard',
-        'abbreviation',
-        'foreignword',
-        'article',
-        'slice',
-        'yform',
-        'media',
-        'custom',
-    ];
+    // Die Spalten sprog_translation.status und sprog_unit.source_type sind
+    // bewusst kein MySQL-ENUM (additive Erweiterung in v2.x soll keine teuren
+    // ALTERs auslösen). Whitelist und Single-Source-of-Truth sind die Enums
+    // Sprog\Enum\Status und Sprog\Enum\SourceType — Validierung läuft
+    // PHP-seitig im Service- und Repository-Layer via ::from() / ::tryFrom().
 
     public static function ensure(): void
     {
@@ -86,11 +60,13 @@ final class V2Schema
      */
     private static function ensureUnitTable(): void
     {
-        // Alten UNIQUE-Index aus v2.0-Frühzeit droppen, falls vorhanden.
-        // Wurde durch unit_namespace_context_key abgelöst — ohne den Drop
-        // würde der alte Index die Mehrfach-Verwendung gleicher unit_keys in
-        // unterschiedlichen `context`-Werten blockieren. Idempotent: existiert
-        // der Index nicht (mehr), schluckt der Try den Fehler.
+        // TODO(v3): Diesen ALTER-Schnipsel raus oder in eine versionierte
+        // Schema-Migration umziehen — er ist ein einmaliger v2.0-Frühzeit-Fix,
+        // läuft aber bei jedem ensure() versuchsweise mit. Alten UNIQUE-Index
+        // droppen, falls vorhanden: wurde durch unit_namespace_context_key
+        // abgelöst, sonst würde er die Mehrfach-Verwendung gleicher unit_keys
+        // in unterschiedlichen `context`-Werten blockieren. Idempotent:
+        // existiert der Index nicht (mehr), schluckt der Try den Fehler.
         try {
             rex_sql::factory()->setQuery(
                 'ALTER TABLE ' . rex::getTable('sprog_unit') . ' DROP INDEX unit_namespace_key',
@@ -105,7 +81,7 @@ final class V2Schema
 
             // Kategorie der Einheit / Replacement-Provider, z.B. 'wildcard',
             // 'article.name', 'slice.text'. Bestimmt, WIE der Wert beim Output
-            // ersetzt wird. Whitelist via V2Schema::SOURCE_TYPES.
+            // ersetzt wird. Whitelist: Sprog\Enum\SourceType.
             ->ensureColumn(new rex_sql_column('namespace', 'varchar(64)'))
 
             // User-definierter Kontext / Bereich, z.B. "page.about", "form.contact".
@@ -173,7 +149,7 @@ final class V2Schema
             // Übersetzung. Differenz zu sprog_unit.source_hash => "stale".
             ->ensureColumn(new rex_sql_column('source_hash_at_translation', 'char(64)', true))
 
-            // Workflow-Status; Whitelist via V2Schema::STATUS_VALUES.
+            // Workflow-Status; Whitelist: Sprog\Enum\Status.
             ->ensureColumn(new rex_sql_column('status', 'varchar(32)', false, 'missing'))
 
             // MT-Metadaten: welcher Provider hat den Draft erzeugt und mit welcher
@@ -212,7 +188,9 @@ final class V2Schema
             ->ensureColumn(new rex_sql_column('source_term', 'varchar(191)'))
             ->ensureColumn(new rex_sql_column('target_term', 'varchar(191)'))
 
-            ->ensureColumn(new rex_sql_column('notes', 'text', true))
+            // notes auf 500 Zeichen begrenzt, deckungsgleich mit
+            // GlossaryService::MAX_NOTES_LENGTH (PHP-seitige Validierung).
+            ->ensureColumn(new rex_sql_column('notes', 'varchar(500)', true))
 
             ->ensureGlobalColumns()
 
@@ -283,6 +261,11 @@ final class V2Schema
 
             ->ensureIndex(new rex_sql_index('activity_unit', ['unit_id', 'created_at']))
             ->ensureIndex(new rex_sql_index('activity_translation', ['translation_id', 'created_at']))
+            // Standalone-Index auf created_at: ActivityRepository::deleteOlderThan()
+            // läuft als DELETE … WHERE created_at < :threshold. Sobald ein Retention-
+            // Cronjob aktiv wird, hält der Index die DELETE-Laufzeit kurz und
+            // verhindert eine längere Sperre der Audit-Tabelle.
+            ->ensureIndex(new rex_sql_index('activity_created_at', ['created_at']))
             ->ensure();
     }
 }

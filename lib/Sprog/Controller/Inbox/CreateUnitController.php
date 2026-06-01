@@ -10,6 +10,7 @@ use Sprog\Enum\SourceType;
 use Sprog\Http\JsonResponse;
 use Sprog\Model\Unit;
 use Sprog\Repository\UnitRepository;
+use Sprog\Service\ActivityService;
 use Sprog\Service\TranslationService;
 use Throwable;
 
@@ -33,20 +34,16 @@ final class CreateUnitController
     public function __construct(
         private readonly UnitRepository $units,
         private readonly TranslationService $translations,
+        private readonly ActivityService $activity,
     ) {}
 
     public static function create(): self
     {
-        return new self(new UnitRepository(), TranslationService::create());
+        return new self(new UnitRepository(), TranslationService::create(), ActivityService::create());
     }
 
     public function handle(rex_user $user): never
     {
-        // $user wird derzeit nicht referenziert — Aufrufer geht aber durch den
-        // Page-Permission-Check vor dem Dispatch, daher Parameter aus Signatur
-        // bleibt einheitlich zu den anderen Inbox-Controllern.
-        unset($user);
-
         JsonResponse::ensureCsrf('sprog_inbox_create', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
@@ -55,7 +52,13 @@ final class CreateUnitController
         $notesInput = trim((string) rex_request('notes', 'string', ''));
         $notesValue = '' === $notesInput ? null : $notesInput;
 
-        if (!in_array($namespaceInput, SourceType::values(), true)) {
+        // Whitelist gegen SourceType::userCreatable() — UI-Modal bietet bewusst
+        // nur wildcard/abbreviation/foreignword an; Article/Slice/YForm/Media/
+        // Custom werden über den Sync angelegt und brauchen eine source_ref,
+        // die das Modal nicht liefern kann. Wer per JS-Konsole oder curl einen
+        // anderen namespace schickt, würde sonst eine orphan Article-Unit
+        // ohne source_ref hinterlassen.
+        if (!in_array($namespaceInput, SourceType::userCreatable(), true)) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_namespace_invalid'));
         }
         if ('' === $unitKeyInput) {
@@ -92,6 +95,8 @@ final class CreateUnitController
             // Pro definierter clang eine missing-Row anlegen — spiegelt das
             // Verhalten von pages/create.php (siehe TranslationService::ensureRowsForUnit).
             $this->translations->ensureRowsForUnit($unit);
+
+            $this->activity->logUnitCreated((int) $unit->id, $user->getId(), $unit->namespace, $unit->unitKey);
         } catch (Throwable $e) {
             JsonResponse::internalError($e->getMessage());
         }

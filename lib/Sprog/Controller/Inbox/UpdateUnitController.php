@@ -9,9 +9,8 @@ use rex_user;
 use Sprog\Http\JsonResponse;
 use Sprog\Model\Unit;
 use Sprog\Repository\UnitRepository;
+use Sprog\Validator\UnitValidator;
 use Throwable;
-
-use function strlen;
 
 /**
  * Endpoint POST ?func=update_unit — Inline-Edit des Unit-Key aus dem
@@ -19,30 +18,28 @@ use function strlen;
  *
  * Eigene Permission `sprog[unit_edit]`; Admin geht immer durch.
  * Nur unit_key / context / notes werden aktualisiert; namespace, source_type,
- * source_ref, tags bleiben unverändert. Längen- und UNIQUE-Check inline,
- * identisch zum Pendant in editor.php (action=update_unit) — Drift hier hätte
- * je nach Edit-Surface unterschiedliche Validierungen zur Folge.
+ * source_ref, tags bleiben unverändert. Längen- und UNIQUE-Check laufen
+ * über Sprog\Validator\UnitValidator — dasselbe Validator-Objekt nutzt auch
+ * pages/editor.php (action=update_unit), damit Drift zwischen den Edit-
+ * Surfaces ausgeschlossen ist.
  */
 final class UpdateUnitController
 {
-    private const MAX_KEY_LEN = 191;
-    private const MAX_CONTEXT_LEN = 64;
-    private const MAX_NOTES_LEN = 500;
-
     public function __construct(
         private readonly UnitRepository $units,
+        private readonly UnitValidator $validator,
     ) {}
 
     public static function create(): self
     {
-        return new self(new UnitRepository());
+        return new self(new UnitRepository(), UnitValidator::create());
     }
 
     public function handle(rex_user $user): never
     {
         $unitId = (int) rex_request('unit_id', 'int', 0);
 
-        JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
+        JsonResponse::ensureCsrf('sprog_inbox_save', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         if (!($user->isAdmin() || $user->hasPerm('sprog[unit_edit]'))) {
             JsonResponse::forbidden(rex_i18n::rawMsg('sprog_editor_unit_edit_no_perm'));
@@ -58,26 +55,11 @@ final class UpdateUnitController
         $newNotesIn = trim((string) rex_request('notes', 'string', ''));
         $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 
-        if ('' === $newKey) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_key_empty'));
-        }
-        if (strlen($newKey) > self::MAX_KEY_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_key_too_long'));
-        }
-        if (strlen($newContext) > self::MAX_CONTEXT_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_inbox_unit_context_too_long'));
-        }
-        if (null !== $newNotes && strlen($newNotes) > self::MAX_NOTES_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_notes_too_long'));
-        }
-
-        // UNIQUE-Vorprüfung nur, wenn sich Key oder Context tatsächlich ändert
-        // — sonst würde der eigene Eintrag als „Duplikat" gewertet.
-        if ($newKey !== $unit->unitKey || $newContext !== $unit->context) {
-            $existing = $this->units->findByKey($unit->namespace, $newKey, $newContext);
-            if (null !== $existing && $existing->id !== $unit->id) {
-                JsonResponse::badRequest(rex_i18n::msg('sprog_editor_unit_edit_duplicate', $newKey, $unit->namespace));
-            }
+        $errors = $this->validator->validateUpdate($unit, $newKey, $newContext, $newNotes);
+        if ([] !== $errors) {
+            // JSON-Endpoint: erster Fehler reicht — die Inbox-Modal-UX hat eh
+            // nur ein Feedback-Feld. Editor-Page zeigt dagegen alle Fehler.
+            JsonResponse::badRequest($errors[0]);
         }
 
         try {

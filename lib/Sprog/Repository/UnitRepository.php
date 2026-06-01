@@ -83,12 +83,6 @@ final class UnitRepository
     }
 
     /**
-     * Nachschlagen über das natürliche Schlüsselpaar (namespace, unit_key).
-     *
-     * @throws rex_sql_exception
-     * @throws JsonException
-     */
-    /**
      * Liefert alle distinct context-Werte, die in der Unit-Tabelle vorkommen
      * (ohne leeren String). Wird für das Modal-Datalist als Vorschlagsliste
      * genutzt, damit der User beim Anlegen neuer Units bereits bekannte
@@ -115,6 +109,13 @@ final class UnitRepository
         return array_values(array_map(static fn (array $r) => (string) $r['context'], $rows));
     }
 
+    /**
+     * Nachschlagen über das natürliche Schlüsseltripel (namespace, context, unit_key).
+     * Spiegelt den UNIQUE-Index der sprog_unit-Tabelle (V2Schema).
+     *
+     * @throws rex_sql_exception
+     * @throws JsonException
+     */
     public function findByKey(string $namespace, string $unitKey, string $context = ''): ?Unit
     {
         $sql = rex_sql::factory();
@@ -213,6 +214,11 @@ final class UnitRepository
     }
 
     /**
+     * Löscht ausschließlich die Unit-Row. Caller-Verantwortung: zugehörige
+     * Translation-Rows separat über TranslationRepository::deleteByUnit($id)
+     * löschen — REDAXO bietet keine DB-Cascades, ein Cleanup-Schritt im
+     * Service-Layer ist die Konvention.
+     *
      * @throws rex_sql_exception
      */
     public function delete(int $id): void

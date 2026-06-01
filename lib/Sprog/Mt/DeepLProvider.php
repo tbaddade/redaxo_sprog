@@ -42,6 +42,15 @@ use const PHP_QUERY_RFC3986;
  *     nicht beliebig lang.
  *   - SSL-Verify ist explizit aktiv (cURL-Default, hier zusätzlich gesetzt).
  *   - Response wird mit JSON_THROW_ON_ERROR + Depth-Limit 16 geparst.
+ *
+ * Offene Feature-Lücken (TODO v3):
+ *   - **Bulk-Pfad**: translate() schickt pro Aufruf genau einen text=-Wert.
+ *     DeepL unterstützt bis zu 50 text=-Parameter pro Request. Bei
+ *     200 missing-Translations → 4 Roundtrips statt 200. Braucht Erweiterung
+ *     im ProviderInterface (translateBatch(list<string>): list<TranslationResult>).
+ *   - **formality**-Parameter (default/more/less/prefer_more/prefer_less)
+ *     fehlt — relevant für deutsche Pro-Inhalte (Sie/du). Sobald MT-Settings
+ *     pro Sprache UI-seitig ausgebaut werden, hier anbinden.
  */
 final class DeepLProvider implements ProviderInterface
 {
@@ -74,6 +83,9 @@ final class DeepLProvider implements ProviderInterface
      */
     public function supports(string $sourceLang, string $targetLang): bool
     {
+        // Stand 2025-Q4. Bei DeepL-Neusprachen (ar, he, …) hier nachziehen.
+        // Dynamische Auflösung über /languages-Endpoint wäre möglich, lohnt
+        // sich aber erst, wenn die Liste tatsächlich öfter wechselt.
         static $supported = [
             'bg', 'cs', 'da', 'de', 'el', 'en', 'es', 'et', 'fi', 'fr',
             'hu', 'id', 'it', 'ja', 'ko', 'lt', 'lv', 'nb', 'nl', 'pl',
@@ -103,6 +115,9 @@ final class DeepLProvider implements ProviderInterface
             );
         }
 
+        // $glossary: TODO(v3) — DeepL glossary_ids-Endpoint binden. Heute landen
+        // Glossar-Einträge nur im Provider-neutralen NoopProvider-Pfad.
+        // $context: nicht weitergereicht — DeepL hat kein äquivalentes Feld.
         $params = [
             'text' => $text,
             'source_lang' => strtoupper($sourceLang),

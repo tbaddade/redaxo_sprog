@@ -62,15 +62,20 @@ final class AbbreviationMigrator implements MigratorInterface
         return 'abbreviation';
     }
 
+    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
+    private ?bool $availableCache = null;
+
     public function isAvailable(): bool
     {
+        if (null !== $this->availableCache) {
+            return $this->availableCache;
+        }
         try {
             $sql = rex_sql::factory();
             $sql->setQuery('SHOW TABLES LIKE :name', ['name' => $this->v1Table()]);
-
-            return $sql->getRows() > 0;
+            return $this->availableCache = $sql->getRows() > 0;
         } catch (rex_sql_exception) {
-            return false;
+            return $this->availableCache = false;
         }
     }
 
@@ -101,6 +106,12 @@ final class AbbreviationMigrator implements MigratorInterface
         // Gruppen-Cursor: pro abbreviation-String den ältesten id-Wert,
         // sortiert nach diesem ältesten id. Bei Resume nimmt das nur
         // Gruppen mit, deren ältester Eintrag jenseits des Cursors liegt.
+        //
+        // TODO(v3): Resume-Phase trifft Spät-Rows bereits verarbeiteter
+        // Gruppen erneut (id-Liste pro Gruppe nicht zusammenhängend).
+        // Idempotenz-Check fängt es ab, aber GROUP BY läuft jedes Mal mit.
+        // Alternativen: (a) MAX(id)-Cursor statt MIN(id); (b) Cursor auf
+        // abbreviation-String selbst (ORDER BY abbreviation).
         $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT abbreviation, MIN(id) AS min_id
@@ -185,6 +196,8 @@ final class AbbreviationMigrator implements MigratorInterface
                 }
 
                 // Fehlende clangs mit missing-Rows auffüllen (siehe WildcardMigrator).
+                // TODO(v3 perf): siehe WildcardMigrator — Service vor der Loop
+                // instanziieren + Bulk-Pfad für ensureRowsForUnit.
                 TranslationService::create()->ensureRowsForUnit($unit);
 
                 $tx->commit();

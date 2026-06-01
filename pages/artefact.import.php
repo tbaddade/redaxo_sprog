@@ -14,7 +14,7 @@ use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
 $addon = rex_addon::get('sprog');
 
-$csrfToken = rex_csrf_token::factory('sprog-settings');
+$csrfToken = rex_csrf_token::factory('sprog_settings');
 
 $func = rex_request('func', 'string');
 $missing_language = rex_request('missing_language', 'string', '');

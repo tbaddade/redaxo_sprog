@@ -144,16 +144,18 @@ $statusOptions = [
  | Wird genutzt, um Deep-Links auf eine geöffnete Unit zu erzeugen
  | (z.B. nach einem Redirect aus dem Create-Flow).
  */
+// status als nativer Array-Wert — http_build_query (intern in
+// rex_url::currentBackendPage) serialisiert das als status[0]=…&status[1]=…
+// Vorher haben wir die Bracket-Indizes manuell als String-Keys gesetzt; das
+// wäre an Refactorings an rex_url::* zerbrechen können.
 $baseParams = [
     'clang_id' => $clangId,
     'namespace' => $namespace ?? '',
     'search' => $searchInput,
     'pg' => $page,
     'page_size' => $pageSize,
+    'status' => array_map(static fn (Status $st) => $st->value, $statuses),
 ];
-foreach ($statuses as $i => $st) {
-    $baseParams['status[' . $i . ']'] = $st->value;
-}
 
 $jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
 $endpointUpdateUnit = rex_url::currentBackendPage(['func' => 'update_unit'], false);
@@ -179,6 +181,12 @@ $currentNamespaceLabel = null !== $namespace
 // GitHub-Octicon "chevron-down". `currentColor` damit es Themes mit-rendert.
 $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.78 6.22a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L3.22 7.28a.75.75 0 1 1 1.06-1.06L8 9.94l3.72-3.72a.75.75 0 0 1 1.06 0Z"/></svg>';
 
+// Page-globaler CSRF-Token für Save / UpdateUnit / Transition. Per-Unit-
+// Token wäre Resource-Scope, hier reicht der Operation-Scope: das Token
+// ist Session-gebunden, eine Unit-Querverweis-Attacke ist außerhalb der
+// Session ohnehin nicht möglich (CSRF schützt das Session-Cookie-Risiko).
+$inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
+
 ?>
 <article
     class="sprog-inbox"
@@ -187,6 +195,8 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
     data-endpoint-update-unit="<?= rex_escape($endpointUpdateUnit) ?>"
     data-endpoint-transition="<?= rex_escape($endpointTransition) ?>"
     data-can-edit-unit="<?= $canEditUnit ? '1' : '0' ?>"
+    data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
+    data-csrf-value="<?= rex_escape($inboxSaveCsrf->getValue()) ?>"
 >
     <header class="sprog-inbox--intro">
         <h1 class="sprog-inbox--heading"><?= rex_i18n::msg('sprog_inbox_heading') ?></h1>
@@ -343,7 +353,7 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                     </select>
                 </label>
 
-                <details class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--dropdown" tabindex="0">
+                <details class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_status_aria')) ?>">
                     <summary class="sprog-inbox--toolbar-cell-summary" tabindex="-1">
                         <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_status') ?></span>
                         <span class="sprog-inbox--toolbar-cell-value"><?= rex_escape($statusSummaryText) ?></span>
@@ -392,15 +402,12 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         ++$coverageDone;
                     }
                 }
-
-                // CSRF pro Unit erzeugen — Token wandert ins data-attr und wird
-                // vom JS bei jedem fetch mitgeschickt.
-                $unitCsrf = rex_csrf_token::factory('sprog_inbox_save_' . $unit->id);
             ?>
                 <?php $conflictHint = $conflictMap[$unit->id] ?? null ?>
                 <li class="sprog-inbox--card">
                     <details
                         class="sprog-inbox--unit"
+                        aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_unit_card_aria', $item->unitKey)) ?>"
                         data-unit-id="<?= rex_escape((string) $unit->id) ?>"
                         data-unit-namespace="<?= rex_escape($item->namespace) ?>"
                         data-unit-namespace-label="<?= rex_escape(Labels::forNamespace($item->namespace)) ?>"
@@ -408,8 +415,6 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         data-unit-context="<?= rex_escape($item->context) ?>"
                         data-unit-notes="<?= rex_escape($item->notes ?? '') ?>"
                         <?php if (null !== $conflictHint) : ?>data-unit-conflict="<?= rex_escape($conflictHint) ?>"<?php endif ?>
-                        data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
-                        data-csrf-value="<?= rex_escape($unitCsrf->getValue()) ?>"
                         <?= $isOpen ? 'open' : '' ?>
                     >
                         <summary class="sprog-inbox--unit-summary">
@@ -672,9 +677,9 @@ $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColo
                         name="namespace"
                         hidden
                     >
-                        <option value="wildcard"><?= Labels::forNamespace('wildcard') ?></option>
-                        <option value="abbreviation"><?= Labels::forNamespace('abbreviation') ?></option>
-                        <option value="foreignword"><?= Labels::forNamespace('foreignword') ?></option>
+                        <?php foreach (SourceType::userCreatable() as $ns) : ?>
+                            <option value="<?= rex_escape($ns) ?>"><?= Labels::forNamespace($ns) ?></option>
+                        <?php endforeach ?>
                     </select>
                     <span class="sprog-inbox--unit-modal-hint">
                         <?= rex_i18n::msg('sprog_inbox_unit_modal_namespace_hint') ?>

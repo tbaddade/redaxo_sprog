@@ -11,7 +11,7 @@
 
 use Sprog\Copy\StructureMetadata;
 
-if (!rex_csrf_token::factory('sprog-copy-metadata')->isValid()) {
+if (!rex_csrf_token::factory('sprog_copy_metadata')->isValid()) {
     echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
     return;
 }

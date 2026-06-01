@@ -11,7 +11,7 @@
 
 $addon = rex_addon::get('sprog');
 
-$csrfToken = rex_csrf_token::factory('sprog-abbreviation');
+$csrfToken = rex_csrf_token::factory('sprog_abbreviation');
 
 $id = rex_request('id', 'int');
 $func = rex_request('func', 'string');

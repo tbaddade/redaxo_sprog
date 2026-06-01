@@ -47,6 +47,12 @@ use const PHP_INT_MIN;
  * Idempotenz: vor jedem Gruppen-Insert prüfen wir, ob eine Unit mit
  * (namespace='wildcard', unit_key=$wildcardName) bereits existiert.
  * Falls ja, überspringen — bereits migriert.
+ *
+ * TODO(v3): Konstruktor, isAvailable(), migrateChunk()-Loop-Skelett,
+ * Transaktions-Wrapping und ensureRowsForUnit() teilen ~80% Struktur mit
+ * AbbreviationMigrator und ForeignwordMigrator. Ein AbstractMigrator mit
+ * Template-Methoden loadGroupCursor(), mapToUnit(), mapToTranslation()
+ * würde die drei Klassen auf je ~50 LOC fachliche Differenz reduzieren.
  */
 final class WildcardMigrator implements MigratorInterface
 {
@@ -62,15 +68,20 @@ final class WildcardMigrator implements MigratorInterface
         return 'wildcard';
     }
 
+    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
+    private ?bool $availableCache = null;
+
     public function isAvailable(): bool
     {
+        if (null !== $this->availableCache) {
+            return $this->availableCache;
+        }
         try {
             $sql = rex_sql::factory();
             $sql->setQuery('SHOW TABLES LIKE :name', ['name' => $this->v1Table()]);
-
-            return $sql->getRows() > 0;
+            return $this->availableCache = $sql->getRows() > 0;
         } catch (rex_sql_exception) {
-            return false;
+            return $this->availableCache = false;
         }
     }
 
@@ -185,6 +196,11 @@ final class WildcardMigrator implements MigratorInterface
 
                 // Fehlende clangs (in v1 nie befüllt) mit missing-Rows auffüllen,
                 // damit jede Unit für alle clangs eine Row hat — Inbox-Filter konsistent.
+                // TODO(v3 perf): TranslationService einmal vor der Loop bauen
+                // (Constructor-DI) statt pro Iteration; zusätzlich einen Bulk-Pfad
+                // TranslationRepository::ensureMissingForUnit(int, list<int>) via
+                // INSERT IGNORE … SELECT clang_id FROM rex_clang einziehen.
+                // Heute: 10k Wildcards × 5 clangs × 2 = 100k Roundtrips.
                 TranslationService::create()->ensureRowsForUnit($unit);
 
                 $tx->commit();

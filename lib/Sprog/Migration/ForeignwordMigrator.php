@@ -61,15 +61,20 @@ final class ForeignwordMigrator implements MigratorInterface
         return 'foreignword';
     }
 
+    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
+    private ?bool $availableCache = null;
+
     public function isAvailable(): bool
     {
+        if (null !== $this->availableCache) {
+            return $this->availableCache;
+        }
         try {
             $sql = rex_sql::factory();
             $sql->setQuery('SHOW TABLES LIKE :name', ['name' => $this->v1Table()]);
-
-            return $sql->getRows() > 0;
+            return $this->availableCache = $sql->getRows() > 0;
         } catch (rex_sql_exception) {
-            return false;
+            return $this->availableCache = false;
         }
     }
 
@@ -97,6 +102,12 @@ final class ForeignwordMigrator implements MigratorInterface
         $v1Table = $this->v1Table();
         $lastId = $lastProcessedId ?? PHP_INT_MIN;
 
+        // TODO(v3): Cursor speichert MIN(id) der letzten Gruppe, WHERE filtert
+        // pro Row (id > :last_id). Beim Resume sehen wir Spät-Rows bereits
+        // verarbeiteter Gruppen erneut; Idempotenz-Check fängt das ab, aber
+        // GROUP BY läuft jedes Mal mit. Alternativen:
+        //   (a) MAX(id) pro Gruppe als Cursor — id-filter wird sauber, oder
+        //   (b) Cursor auf foreignword-String selbst, ORDER BY foreignword.
         $sql = rex_sql::factory();
         $groupRows = $sql->getArray(
             'SELECT foreignword, MIN(id) AS min_id
@@ -197,6 +208,8 @@ final class ForeignwordMigrator implements MigratorInterface
                 }
 
                 // Fehlende clangs mit missing-Rows auffüllen (siehe WildcardMigrator).
+                // TODO(v3 perf): siehe WildcardMigrator — Service vor der Loop
+                // instanziieren + Bulk-Pfad für ensureRowsForUnit.
                 TranslationService::create()->ensureRowsForUnit($unit);
 
                 $tx->commit();

@@ -10,6 +10,7 @@ use Sprog\Repository\UnitRepository;
 use Sprog\Service\MtService;
 use Sprog\Service\TranslationService;
 use Sprog\Support\Labels;
+use Sprog\Validator\UnitValidator;
 
 $user = rex::getUser();
 if (null === $user) {
@@ -219,8 +220,10 @@ if ('mt' === $action) {
         exit;
     }
 
-    // Quelltext kommt aus der Start-Clang. Per-Unit override (z.B. ein anderer
-    // "Source-Lang"-Setter) ist eine Idee für eine spätere Tranche.
+    // Quelltext kommt aus der Start-Clang.
+    // TODO(v3): Per-Unit override (z.B. ein anderer "Source-Lang"-Setter) —
+    // braucht eine UI-Schwelle und eine zusätzliche Spalte/Konvention auf
+    // sprog_unit. Aktuell ist die Start-Clang implizit immer Quelle.
     $sourceClangId = rex_clang::getStartId();
     if ($sourceClangId === $targetClangId) {
         rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
@@ -280,10 +283,28 @@ if ('mt' === $action) {
             exit;
         }
 
+        // Pre-Check der Sprach-Codes — MtService akzeptiert nur ISO-639-1
+        // (zwei Kleinbuchstaben). Locale-Codes wie de_AT, pt-BR brechen sonst
+        // mit einer technischen InvalidArgumentException; hier eine klarere
+        // UX-Meldung. Sobald MT Locales unterstützt (s. MtService-NIT), kann
+        // dieser Block entfernt werden.
+        $sourceCode = strtolower($sourceClang->getCode());
+        $targetCode = strtolower($targetClang->getCode());
+        foreach ([$sourceCode, $targetCode] as $code) {
+            if (1 !== preg_match('/^[a-z]{2}$/', $code)) {
+                rex_response::setStatus(rex_response::HTTP_BAD_REQUEST);
+                rex_response::sendJson([
+                    'success' => false,
+                    'error' => rex_i18n::msg('sprog_editor_mt_locale_unsupported', $code),
+                ]);
+                exit;
+            }
+        }
+
         $result = $mt->translate(
             $sourceTranslation->value,
-            strtolower($sourceClang->getCode()),
-            strtolower($targetClang->getCode()),
+            $sourceCode,
+            $targetCode,
             $useProvider,
         );
 
@@ -308,9 +329,10 @@ if ('mt' === $action) {
  | POST: unit_key / notes der Einheit aktualisieren
  |---------------------------------------------------------------------------
  | Eigene Permission `sprog[unit_edit]`. Admin geht immer durch.
- | namespace, source_type, source_ref, tags bleiben unverändert — nur key
- | und notes sind bewusst editierbar (alles andere ist strukturell oder
- * wird durch die Inhalt-Synchronisation gesetzt).
+ | namespace, context, source_type, source_ref, tags bleiben unverändert
+ | — nur key und notes sind hier bewusst editierbar. context wird im
+ | Inbox-Modal gepflegt; alles andere ist strukturell oder wird durch die
+ | Inhalt-Synchronisation gesetzt.
  */
 $canEditUnit = $user->isAdmin() || $user->hasPerm('sprog[unit_edit]');
 
@@ -324,24 +346,12 @@ if ('update_unit' === $action) {
         $newNotesIn = trim((string) rex_request('notes', 'string', ''));
         $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 
-        $errors = [];
-        if ('' === $newKey) {
-            $errors[] = rex_i18n::msg('sprog_create_key_empty');
-        } elseif (strlen($newKey) > 191) {
-            $errors[] = rex_i18n::msg('sprog_create_key_too_long');
-        }
-        if (null !== $newNotes && strlen($newNotes) > 500) {
-            $errors[] = rex_i18n::msg('sprog_create_notes_too_long');
-        }
-
-        // UNIQUE-Vorprüfung nur bei tatsächlichem Key-Wechsel — sonst würde
-        // unser eigener Eintrag als „Duplikat" gewertet.
-        if ([] === $errors && $newKey !== $unit->unitKey) {
-            $existing = $units->findByKey($unit->namespace, $newKey);
-            if (null !== $existing && $existing->id !== $unit->id) {
-                $errors[] = rex_i18n::msg('sprog_editor_unit_edit_duplicate', $newKey, $unit->namespace);
-            }
-        }
+        // Längen-Checks + UNIQUE-Vorprüfung über UnitValidator — dieselbe
+        // Validierung läuft im UpdateUnitController (Inbox-Modal). Editor
+        // editiert context nicht: $unit->context geht unverändert rein,
+        // damit der UNIQUE-Check (namespace, context, unit_key) korrekt
+        // greift (DB-Index lautet so, kein (namespace, unit_key)).
+        $errors = UnitValidator::create()->validateUpdate($unit, $newKey, $unit->context, $newNotes);
 
         if ([] === $errors) {
             try {

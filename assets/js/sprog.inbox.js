@@ -21,6 +21,10 @@
     const endpoint           = root.getAttribute('data-endpoint');
     const endpointUpdateUnit = root.getAttribute('data-endpoint-update-unit');
     const endpointTransition = root.getAttribute('data-endpoint-transition');
+    // Page-globaler CSRF-Token für Save/Update/Transition. Liegt am Root-Element,
+    // damit nicht jede Unit-Karte ihn dupliziert.
+    const csrfName           = root.getAttribute('data-csrf-name');
+    const csrfValue          = root.getAttribute('data-csrf-value');
     if (!endpoint) {
         return;
     }
@@ -103,16 +107,14 @@
         const unitId   = unit.getAttribute('data-unit-id');
         const clangId  = row.getAttribute('data-clang-id');
         const revision = row.getAttribute('data-revision') || '0';
-        const csrfName = unit.getAttribute('data-csrf-name');
-        const csrfVal  = unit.getAttribute('data-csrf-value');
 
         const body = new URLSearchParams();
         body.set('unit_id', unitId);
         body.set('clang_id', clangId);
         body.set('value', newValue);
         body.set('revision', revision);
-        if (csrfName && csrfVal) {
-            body.set(csrfName, csrfVal);
+        if (csrfName && csrfValue) {
+            body.set(csrfName, csrfValue);
         }
 
         textarea.disabled = true;
@@ -424,10 +426,8 @@
                 endpoint = endpointCreateUnit;
             } else {
                 if (!modalActiveUnit || !endpointUpdateUnit) return;
-                const csrfName = modalActiveUnit.getAttribute('data-csrf-name');
-                const csrfVal  = modalActiveUnit.getAttribute('data-csrf-value');
                 body.set('unit_id', modalActiveUnit.getAttribute('data-unit-id'));
-                if (csrfName && csrfVal) body.set(csrfName, csrfVal);
+                if (csrfName && csrfValue) body.set(csrfName, csrfValue);
                 endpoint = endpointUpdateUnit;
             }
 
@@ -583,16 +583,14 @@
         const translationId = btn.getAttribute('data-translation-id');
         const target        = btn.getAttribute('data-target-status');
         const revision      = row.getAttribute('data-revision') || '0';
-        const csrfName      = unit.getAttribute('data-csrf-name');
-        const csrfVal       = unit.getAttribute('data-csrf-value');
 
         const body = new URLSearchParams();
         body.set('unit_id', unitId);
         body.set('translation_id', translationId);
         body.set('target_status', target);
         body.set('revision', revision);
-        if (csrfName && csrfVal) {
-            body.set(csrfName, csrfVal);
+        if (csrfName && csrfValue) {
+            body.set(csrfName, csrfValue);
         }
 
         // Den geklickten Button kurz disablen, damit Doppel-Klicks nicht

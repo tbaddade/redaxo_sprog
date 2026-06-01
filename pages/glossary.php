@@ -23,8 +23,13 @@ $clangs = rex_clang::getAll();
 
 $defaultSource = rex_clang::getStartId();
 $defaultTarget = 0;
+$clangPerm = $user->getComplexPerm('clang');
 foreach ($clangs as $cid => $_clang) {
-    if ($cid !== $defaultSource) {
+    // Nur clangs vorschlagen, auf die der User Perm hat — sonst landet die
+    // Page bei pairIsValid=false und zeigt eine irreführende Meldung („Quell-
+    // und Zielsprache identisch") für einen Default, den der User gar nicht
+    // ausgesucht hat.
+    if ($cid !== $defaultSource && $clangPerm->hasPerm($cid)) {
         $defaultTarget = $cid;
         break;
     }
@@ -67,10 +72,12 @@ if ('add' === $action) {
         } catch (InvalidArgumentException $e) {
             $flashMessages[] = rex_view::error(rex_escape($e->getMessage()));
         } catch (rex_sql_exception $e) {
-            // UNIQUE-Constraint-Verstoss landet hier — sauberer wäre ein eigener
-            // ErrorCode aus dem SQLState, aber das Message-Match reicht für die
-            // einzige Constraint auf der Tabelle.
-            if (false !== stripos($e->getMessage(), 'duplicate')) {
+            // UNIQUE-Constraint-Verstoss landet hier. rex_sql_exception::getErrorCode()
+            // liefert den MySQL-native Error-Code aus der gewrappten PDOException;
+            // 1062 = ER_DUP_ENTRY. Stabiler als Message-Match, weil lokalisierte
+            // MySQL/MariaDB-Installs den Fehlertext übersetzen
+            // („Schlüsseldopplung" o.ä.) und der stripos-Treffer dann fehlschlägt.
+            if (1062 === $e->getErrorCode()) {
                 $flashMessages[] = rex_view::error(rex_i18n::msg(
                     'sprog_glossary_add_duplicate',
                     $sourceTerm,
@@ -241,6 +248,9 @@ $entries = $pairIsValid ? $service->listForPair($sourceClangId, $targetClangId) 
         <?php if ([] === $entries) : ?>
             <p class="sprog-glossary--empty"><?= rex_i18n::msg('sprog_glossary_empty') ?></p>
         <?php else : ?>
+            <noscript>
+                <p class="rex-alert rex-alert-warning"><?= rex_i18n::msg('sprog_noscript_confirm_warning') ?></p>
+            </noscript>
             <ul class="sprog-glossary--list" role="list">
                 <?php foreach ($entries as $entry) : ?>
                     <li class="sprog-glossary--card">

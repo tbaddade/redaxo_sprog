@@ -124,6 +124,11 @@ final class TranslationService
         $targets = $clangIds ?? rex_clang::getAllIds(false);
         $created = 0;
 
+        // TODO(v3 perf): pro clang zwei Queries (findForUnitAndClang +
+        // anschließendes INSERT). Bei Bulk-Aufrufern (Migration!) wäre
+        // findByUnit($unitId) + Set-Differenz + Multi-Insert sparsamer.
+        // Siehe WildcardMigrator-NIT (Loop instanziiert Service + ruft
+        // diese Methode in Schleife).
         foreach ($targets as $clangId) {
             $existing = $this->translations->findForUnitAndClang($unit->id, (int) $clangId);
             if (null !== $existing) {

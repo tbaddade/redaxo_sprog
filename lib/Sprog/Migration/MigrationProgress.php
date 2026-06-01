@@ -51,6 +51,15 @@ final readonly class MigrationProgress
         return null !== $this->startedAt;
     }
 
+    /**
+     * Migrations-Fortschritt in Prozent (0–100).
+     *
+     * Bei totalRows = 0 (nichts zu migrieren) liefert die Funktion ebenfalls
+     * 100 — semantisch korrekt im Sinne von „done", aber UI-seitig
+     * irreführend, wenn ein 100%-Balken angezeigt wird, obwohl gar keine
+     * Quelle vorhanden ist. UI-Code bitte vorab `isEmpty()` prüfen und einen
+     * eigenen „nichts zu tun"-Zustand rendern.
+     */
     public function percent(): int
     {
         if ($this->totalRows <= 0) {
@@ -58,6 +67,16 @@ final readonly class MigrationProgress
         }
 
         return (int) min(100, floor($this->processedRows * 100 / $this->totalRows));
+    }
+
+    /**
+     * True, wenn die Quelle gar keine Rows hat (Bestandsinstallation ohne
+     * sprog-Daten o.ä.). Distinct vom „fertig durchmigriert"-Zustand, der
+     * mit totalRows > 0 und processedRows >= totalRows einhergeht.
+     */
+    public function isEmpty(): bool
+    {
+        return $this->totalRows <= 0;
     }
 
     /**

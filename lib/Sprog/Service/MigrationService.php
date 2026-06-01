@@ -225,13 +225,11 @@ final class MigrationService
                 'source' => $source,
                 'processed_rows' => $nextProcessed,
             ]);
-        } else {
-            $this->activity->log('migration.chunk', null, null, $userId, [
-                'source' => $source,
-                'processed' => $result->processed,
-                'total' => $nextProcessed,
-            ]);
         }
+        // Bewusst kein migration.chunk-Log: bei 10k Units × Chunk-Size 50
+        // wären das 200 Audit-Einträge pro Quelle und würden den Nutz-Audit
+        // (Status-Übergänge etc.) verwässern. Chunk-Fortschritt liegt im
+        // MigrationProgress-State und reicht für die UI-Anzeige.
 
         return $nextProgress;
     }

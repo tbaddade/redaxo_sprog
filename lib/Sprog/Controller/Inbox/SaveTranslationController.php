@@ -22,8 +22,10 @@ use Throwable;
  * inline mit cleanOutputBuffers/setStatus/sendJson/exit zusammengeklebt war,
  * läuft jetzt über JsonResponse mit einheitlichem Envelope { ok, error?, … }.
  *
- * CSRF-Token ist pro Unit gebunden (sprog_inbox_save_<unit_id>), damit ein
- * gestohlenes Token nicht für andere Units missbraucht werden kann.
+ * CSRF-Token ist page-global (sprog_inbox_save) und wird von Save / UpdateUnit /
+ * Transition gemeinsam genutzt. Operation-Scope reicht: CSRF schützt das
+ * Session-Cookie-Risiko, eine Unit-spezifische Token-Bindung war Resource-
+ * Scope und damit Overhead ohne Sicherheits-Gewinn.
  */
 final class SaveTranslationController
 {
@@ -42,7 +44,7 @@ final class SaveTranslationController
         $unitId = (int) rex_request('unit_id', 'int', 0);
         $clangId = (int) rex_request('clang_id', 'int', 0);
 
-        JsonResponse::ensureCsrf('sprog_inbox_save_' . $unitId, rex_i18n::rawMsg('sprog_inbox_save_csrf'));
+        JsonResponse::ensureCsrf('sprog_inbox_save', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         if ($unitId <= 0 || !rex_clang::exists($clangId)) {
             JsonResponse::badRequest(rex_i18n::rawMsg('sprog_inbox_save_bad_request'));

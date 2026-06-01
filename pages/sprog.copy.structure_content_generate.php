@@ -11,7 +11,7 @@
 
 use Sprog\Copy\StructureContent;
 
-if (!rex_csrf_token::factory('sprog-copy-content')->isValid()) {
+if (!rex_csrf_token::factory('sprog_copy_content')->isValid()) {
     echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
     return;
 }

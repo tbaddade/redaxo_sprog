@@ -268,9 +268,15 @@ final class TranslationRepository
     public function markStaleForUnit(int $unitId): int
     {
         $sql = rex_sql::factory();
+        // updateuser='system' macht die System-Aktion in SELECT-Reports
+        // sichtbar — sonst stünde dort der letzte Edit-User aus
+        // addGlobalUpdateFields(), obwohl er das Stale-Markieren nicht
+        // ausgelöst hat. Der eigentliche Audit-Trail liegt in sprog_activity
+        // (source.changed), die Row-Spalte ist Defense-in-depth.
         $sql->setQuery(
             'UPDATE ' . $this->tableName() . '
-             SET status = :stale, revision = revision + 1, updatedate = NOW()
+             SET status = :stale, revision = revision + 1,
+                 updatedate = NOW(), updateuser = :system_user
              WHERE unit_id = :unit_id AND status IN (:translated, :needs_review, :approved)',
             [
                 'stale' => Status::Stale->value,
@@ -278,6 +284,7 @@ final class TranslationRepository
                 'translated' => Status::Translated->value,
                 'needs_review' => Status::NeedsReview->value,
                 'approved' => Status::Approved->value,
+                'system_user' => 'system',
             ],
         );
 
