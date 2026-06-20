@@ -102,7 +102,7 @@ final class StatusTest extends TestCase
         yield 'translated -> stale'    => [Status::Translated, Status::Stale, true];
         yield 'translated -> draft'    => [Status::Translated, Status::Draft, true];
         yield 'translated -> missing'  => [Status::Translated, Status::Missing, false];
-        yield 'translated -> revise'   => [Status::Translated, Status::Revise, false];
+        yield 'translated -> revise'   => [Status::Translated, Status::Revise, true];
         // needs_review
         yield 'needs_review -> approved' => [Status::NeedsReview, Status::Approved, true];
         yield 'needs_review -> revise'   => [Status::NeedsReview, Status::Revise, true];
@@ -113,6 +113,7 @@ final class StatusTest extends TestCase
         // approved
         yield 'approved -> stale'       => [Status::Approved, Status::Stale, true];
         yield 'approved -> needs_review' => [Status::Approved, Status::NeedsReview, true];
+        yield 'approved -> revise'      => [Status::Approved, Status::Revise, true];
         yield 'approved -> draft'       => [Status::Approved, Status::Draft, false];
         // stale
         yield 'stale -> translated'     => [Status::Stale, Status::Translated, true];

@@ -12,15 +12,22 @@ use function in_array;
  * Übergänge sind erlaubt:
  *   missing       → draft, translated
  *   draft         → translated, needs_review, missing
- *   translated    → needs_review, approved, stale
- *   needs_review  → approved, revise, stale
- *   approved      → stale, needs_review
+ *   translated    → needs_review, approved, revise, stale, draft
+ *   needs_review  → approved, revise, translated, stale, draft
+ *   approved      → stale, needs_review, revise
  *   revise        → draft, translated, needs_review
  *   stale         → draft, translated, needs_review
  *
  * Die Übergangslogik selbst lebt im TranslationService; das Enum
  * beschreibt nur die Werte. Persistiert wird der string-Wert in
  * sprog_translation.status (varchar(32)).
+ *
+ * Ein-Reviewer-Modell (seit 2026-06-20): `needs_review` ist als
+ * USER-Aktion aus dem Inbox-UI raus — wer den Workflow-Button klickt,
+ * IST der Reviewer und gibt entweder frei (`approved`) oder schickt
+ * zurück (`revise`). `needs_review` bleibt im Enum als System-Status
+ * für MT-Auto-Flagging und Bestandsdaten und kann von dort über die
+ * normalen Reviewer-Aktionen weiterbearbeitet werden.
  */
 enum Status: string
 {
@@ -93,10 +100,10 @@ enum Status: string
         return match ($this) {
             self::Missing => [self::Draft, self::Translated],
             self::Draft => [self::Translated, self::NeedsReview, self::Missing],
-            self::Translated => [self::NeedsReview, self::Approved, self::Stale, self::Draft],
+            self::Translated => [self::NeedsReview, self::Approved, self::Revise, self::Stale, self::Draft],
             self::NeedsReview => [self::Approved, self::Revise, self::Translated, self::Stale, self::Draft],
             self::Revise => [self::Draft, self::Translated, self::NeedsReview],
-            self::Approved => [self::Stale, self::NeedsReview],
+            self::Approved => [self::Stale, self::NeedsReview, self::Revise],
             self::Stale => [self::Draft, self::Translated, self::NeedsReview],
         };
     }
@@ -111,6 +118,10 @@ enum Status: string
      * Bewusst NICHT enthalten:
      * - Status::Missing als Ziel (Auto-Reset über leeren Wert, nicht User-Aktion)
      * - Status::Stale als Ziel (System-Status, wird per Hash-Detection gesetzt)
+     * - Status::NeedsReview als Ziel (Ein-Reviewer-Modell: wer den Button klickt,
+     *   IST der Reviewer. Eine eigene „bitte review mich"-Aktion gibt es nicht
+     *   mehr; NeedsReview wird nur noch system-seitig gesetzt, z.B. bei
+     *   MT-Drafts oder Bulk-Auto-Flagging.)
      * - destruktive Rückwege auf Draft (Wert geht nicht verloren, aber das
      *   Konzept „Reviewer wirft auf Draft zurück" hat seinen eigenen Status
      *   `Revise`)
@@ -121,12 +132,12 @@ enum Status: string
     {
         return match ($this) {
             self::Missing => [],
-            self::Draft => [self::Translated, self::NeedsReview],
-            self::Translated => [self::NeedsReview, self::Approved],
+            self::Draft => [self::Translated],
+            self::Translated => [self::Revise, self::Approved],
             self::NeedsReview => [self::Revise, self::Approved],
-            self::Revise => [self::Translated, self::NeedsReview],
-            self::Approved => [self::NeedsReview],
-            self::Stale => [self::Translated, self::NeedsReview],
+            self::Revise => [self::Translated],
+            self::Approved => [self::Revise],
+            self::Stale => [self::Translated],
         };
     }
 

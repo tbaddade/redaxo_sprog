@@ -276,9 +276,16 @@ final class TranslationService
         }
 
         // Reviewer-ID nur setzen, wenn die Transition tatsächlich eine
-        // Review-Aktion ist. So bleibt nachvollziehbar, wer wann freigegeben hat.
+        // Review-Aktion ist. So bleibt nachvollziehbar, wer wann freigegeben
+        // oder zurückgeschickt hat. NeedsReview bleibt drin, falls jemand
+        // den System-Status doch mal mit userId setzt — der Default-Pfad
+        // (MT-Auto-Flagging) übergibt aber null und schreibt nichts.
         $reviewerId = $current->reviewerId;
-        if (Status::Approved === $newStatus || Status::NeedsReview === $newStatus) {
+        if (
+            Status::Approved === $newStatus
+            || Status::Revise === $newStatus
+            || Status::NeedsReview === $newStatus
+        ) {
             $reviewerId = $userId ?? $reviewerId;
         }
 

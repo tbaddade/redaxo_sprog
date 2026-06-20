@@ -553,9 +553,10 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                          */
                                         if ($hasPerm && null !== $tr) :
                                             $activeTransitions = $status->userActions();
+                                            // Ein-Reviewer-Modell: NeedsReview ist nur noch
+                                            // System-Status (MT-Auto-Flag etc.), kein Button.
                                             $workflowButtons = [
                                                 Status::Translated,
-                                                Status::NeedsReview,
                                                 Status::Revise,
                                                 Status::Approved,
                                             ];
