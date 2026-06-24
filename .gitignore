@@ -6,8 +6,14 @@
 # Lokale PHPUnit-Overrides
 /phpunit.xml
 
-# Coder/Reviewer-Pattern: review/ ist ein Symlink auf den Reviewer-Worktree
+# Coder/Reviewer-Pattern (Zwei-Session-Workflow): nichts davon gehört ins
+# AddOn-Repo. review/ ist ein Symlink auf den Reviewer-Worktree; die übrigen
+# Pfade sind Harness-Tooling — Claude-Code-Config, der Check-Hook und das
+# Scaffolding-Paket der beiden Sessions.
 review
+/.claude/
+/bin/
+/redaxo-coder-reviewer-redaxo-addon/
 
 # vendor/: nur Production-Deps sind committed (symfony/serializer + Transitive
 # und der vendor/composer/-Autoloader). Lokales `composer install` (mit dev)
