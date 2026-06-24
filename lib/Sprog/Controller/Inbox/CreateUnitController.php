@@ -48,7 +48,7 @@ final class CreateUnitController
 
         $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
         $unitKeyInput = trim((string) rex_request('unit_key', 'string', ''));
-        $contextInput = trim((string) rex_request('context', 'string', ''));
+        $contextInput = Unit::normalizeContext((string) rex_request('context', 'string', ''));
         $notesInput = trim((string) rex_request('notes', 'string', ''));
         $notesValue = '' === $notesInput ? null : $notesInput;
 

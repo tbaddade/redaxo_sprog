@@ -51,7 +51,7 @@ final class UpdateUnitController
         }
 
         $newKey = trim((string) rex_request('unit_key', 'string', ''));
-        $newContext = trim((string) rex_request('context', 'string', ''));
+        $newContext = Unit::normalizeContext((string) rex_request('context', 'string', ''));
         $newNotesIn = trim((string) rex_request('notes', 'string', ''));
         $newNotes = '' === $newNotesIn ? null : $newNotesIn;
 

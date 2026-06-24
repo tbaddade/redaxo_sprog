@@ -43,4 +43,21 @@ final readonly class Unit
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
     ) {}
+
+    /**
+     * Normalisiert einen Bereich-/Context-Eingabewert: Whitespace UND
+     * führende/abschließende Punkte fallen weg.
+     *
+     * Der Lookup baut den Platzhalter als `context . '.' . unit_key`
+     * (siehe WildcardLookupService). Ohne dieses Trimmen erzeugt die Eingabe
+     * „test.mt." (mit Schlusspunkt) den kaputten Platzhalter
+     * `{{ test.mt..button }}` statt des gewollten `{{ test.mt.button }}`.
+     *
+     * Punkte INNERHALB des Bereichs bleiben erhalten — sie sind die
+     * beabsichtigte Sub-Hierarchie (z.B. „page.about").
+     */
+    public static function normalizeContext(string $raw): string
+    {
+        return trim($raw, " \t\n\r\0\x0B.");
+    }
 }
