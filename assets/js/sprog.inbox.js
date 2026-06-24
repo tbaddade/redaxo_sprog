@@ -25,6 +25,12 @@
     // damit nicht jede Unit-Karte ihn dupliziert.
     const csrfName           = root.getAttribute('data-csrf-name');
     const csrfValue          = root.getAttribute('data-csrf-value');
+    // Wildcard-Tags für den Copy-Button: der Platzhalter wird beim Klick aus
+    // data-unit-context + data-unit-key + diesen Tags gebaut (immer aktuell,
+    // auch nach Inline-Edit, weil die data-Attribute am <details> mitgepflegt
+    // werden).
+    const wildcardOpen       = root.getAttribute('data-wildcard-open') || '{{ ';
+    const wildcardClose      = root.getAttribute('data-wildcard-close') || ' }}';
     if (!endpoint) {
         return;
     }
@@ -49,6 +55,43 @@
         toastTimer = window.setTimeout(() => {
             toastEl.hidden = true;
         }, kind === 'error' || kind === 'warn' ? 6000 : 2500);
+    }
+
+    /**
+     * Kopiert Text in die Zwischenablage. navigator.clipboard braucht einen
+     * Secure Context (https oder localhost); im Dev-Backend über http greift
+     * der execCommand-Fallback.
+     */
+    function copyToClipboard(text, btn) {
+        const done = () => {
+            toast((strings.copyDone || 'Kopiert') + ': ' + text, 'ok');
+            if (btn) {
+                btn.classList.add('is-copied');
+                window.setTimeout(() => btn.classList.remove('is-copied'), 1200);
+            }
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done, () => fallbackCopy(text, done));
+        } else {
+            fallbackCopy(text, done);
+        }
+    }
+
+    function fallbackCopy(text, done) {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'absolute';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            done();
+        } catch (e) {
+            /* Zwischenablage nicht verfügbar — still ignorieren. */
+        }
+        document.body.removeChild(ta);
     }
 
     /**
@@ -475,7 +518,7 @@
     }
 
     /**
-     * Zeigt oder versteckt die "context / "-Anzeige vor dem Key im Summary,
+     * Zeigt oder versteckt die "context."-Anzeige vor dem Key im Summary,
      * je nachdem, ob ein context-Wert gesetzt ist.
      */
     function updateContextDisplay(unitEl, contextValue) {
@@ -499,7 +542,7 @@
                 const sep = document.createElement('span');
                 sep.className = 'sprog-inbox--context-sep';
                 sep.setAttribute('aria-hidden', 'true');
-                sep.textContent = '/';
+                sep.textContent = '.';
                 keyLine.insertBefore(span, keySpan);
                 keyLine.insertBefore(sep, keySpan);
             }
@@ -549,6 +592,21 @@
             event.stopPropagation();
             const unitEl = editTrigger.closest('[data-unit-id]');
             if (openUnitModal) openUnitModal(unitEl);
+            return;
+        }
+
+        // Copy-Button am Schlüssel → vollständigen Platzhalter kopieren
+        const copyTrigger = event.target.closest('[data-role="unit-copy-placeholder"]');
+        if (copyTrigger) {
+            event.preventDefault();
+            event.stopPropagation();
+            const unitEl = copyTrigger.closest('[data-unit-id]');
+            if (unitEl) {
+                const key = unitEl.getAttribute('data-unit-key') || '';
+                const ctx = unitEl.getAttribute('data-unit-context') || '';
+                const fullKey = ctx ? ctx + '.' + key : key;
+                copyToClipboard(wildcardOpen + fullKey + wildcardClose, copyTrigger);
+            }
             return;
         }
 

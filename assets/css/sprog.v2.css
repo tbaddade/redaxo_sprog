@@ -3076,7 +3076,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     gap: 0.48rem;
 }
 
-.sprog-inbox--key-edit {
+.sprog-inbox--key-edit,
+.sprog-inbox--key-copy {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -3093,14 +3094,24 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--unit-summary:hover .sprog-inbox--key-edit,
-.sprog-inbox--unit:focus-within .sprog-inbox--key-edit {
+.sprog-inbox--unit-summary:hover .sprog-inbox--key-copy,
+.sprog-inbox--unit:focus-within .sprog-inbox--key-edit,
+.sprog-inbox--unit:focus-within .sprog-inbox--key-copy {
     opacity: 1;
 }
 
 .sprog-inbox--key-edit:hover,
-.sprog-inbox--key-edit:focus-visible {
+.sprog-inbox--key-edit:focus-visible,
+.sprog-inbox--key-copy:hover,
+.sprog-inbox--key-copy:focus-visible {
     background: var(--gh-hover, #eaeef2);
     color: var(--gh-text, #1f2328);
+    opacity: 1;
+}
+
+/* Kurzes visuelles Feedback nach dem Kopieren (JS setzt .is-copied für ~1,2s). */
+.sprog-inbox--key-copy.is-copied {
+    color: var(--sprog-color-accent, #2563eb);
     opacity: 1;
 }
 

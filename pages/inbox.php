@@ -126,6 +126,12 @@ $conflictMap = WildcardConflictService::create()->findConflictsByUnitId();
 // sieht beim Tippen ins Bereich-Feld bekannte Werte als Vorschläge.
 $existingContexts = $units->findAllContexts();
 
+// Wildcard-Tags für den Copy-Button an Bereich/Schlüssel: damit baut das JS
+// den Platzhalter exakt so, wie der Frontend-Parser ihn erwartet. Defaults
+// wie in package.yml / CLAUDE.md dokumentiert ({{ … }}).
+$wildcardOpenTag = (string) rex_config::get('sprog', 'wildcard_open_tag', '{{ ');
+$wildcardCloseTag = (string) rex_config::get('sprog', 'wildcard_close_tag', ' }}');
+
 // Anzeige-Reihenfolge der Status-Optionen — schwergewichtige zuerst.
 $statusOptions = [
     Status::Missing,
@@ -197,6 +203,8 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
     data-can-edit-unit="<?= $canEditUnit ? '1' : '0' ?>"
     data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
     data-csrf-value="<?= rex_escape($inboxSaveCsrf->getValue()) ?>"
+    data-wildcard-open="<?= rex_escape($wildcardOpenTag) ?>"
+    data-wildcard-close="<?= rex_escape($wildcardCloseTag) ?>"
 >
     <header class="sprog-inbox--intro">
         <h1 class="sprog-inbox--heading"><?= rex_i18n::msg('sprog_inbox_heading') ?></h1>
@@ -430,9 +438,23 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                     <?php endif ?>
                                     <?php if ('' !== $item->context) : ?>
                                         <span class="sprog-inbox--context" data-role="context-text"><?= rex_escape($item->context) ?></span>
-                                        <span class="sprog-inbox--context-sep" aria-hidden="true">/</span>
+                                        <span class="sprog-inbox--context-sep" aria-hidden="true">.</span>
                                     <?php endif ?>
                                     <span class="sprog-inbox--key" data-role="key-text"><?= rex_escape($item->unitKey) ?></span>
+                                    <?php if (SourceType::Wildcard->value === $item->namespace) : ?>
+                                        <button
+                                            type="button"
+                                            class="sprog-inbox--key-copy"
+                                            data-role="unit-copy-placeholder"
+                                            title="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
+                                            aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/>
+                                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/>
+                                            </svg>
+                                        </button>
+                                    <?php endif ?>
                                     <?php if ($canEditUnit) : ?>
                                         <button
                                             type="button"
@@ -776,7 +798,8 @@ window.sprogInbox = {
         transitionSaved: <?= json_encode(rex_i18n::rawMsg('sprog_inbox_transition_saved'), JSON_THROW_ON_ERROR) ?>,
         notesLabel:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_notes_label'), JSON_THROW_ON_ERROR) ?>,
         modalTitleEdit:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title'), JSON_THROW_ON_ERROR) ?>,
-        modalTitleCreate:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title_create'), JSON_THROW_ON_ERROR) ?>
+        modalTitleCreate:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title_create'), JSON_THROW_ON_ERROR) ?>,
+        copyDone:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_copy_placeholder_done'), JSON_THROW_ON_ERROR) ?>
     }
 };
 </script>
