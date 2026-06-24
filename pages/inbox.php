@@ -55,6 +55,8 @@ $searchInput = trim((string) rex_request('search', 'string', ''));
 $page = max(1, (int) rex_request('pg', 'int', 1));
 $pageSize = (int) rex_request('page_size', 'int', TranslationListFilter::DEFAULT_PAGE_SIZE);
 $openUnit = (int) rex_request('open_unit', 'int', 0);
+// Konflikt-Filter: nur Einträge mit Wildcard-Mehrdeutigkeit (rotes Dreieck).
+$conflictsOnly = (bool) rex_request('conflict', 'bool', false);
 
 // Per-Sprache Berechtigungs-Check vor der DB-Query — kein Bypass durch URL-Tampering.
 if ($clangId <= 0 || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
@@ -84,6 +86,7 @@ try {
         search: $search,
         page: $page,
         pageSize: $pageSize,
+        conflictsOnly: $conflictsOnly,
     );
 } catch (InvalidArgumentException $e) {
     echo rex_view::error(rex_i18n::msg('sprog_inbox_filter_invalid', $e->getMessage()));
@@ -161,6 +164,7 @@ $baseParams = [
     'pg' => $page,
     'page_size' => $pageSize,
     'status' => array_map(static fn (Status $st) => $st->value, $statuses),
+    'conflict' => $conflictsOnly ? '1' : '',
 ];
 
 $jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
@@ -186,6 +190,26 @@ $currentNamespaceLabel = null !== $namespace
 // Ein einheitlicher Chevron für alle Dropdowns + das Unit-Akkordeon —
 // GitHub-Octicon "chevron-down". `currentColor` damit es Themes mit-rendert.
 $chevronSvg = '<svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M12.78 6.22a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L3.22 7.28a.75.75 0 1 1 1.06-1.06L8 9.94l3.72-3.72a.75.75 0 0 1 1.06 0Z"/></svg>';
+
+// Rechts-Chevron als führende Aufklapp-Indikator vor dem Bezeichner (rotiert
+// per CSS um 90° beim Öffnen).
+$unitChevronSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z"/></svg>';
+
+// Kompaktes Quelle-Icon je Namespace — hält die Schlüssel-Spalte linksbündig
+// (Tooltip trägt das volle Label). Dänisches æø signalisiert „Fremdwort".
+$sourceGlyph = static function (string $ns): string {
+    return match ($ns) {
+        SourceType::Wildcard->value     => '{}',
+        SourceType::Abbreviation->value => 'Ab',
+        SourceType::Foreignword->value  => 'æø',
+        SourceType::Article->value      => 'Ar',
+        SourceType::Slice->value        => 'Sl',
+        SourceType::YForm->value        => 'YF',
+        SourceType::Media->value        => 'Me',
+        SourceType::Custom->value       => '∗',
+        default                         => rex_escape(mb_strtoupper(mb_substr($ns, 0, 2))),
+    };
+};
 
 // Page-globaler CSRF-Token für Save / UpdateUnit / Transition. Per-Unit-
 // Token wäre Resource-Scope, hier reicht der Operation-Scope: das Token
@@ -385,6 +409,26 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                         </button>
                     </div>
                 </details>
+
+                <?php
+                // Konflikt-Filter-Toggle: Link, der den `conflict`-Parameter
+                // umschaltet und alle übrigen Filter beibehält (funktioniert
+                // auch ohne JS, da reine Navigation).
+                $conflictToggleParams = $baseParams;
+                $conflictToggleParams['conflict'] = $conflictsOnly ? '' : '1';
+                $conflictToggleParams['pg'] = 1;
+                ?>
+                <a
+                    class="sprog-inbox--toolbar-cell sprog-inbox--conflict-toggle<?= $conflictsOnly ? ' is-active' : '' ?>"
+                    href="<?= rex_escape(rex_url::currentBackendPage($conflictToggleParams, false)) ?>"
+                    aria-pressed="<?= $conflictsOnly ? 'true' : 'false' ?>"
+                    title="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_conflicts_title')) ?>"
+                >
+                    <span class="sprog-inbox--conflict-toggle-icon" aria-hidden="true">
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+                    </span>
+                    <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_conflicts') ?></span>
+                </a>
             </div>
         </div>
 
@@ -427,8 +471,9 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                         <?= $isOpen ? 'open' : '' ?>
                     >
                         <summary class="sprog-inbox--unit-summary">
-                            <div class="sprog-inbox--summary-main">
-                                <div class="sprog-inbox--key-line">
+                            <span class="sprog-inbox--unit-chevron"><?= $unitChevronSvg ?></span>
+                            <span class="sprog-inbox--source-icon" title="<?= rex_escape(Labels::forNamespace($item->namespace)) ?>" aria-hidden="true"><?= $sourceGlyph($item->namespace) ?></span>
+                            <div class="sprog-inbox--key-line">
                                     <?php if (null !== $conflictHint) : ?>
                                         <span class="sprog-inbox--conflict-flag" title="<?= rex_escape($conflictHint) ?>" aria-label="<?= rex_escape($conflictHint) ?>">
                                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -441,6 +486,19 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                         <span class="sprog-inbox--context-sep" aria-hidden="true">.</span>
                                     <?php endif ?>
                                     <span class="sprog-inbox--key" data-role="key-text"><?= rex_escape($item->unitKey) ?></span>
+                                </div>
+
+                                <div class="sprog-inbox--translation<?= '' === $item->displayValue ? ' sprog-inbox--translation--missing' : '' ?>">
+                                    <?php if ('' === $item->displayValue) : ?>
+                                        <span class="sprog-inbox--translation-dot" aria-hidden="true"></span>
+                                        <span class="sprog-inbox--translation-missing"><?= rex_i18n::msg('sprog_inbox_value_empty') ?></span>
+                                    <?php else : ?>
+                                        <span class="sprog-inbox--translation-dot" aria-hidden="true" style="background:var(--sprog-status-<?= rex_escape($item->displayStatus->value) ?>)"></span>
+                                        <span class="sprog-inbox--translation-text"><?= rex_escape($item->displayValue) ?></span>
+                                    <?php endif ?>
+                                </div>
+
+                                <div class="sprog-inbox--unit-actions">
                                     <?php if (SourceType::Wildcard->value === $item->namespace) : ?>
                                         <button
                                             type="button"
@@ -469,21 +527,12 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                         </button>
                                     <?php endif ?>
                                 </div>
-                                <span class="sprog-inbox--value-preview <?= '' === $item->displayValue ? 'is-empty' : '' ?>">
-                                    <?= '' === $item->displayValue
-                                        ? rex_i18n::msg('sprog_inbox_value_empty')
-                                        : rex_escape($item->displayValue) ?>
-                                </span>
-                            </div>
-                            <div class="sprog-inbox--summary-meta">
-                                <span class="sprog-inbox--namespace"><?= Labels::forNamespace($item->namespace) ?></span>
+                            <div class="sprog-inbox--coverage-cell">
                                 <!--
-                                    Pro Sprache eine Pill: Sprachkürzel als Text,
-                                    Hintergrundfarbe = Status-Farbe (.sprog-status--<status>),
-                                    Tooltip = Sprache + Status-Label.
-                                    Initial (Status=missing) wird die Pille im
-                                    neutralen Coverage-Look gerendert — erst
-                                    "berührte" Sprachen bekommen Status-Farbe.
+                                    Coverage-Rail: pro Sprache eine kompakte Pille
+                                    (Sprachkürzel + Status-Farbe). missing rendert
+                                    neutral im Coverage-Look — nur bearbeitete
+                                    Sprachen bekommen Gewicht. N/M = fertige Sprachen.
                                 -->
                                 <div class="sprog-inbox--lang-badges">
                                     <?php foreach ($clangs as $cId => $clang) :
@@ -501,11 +550,18 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                       title="<?= rex_escape(rex_i18n::msg('sprog_inbox_coverage_title', (string) $coverageDone, (string) $coverageAll)) ?>">
                                     <?= rex_escape($coverageDone . '/' . $coverageAll) ?>
                                 </span>
-                                <span class="sprog-inbox--chevron"><?= $chevronSvg ?></span>
                             </div>
                         </summary>
 
                         <div class="sprog-inbox--rows" role="group" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_rows_label', $item->unitKey)) ?>">
+                            <?php if (null !== $conflictHint) : ?>
+                                <p class="sprog-inbox--conflict-note">
+                                    <span class="sprog-inbox--conflict-note-icon" aria-hidden="true">
+                                        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+                                    </span>
+                                    <span class="sprog-inbox--conflict-note-text"><strong><?= rex_i18n::msg('sprog_inbox_conflict_label') ?></strong> <?= rex_escape($conflictHint) ?></span>
+                                </p>
+                            <?php endif ?>
                             <?php if (null !== $item->notes) : ?>
                                 <p class="sprog-inbox--notes">
                                     <span class="sprog-inbox--notes-label"><?= rex_i18n::msg('sprog_inbox_notes_label') ?></span>

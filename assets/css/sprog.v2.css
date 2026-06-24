@@ -630,24 +630,62 @@
  */
 
 .sprog-inbox {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
+    /* ── Eine ruhige, kühle Palette, verankert in REDAXO-Cyan ─────────────────
+       Ersetzt die drei früher überlagerten Systeme (--sprog-color-*, --gh-* und
+       die hartkodierten Slate-Fallbacks). Alle drei Namensschemata werden hier
+       auf dieselben Werte gelegt, damit die `var(name, fallback)`-Aufrufe im
+       übrigen Inbox-CSS automatisch einrasten — eine Quelle der Wahrheit. */
+    --sprog-color-bg:            #ffffff;   /* Paper – Card / Liste              */
+    --sprog-color-surface:       #f3f5f8;   /* Mist  – List-Header, readonly     */
+    --sprog-color-fg:            #1b2733;   /* Ink   – Primärtext                */
+    --sprog-color-muted:         #5b6675;   /* Slate – Sekundärtext              */
+    --sprog-color-border:        #dde2e8;   /* Line  – Haarlinie                 */
+    --sprog-color-accent:        #4b9ad9;   /* Cyan  – Marke: Button/Link/Fokus/Open */
+    --sprog-color-accent-strong: #3f86c0;   /* Cyan gedrückt                     */
 
-    --sprog-status-missing:      #94a3b8;
-    --sprog-status-draft:        #f59e0b;
-    --sprog-status-translated:   #3b82f6;
-    --sprog-status-needs_review: #d97706;
-    --sprog-status-revise:       #a855f7;
-    --sprog-status-approved:     #10b981;
-    --sprog-status-stale:        #ef4444;
+    /* Alias-Tokens: zuvor undefiniert → liefen auf verstreute Hex-Fallbacks
+       (drei Grautöne, zwei Textfarben, Indigo-Fokus). Jetzt explizit auf die
+       Ramp gelegt — genau ein Grau, ein Ink, ein Fokus (= Cyan). */
+    --sprog-text:          var(--sprog-color-fg);
+    --sprog-muted:         var(--sprog-color-muted);
+    --sprog-border:        var(--sprog-color-border);
+    --sprog-surface-muted: var(--sprog-color-surface);
+    --sprog-focus:         var(--sprog-color-accent);
+    --sprog-focus-ring:    rgba(75 154 217 / 30%);   /* einheitlicher Fokus-Glow */
 
-    --sprog-radius:      0.8rem;
+    /* Flächen-/Hover-Token für die ruhigen „Cells" (Toolbar, Liste, Modal).
+       border/text/muted/radius brauchen keine eigenen Aliase — die Usages
+       zeigen direkt auf --sprog-color-* bzw. --sprog-radius-md. */
+    --sprog-cell-bg: #ffffff;
+    --sprog-hover:   #eef2f6;
+
+    /* ── Status: 7 Workflow-Hues, auf EIN Sättigungs-/Helligkeitsband
+       normalisiert (Variante B). Gleiche Hue-Identität wie zuvor, damit die
+       Legende dasselbe lehrt — nur ruhiger, als Farbfamilie statt Neon. */
+    --sprog-status-missing:      #9aa6b4;
+    --sprog-status-draft:        #cf9436;
+    --sprog-status-translated:   #5a8fcf;
+    --sprog-status-needs_review: #b87333;
+    --sprog-status-revise:       #9069c9;
+    --sprog-status-approved:     #2f9e76;
+    --sprog-status-stale:        #d35d5d;
+
+    /* ── Radius-Skala: vorher 6 ad-hoc Werte → 3 Tokens ──────────────────────── */
+    --sprog-radius-sm:   0.6rem;   /* Inputs, Chips, kleine Buttons */
+    --sprog-radius-md:   1.0rem;   /* Cards, Liste, Popups          */
+    --sprog-radius-lg:   1.4rem;   /* Modal                         */
+    --sprog-radius:      var(--sprog-radius-md);
     --sprog-radius-pill: 999px;
-    --sprog-spacing:     1.6rem;
+
+    /* ── Spacing-Skala (4px-Basis, ×1.6-rem-Konvention) ──────────────────────── */
+    --sprog-space-1: 0.4rem;
+    --sprog-space-2: 0.8rem;
+    --sprog-space-3: 1.2rem;
+    --sprog-space-4: 1.6rem;
+    --sprog-space-5: 2.4rem;
+    --sprog-space-6: 3.2rem;
+    --sprog-spacing: var(--sprog-space-4);
+
     --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
 
     display: grid;
@@ -953,19 +991,35 @@
 
 @media (prefers-color-scheme: dark) {
     .sprog-inbox {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
+        /* GitHub-Dark-Flächen — deckungsgleich mit den späteren Hintergrund-
+           Overrides (vorher widersprüchlich: Tokens #1f2937, Overrides #0d1117). */
+        --sprog-color-bg:            #0d1117;
+        --sprog-color-surface:       #161b22;
+        --sprog-color-fg:            #e6edf3;
+        --sprog-color-muted:         #8d96a0;
+        --sprog-color-border:        #30363d;
+        --sprog-color-accent:        #5aa9e6;   /* Cyan, dunkel-tauglich */
+        --sprog-color-accent-strong: #4b9ad9;
 
+        --sprog-text:          var(--sprog-color-fg);
+        --sprog-muted:         var(--sprog-color-muted);
+        --sprog-border:        var(--sprog-color-border);
+        --sprog-surface-muted: var(--sprog-color-surface);
+        --sprog-focus:         var(--sprog-color-accent);
+        --sprog-focus-ring:    rgba(90 169 230 / 32%);
+
+        --sprog-cell-bg: #161b22;
+        --sprog-hover:   #21262d;
+
+        /* Status – gleiche normalisierte Familie, dunkel angehoben (inkl. revise,
+           das in der alten Dark-Map fehlte). */
         --sprog-status-missing:      #6b7280;
-        --sprog-status-draft:        #fbbf24;
-        --sprog-status-translated:   #60a5fa;
-        --sprog-status-needs_review: #f59e0b;
-        --sprog-status-approved:     #34d399;
-        --sprog-status-stale:        #f87171;
+        --sprog-status-draft:        #d6a44a;
+        --sprog-status-translated:   #6fa8e0;
+        --sprog-status-needs_review: #cd8b46;
+        --sprog-status-revise:       #b08ce0;
+        --sprog-status-approved:     #3fae84;
+        --sprog-status-stale:        #e07a7a;
 
         --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
     }
@@ -2335,7 +2389,7 @@
  * dünner border-bottom. Kein Box-Shadow — bewusst flacher, GitHub-näher.
  */
 .sprog-inbox--card {
-    border-bottom: 1px solid var(--gh-border, #d0d7de);
+    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
 }
 
 .sprog-inbox--card:last-child {
@@ -2487,8 +2541,8 @@
 
 .sprog-inbox--textarea:focus-visible {
     outline: none;
-    border-color: var(--sprog-focus, #6366f1);
-    box-shadow: 0 0 0 0.32rem rgba(99 102 241 / 18%);
+    border-color: var(--sprog-focus);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
 }
 
 .sprog-inbox--textarea[readonly] {
@@ -2512,12 +2566,11 @@
 .sprog-inbox--row-feedback[data-kind="pending"] { color: var(--sprog-muted, #64748b); font-style: italic; }
 .sprog-inbox--row-feedback[data-kind="error"]   { color: var(--sprog-status-stale, #ef4444); }
 
-.sprog-inbox--unit-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.96rem;
-    padding-top: 0.96rem;
-}
+/*
+ * Hinweis: Die frühere `.sprog-inbox--unit-actions`-Regel (Save-Bar mit
+ * padding-top) ist entfallen — die Klasse trägt jetzt die Aktions-Spalte im
+ * Summary-Raster und wird in der „Inbox v3"-Sektion am Dateiende definiert.
+ */
 
 /*
  * Toast – fixed unten rechts. Liegt im DOM innerhalb des Inbox-Artikels,
@@ -2592,16 +2645,12 @@
  */
 
 .sprog-inbox--toolbar {
-    --gh-border:  #d0d7de;
-    --gh-bg:      #ffffff;
-    --gh-hover:   #eaeef2;
-    --gh-text:    #1f2328;
-    --gh-muted:   #59636e;
-    --gh-radius:  0.96rem;
-
+    /* Kein eigener Hintergrund — die Toolbar ist nur Container; Such-Row ist
+       transparent, der List-Header bringt seine eigene Fläche mit. (Sonst
+       läge im Dark-Mode ein heller Block hinter der Such-Row.) */
     display: flex;
     flex-direction: column;
-    background: var(--gh-bg);
+    background: transparent;
 }
 
 /*
@@ -2636,10 +2685,10 @@
     justify-content: space-between;
     gap: 0.96rem;
     padding: 0.96rem 1.28rem;
-    background: var(--gh-bg);
-    border: 1px solid var(--gh-border);
-    border-top-left-radius: var(--gh-radius);
-    border-top-right-radius: var(--gh-radius);
+    background: var(--sprog-cell-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-top-left-radius: var(--sprog-radius-md);
+    border-top-right-radius: var(--sprog-radius-md);
     border-bottom: none;
 }
 
@@ -2655,20 +2704,20 @@
     gap: 0.64rem;
     padding: 0.48rem 0.96rem;
     background: #ffffff;
-    border: 1px solid var(--gh-border);
+    border: 1px solid var(--sprog-color-border);
     border-radius: 0.96rem;
     cursor: pointer;
-    color: var(--gh-text);
+    color: var(--sprog-color-fg);
     line-height: 1;
 }
 
 .sprog-inbox--toolbar-cell:hover {
-    background: var(--gh-hover);
+    background: var(--sprog-hover);
 }
 
 .sprog-inbox--toolbar-cell-label {
     font-size: 1.12rem;
-    color: var(--gh-muted);
+    color: var(--sprog-color-muted);
     font-weight: 600;
 }
 
@@ -2677,13 +2726,13 @@
     -webkit-appearance: none;
     border: 0;
     background: transparent;
-    color: var(--gh-text);
+    color: var(--sprog-color-fg);
     font: inherit;
     font-size: 1.28rem;
     padding: 0.24rem 1.6rem 0.24rem 0.32rem;
     cursor: pointer;
-    background-image: linear-gradient(45deg, transparent 50%, var(--gh-muted) 50%),
-                      linear-gradient(135deg, var(--gh-muted) 50%, transparent 50%);
+    background-image: linear-gradient(45deg, transparent 50%, var(--sprog-color-muted) 50%),
+                      linear-gradient(135deg, var(--sprog-color-muted) 50%, transparent 50%);
     background-position: calc(100% - 0.96rem) 50%, calc(100% - 0.48rem) 50%;
     background-size: 0.48rem 0.48rem, 0.48rem 0.48rem;
     background-repeat: no-repeat;
@@ -2718,11 +2767,11 @@
 }
 
 .sprog-inbox--toolbar-trigger-value {
-    color: var(--gh-text);
+    color: var(--sprog-color-fg);
 }
 
 .sprog-inbox--toolbar-trigger-chevron {
-    color: var(--gh-muted);
+    color: var(--sprog-color-muted);
     font-size: 1.12rem;
 }
 
@@ -2738,7 +2787,7 @@
     min-width: 22rem;
     padding: 0.64rem;
     background: #ffffff;
-    border: 1px solid var(--gh-border);
+    border: 1px solid var(--sprog-color-border);
     border-radius: 0.96rem;
     box-shadow: 0 0.96rem 1.92rem rgba(15 23 42 / 12%);
     display: flex;
@@ -2754,12 +2803,12 @@
     border-radius: 0.64rem;
     cursor: pointer;
     font-size: 1.28rem;
-    color: var(--gh-text);
+    color: var(--sprog-color-fg);
     line-height: 1.2;
 }
 
 .sprog-inbox--toolbar-check:hover {
-    background: var(--gh-hover);
+    background: var(--sprog-hover);
 }
 
 /* Checkbox-Box optisch zur Label-Mitte rücken: feste Größe + margin: 0
@@ -2781,11 +2830,11 @@
     margin: 0.48rem -0.64rem -0.64rem;
     padding: 0.96rem 1.28rem;
     border: 0;
-    border-top: 1px solid var(--gh-border);
+    border-top: 1px solid var(--sprog-color-border);
     border-bottom-left-radius: 0.96rem;
     border-bottom-right-radius: 0.96rem;
-    background: var(--gh-bg);
-    color: var(--gh-text);
+    background: var(--sprog-cell-bg);
+    color: var(--sprog-color-fg);
     font: inherit;
     font-size: 1.2rem;
     font-weight: 600;
@@ -2794,7 +2843,7 @@
 }
 
 .sprog-inbox--toolbar-popup-apply:hover {
-    background: var(--gh-hover);
+    background: var(--sprog-hover);
 }
 
 /*
@@ -2807,17 +2856,17 @@
     gap: 0.64rem;
     padding: 0.48rem 0.96rem;
     background: #ffffff;
-    border: 1px solid var(--gh-border);
+    border: 1px solid var(--sprog-color-border);
     border-radius: 0.96rem;
 }
 
 .sprog-inbox--toolbar-search:focus-within {
-    border-color: var(--sprog-focus, #6366f1);
-    box-shadow: 0 0 0 0.32rem rgba(99 102 241 / 18%);
+    border-color: var(--sprog-focus);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
 }
 
 .sprog-inbox--toolbar-search-icon {
-    color: var(--gh-muted);
+    color: var(--sprog-color-muted);
     display: inline-flex;
     line-height: 0;
 }
@@ -2826,7 +2875,7 @@
     flex: 1;
     border: 0;
     background: transparent;
-    color: var(--gh-text);
+    color: var(--sprog-color-fg);
     font: inherit;
     font-size: 1.28rem;
     padding: 0.32rem 0;
@@ -2838,10 +2887,10 @@
 
 .sprog-inbox--toolbar-apply {
     padding: 0.64rem 1.6rem;
-    border: 1px solid var(--gh-border);
+    border: 1px solid var(--sprog-color-border);
     border-radius: 0.96rem;
-    background: var(--gh-bg);
-    color: var(--gh-text);
+    background: var(--sprog-cell-bg);
+    color: var(--sprog-color-fg);
     font: inherit;
     font-size: 1.28rem;
     font-weight: 600;
@@ -2849,35 +2898,26 @@
 }
 
 .sprog-inbox--toolbar-apply:hover {
-    background: var(--gh-hover);
+    background: var(--sprog-hover);
 }
 
 .sprog-inbox--toolbar-reset {
     padding: 0.48rem 0.96rem;
-    color: var(--gh-muted);
+    color: var(--sprog-color-muted);
     font-size: 1.28rem;
     text-decoration: none;
     border-radius: 0.64rem;
 }
 
 .sprog-inbox--toolbar-reset:hover {
-    color: var(--gh-text);
-    background: var(--gh-hover);
+    color: var(--sprog-color-fg);
+    background: var(--sprog-hover);
 }
 
 @media (prefers-color-scheme: dark) {
-    .sprog-inbox--toolbar {
-        --gh-border: #30363d;
-        --gh-bg:     #161b22;
-        --gh-hover:  #21262d;
-        --gh-text:   #e6edf3;
-        --gh-muted:  #8d96a0;
-    }
-
-    .sprog-inbox--toolbar-cell,
     .sprog-inbox--toolbar-search,
     .sprog-inbox--toolbar-popup {
-        background: #0d1117;
+        background: var(--sprog-cell-bg);
     }
 }
 
@@ -2903,7 +2943,7 @@
     display: block;          /* overrides earlier `grid` */
     gap: 0;                  /* overrides earlier 1.04rem */
     background: #ffffff;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-top: none;
     border-bottom-left-radius: 0.96rem;
     border-bottom-right-radius: 0.96rem;
@@ -2916,7 +2956,7 @@
     padding: 0;
     background: transparent;
     border: none;
-    border-bottom: 1px solid var(--gh-border, #d0d7de);
+    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0;
     box-shadow: none;
     transition: none;
@@ -2933,7 +2973,7 @@
  * Open + Hover: behält das Cyan-Blau (Open hat hier Priorität).
  */
 .sprog-inbox--list .sprog-inbox--unit:hover {
-    background: var(--gh-hover, #eaeef2);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 .sprog-inbox--list .sprog-inbox--unit:focus-within,
@@ -2975,7 +3015,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 
 .sprog-inbox--list-header {
     /* sichtbare Trennlinie zwischen Header und Liste */
-    border-bottom: 1px solid var(--gh-border, #d0d7de);
+    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
 }
 
 .sprog-inbox--list .sprog-inbox--card {
@@ -3008,7 +3048,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--value-preview {
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     font-size: 1.28rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -3043,7 +3083,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     line-height: 1.2;
     /* zusätzlich zur 14%-Background eine subtile Border in Status-Farbe,
        damit auch hellere Status (z.B. needs_review) klar abgegrenzt sind */
-    border: 1px solid color-mix(in srgb, var(--sprog-status-color) 35%, transparent);
+    border: 1px solid color-mix(in srgb, var(--sprog-status-color) 28%, transparent);
 }
 
 /*
@@ -3055,7 +3095,10 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--lang-badge.sprog-status--missing {
     background: var(--sprog-surface-muted, #f1f5f9);
     color: var(--sprog-muted, #64748b);
-    border: 0;
+    /* transparenter Rahmen statt 0 → gleiche Box-Breite wie Status-Badges,
+       damit die Coverage-Leiste pro Zeile gleich breit bleibt und die
+       Copy/Edit-Spalte über alle Zeilen bündig steht. */
+    border: 1px solid transparent;
 }
 
 /*
@@ -3087,7 +3130,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     border: 0;
     border-radius: 0.48rem;
     background: transparent;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     cursor: pointer;
     opacity: 0.4;
     transition: opacity 0.15s, background-color 0.15s;
@@ -3104,8 +3147,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--key-edit:focus-visible,
 .sprog-inbox--key-copy:hover,
 .sprog-inbox--key-copy:focus-visible {
-    background: var(--gh-hover, #eaeef2);
-    color: var(--gh-text, #1f2328);
+    background: var(--sprog-hover, #eef2f6);
+    color: var(--sprog-color-fg, #1b2733);
     opacity: 1;
 }
 
@@ -3123,8 +3166,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     border: 1px solid var(--sprog-color-accent, #2563eb);
     border-radius: 0.48rem;
     background: #ffffff;
-    color: var(--gh-text, #1f2328);
-    box-shadow: 0 0 0 0.32rem rgba(37 99 235 / 18%);
+    color: var(--sprog-color-fg, #1b2733);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
     /* Komfort-Mindestbreite für sehr kurze Keys (z.B. "a"). Bei normalen
        Keys gewinnt die per JS gesetzte `style.width` (= span-Breite), sodass
        der Stift-Button an seiner X-Position bleibt. */
@@ -3153,10 +3196,10 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     align-items: center;
     gap: 0.32rem;
     padding: 0.48rem 0.96rem;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0.64rem;
     background: #ffffff;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     font: inherit;
     font-size: 1.12rem;
     font-weight: 500;
@@ -3165,8 +3208,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--row-action:hover {
-    background: var(--gh-hover, #eaeef2);
-    border-color: color-mix(in srgb, var(--gh-text, #1f2328) 22%, var(--gh-border, #d0d7de));
+    background: var(--sprog-hover, #eef2f6);
+    border-color: color-mix(in srgb, var(--sprog-color-fg, #1b2733) 22%, var(--sprog-color-border, #dde2e8));
 }
 
 .sprog-inbox--row-action:disabled {
@@ -3203,7 +3246,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  */
 .sprog-inbox--legend {
     margin-bottom: 1.6rem;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0.96rem;
     background: #ffffff;
     overflow: hidden;
@@ -3218,7 +3261,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     list-style: none;
     font-size: 1.28rem;
     font-weight: 500;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     user-select: none;
 }
 
@@ -3228,7 +3271,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--legend-summary:hover {
-    background: var(--gh-hover, #eaeef2);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 .sprog-inbox--legend-icon {
@@ -3260,7 +3303,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     grid-template-columns: minmax(24rem, 1fr) minmax(24rem, 1fr);
     gap: 1.6rem 2.4rem;
     padding: 1.28rem 1.6rem 1.6rem;
-    border-top: 1px solid var(--gh-border, #d0d7de);
+    border-top: 1px solid var(--sprog-color-border, #dde2e8);
 }
 
 .sprog-inbox--legend-section:first-child {
@@ -3273,7 +3316,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.064rem;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
 }
 
 .sprog-inbox--legend-statuses {
@@ -3295,14 +3338,14 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 
 .sprog-inbox--legend-status dd {
     margin: 0;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     font-size: 1.28rem;
     line-height: 1.4;
 }
 
 .sprog-inbox--legend-text {
     margin: 0;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     font-size: 1.28rem;
     line-height: 1.5;
 }
@@ -3389,7 +3432,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 /* List-Header bekommt jetzt einen Hintergrund, damit er sich klar von der
  * darunterliegenden weißen Liste absetzt. */
 .sprog-inbox--list-header {
-    background: #f6f8fa;
+    background: var(--sprog-color-surface);
 }
 
 /*
@@ -3405,27 +3448,27 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     min-height: 3.2rem;
     padding: 0 1.12rem;
     background: #ffffff;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0.96rem;
     cursor: pointer;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     line-height: 1;
 }
 
 .sprog-inbox--toolbar-cell:hover {
-    background: var(--gh-hover, #eaeef2);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 .sprog-inbox--toolbar-cell-label {
     font-size: 1.12rem;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     font-weight: 600;
     pointer-events: none;
 }
 
 .sprog-inbox--toolbar-cell-value {
     font-size: 1.28rem;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     pointer-events: none;
 }
 
@@ -3474,16 +3517,16 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     min-height: 3.2rem;
     padding: 0 1.12rem;
     background: #ffffff;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0.96rem;
     cursor: pointer;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     line-height: 1;
     box-sizing: border-box;
 }
 
 .sprog-inbox--toolbar-cell--dropdown:hover {
-    background: var(--gh-hover, #eaeef2);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 /* Focus-Style fürs <details> selbst — weil das <summary> via display: contents
@@ -3518,7 +3561,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--toolbar-cell-summary:hover {
-    background: var(--gh-hover, #eaeef2);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 .sprog-inbox--toolbar-cell-summary::-webkit-details-marker,
@@ -3534,7 +3577,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--chevron {
     display: inline-flex;
     align-items: center;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     transition: transform 0.15s ease;
     pointer-events: none;       /* clicks gehen durch zur Cell/Summary */
     margin-left: auto;          /* schiebt Chevron in der Cell nach rechts */
@@ -3556,7 +3599,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     gap: 1.6rem;
     align-items: start;
     padding: 0.96rem 0;
-    border-bottom: 1px dashed var(--gh-border, #d0d7de);
+    border-bottom: 1px dashed var(--sprog-color-border, #dde2e8);
 }
 
 /*
@@ -3633,11 +3676,11 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 1.28rem;
     font-weight: 500;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
 }
 
 .sprog-inbox--context-sep {
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     opacity: 0.6;
     margin: 0 0.16rem;
 }
@@ -3649,10 +3692,10 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--unit-modal {
     width: min(56rem, 92vw);
     padding: 0;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 1.28rem;
     background: #ffffff;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     box-shadow: 0 1.6rem 3.2rem rgba(15 23 42 / 24%);
 }
 
@@ -3673,7 +3716,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     align-items: center;
     gap: 0.96rem;
     padding: 1.6rem 2rem;
-    border-bottom: 1px solid var(--gh-border, #d0d7de);
+    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
 }
 
 .sprog-inbox--unit-modal-title {
@@ -3681,7 +3724,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     flex: 1;
     font-size: 1.76rem;
     font-weight: 600;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
 }
 
 .sprog-inbox--unit-modal-close {
@@ -3690,7 +3733,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     padding: 0;
     border: 0;
     background: transparent;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     cursor: pointer;
     font-size: 2.4rem;
     line-height: 1;
@@ -3699,8 +3742,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 
 .sprog-inbox--unit-modal-close:hover,
 .sprog-inbox--unit-modal-close:focus-visible {
-    background: var(--gh-hover, #eaeef2);
-    color: var(--gh-text, #1f2328);
+    background: var(--sprog-hover, #eef2f6);
+    color: var(--sprog-color-fg, #1b2733);
 }
 
 .sprog-inbox--unit-modal-body {
@@ -3719,7 +3762,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--unit-modal-label {
     font-size: 1.12rem;
     font-weight: 600;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
@@ -3728,7 +3771,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     padding: 0.64rem 0.96rem;
     background: var(--sprog-surface-muted, #f1f5f9);
     border-radius: 0.64rem;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     font-size: 1.36rem;
     font-family: inherit;
 }
@@ -3736,10 +3779,10 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--unit-modal-input,
 .sprog-inbox--unit-modal-textarea {
     padding: 0.8rem 1.12rem;
-    border: 1px solid var(--gh-border, #d0d7de);
+    border: 1px solid var(--sprog-color-border, #dde2e8);
     border-radius: 0.64rem;
     background: #ffffff;
-    color: var(--gh-text, #1f2328);
+    color: var(--sprog-color-fg, #1b2733);
     font: inherit;
     font-size: 1.44rem;
     line-height: 1.4;
@@ -3754,14 +3797,14 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 
 .sprog-inbox--unit-modal-input:focus-visible,
 .sprog-inbox--unit-modal-textarea:focus-visible {
-    outline: 0.32rem solid rgba(37 99 235 / 22%);
+    outline: 0.32rem solid var(--sprog-focus-ring);
     outline-offset: 0;
     border-color: var(--sprog-color-accent, #2563eb);
 }
 
 .sprog-inbox--unit-modal-hint {
     font-size: 1.12rem;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     line-height: 1.4;
 }
 
@@ -3788,8 +3831,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     align-items: center;
     gap: 0.96rem;
     padding: 1.28rem 2rem;
-    border-top: 1px solid var(--gh-border, #d0d7de);
-    background: var(--gh-bg, #f6f8fa);
+    border-top: 1px solid var(--sprog-color-border, #dde2e8);
+    background: var(--sprog-color-surface);
     border-bottom-left-radius: 1.28rem;
     border-bottom-right-radius: 1.28rem;
 }
@@ -3798,7 +3841,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     padding: 0.64rem 1.6rem;
     background: transparent;
     border: 0;
-    color: var(--gh-muted, #59636e);
+    color: var(--sprog-color-muted, #5b6675);
     cursor: pointer;
     font: inherit;
     font-size: 1.28rem;
@@ -3807,8 +3850,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 
 .sprog-inbox--unit-modal-cancel:hover,
 .sprog-inbox--unit-modal-cancel:focus-visible {
-    color: var(--gh-text, #1f2328);
-    background: var(--gh-hover, #eaeef2);
+    color: var(--sprog-color-fg, #1b2733);
+    background: var(--sprog-hover, #eef2f6);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -3833,6 +3876,391 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     .sprog-inbox--unit-modal-readonly {
         background: #1f2937;
         color: #cbd5e1;
+    }
+}
+
+/*
+ * ============================================================================
+ * Inbox v3 – Zeilen-Redesign (Wörterbuch-Layout)
+ * ============================================================================
+ * Die Zeile liest sich wie ein Wörterbuch-Eintrag: Bezeichner links
+ * (monospace), Übersetzung rechts (das visuelle Gewicht), getrennt durch eine
+ * Haarlinie. Quelle als kompaktes Icon ganz vorn, damit die Schlüssel
+ * linksbündig in einer scannbaren Spalte stehen. Aktionen (Copy/Edit) liegen
+ * in einer eigenen, vertikal zentrierten Spalte. Ein offener Eintrag wird zur
+ * klar abgegrenzten Karte (Cyan-Kante links).
+ *
+ * Diese Sektion steht bewusst am Dateiende: sie überschreibt die früheren
+ * Summary-Regeln per Source-Order. rem-Werte ×1.6-Konvention (html=10px).
+ */
+
+.sprog-inbox {
+    --sprog-attn: #d8604a;        /* fehlende Übersetzung der aktuellen Sprache */
+    --sprog-toolbar-h: 3.6rem;    /* einheitliche Höhe aller Toolbar-Steuerelemente */
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox { --sprog-attn: #e07a64; }
+}
+
+/* Neues Summary-Raster: Chevron · Quelle · Schlüssel │ Übersetzung · Aktionen · Coverage */
+.sprog-inbox--unit-summary {
+    /* Schlüssel-Spalte proportional (minmax(20rem, 0.8fr)): in jeder Zeile gleich
+       breit — weil Container und übrige Spalten identisch sind, ist der fr-Anteil
+       überall gleich → die Übersetzungen fluchten untereinander. Minimum 20rem,
+       damit auch bei schmalerem Viewport praktisch alle Keys voll passen; nur
+       echte Ausreißer (länger als die Spalte) kürzt die Ellipsis am Key. */
+    grid-template-columns: 1.6rem 2.4rem minmax(20rem, 0.8fr) minmax(0, 1.5fr) auto auto;
+    gap: 1.6rem;
+    padding: 1.2rem 1.92rem;
+    align-items: center;
+}
+
+/* Führender Aufklapp-Chevron (rotiert 90° beim Öffnen) */
+.sprog-inbox--unit-chevron {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--sprog-color-muted, #5b6675);
+    transition: transform 0.15s ease;
+}
+.sprog-inbox--unit-chevron svg { display: block; }
+.sprog-inbox--unit[open] > .sprog-inbox--unit-summary .sprog-inbox--unit-chevron {
+    transform: rotate(90deg);
+}
+
+/* Quelle als kompaktes Icon (Tooltip trägt das volle Label) */
+.sprog-inbox--source-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    border-radius: 0.6rem;
+    background: var(--sprog-color-surface, #f3f5f8);
+    color: var(--sprog-color-muted, #5b6675);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: help;
+    user-select: none;
+}
+
+/* Schlüssel-Spalte: linksbündig, bereich.schlüssel ohne Abstände, mit Haarlinie */
+.sprog-inbox--unit-summary .sprog-inbox--key-line {
+    display: flex;
+    align-items: center;
+    gap: 0;   /* context.key bleibt tight — keine Abstände um den Punkt */
+    min-width: 0;
+    padding-right: 1.6rem;
+    border-right: 1px solid var(--sprog-color-border, #dde2e8);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+/* Nur das Konflikt-Dreieck bekommt etwas Luft zum Bezeichner. */
+.sprog-inbox--unit-summary .sprog-inbox--conflict-flag {
+    margin-right: 0.48rem;
+}
+.sprog-inbox--unit-summary .sprog-inbox--context {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: var(--sprog-color-muted, #5b6675);
+}
+/* Punkt direkt an Bereich und Schlüssel — keine Abstände (bereich.schlüssel) */
+.sprog-inbox--unit-summary .sprog-inbox--context-sep {
+    margin: 0;
+    opacity: 1;
+    color: var(--sprog-color-muted, #5b6675);
+}
+.sprog-inbox--unit-summary .sprog-inbox--key {
+    flex: 0 1 auto;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--sprog-color-fg, #1b2733);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Übersetzungs-Spalte – das Gewicht der Zeile */
+.sprog-inbox--translation {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 0;
+}
+.sprog-inbox--translation-dot {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    flex: none;
+    background: var(--sprog-color-muted, #5b6675);
+}
+.sprog-inbox--translation-text {
+    font-size: 1.45rem;
+    color: var(--sprog-color-fg, #1b2733);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+/* Fehlende Übersetzung der aktuellen Sprache: rot hervorgehoben */
+.sprog-inbox--translation--missing .sprog-inbox--translation-dot {
+    background: transparent;
+    border: 2px solid var(--sprog-attn, #d8604a);
+}
+.sprog-inbox--translation-missing {
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--sprog-attn, #d8604a);
+}
+
+/* Aktionen: eigene, vertikal zentrierte Spalte mit reservierter Breite */
+.sprog-inbox--unit-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.16rem;
+    min-width: 5.2rem;
+    padding: 0;          /* kein padding-top — Icons sitzen auf der Zeilenmitte */
+    justify-self: end;
+}
+/* Im offenen Eintrag bleiben die Aktionen dauerhaft sichtbar */
+.sprog-inbox--unit[open] .sprog-inbox--key-copy,
+.sprog-inbox--unit[open] .sprog-inbox--key-edit {
+    opacity: 1;
+}
+
+/* Coverage-Spalte: Sprach-Rail + N/M */
+.sprog-inbox--coverage-cell {
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    justify-self: end;
+}
+
+/*
+ * Offener Eintrag = abgegrenzte Karte. Cyan-Kante links (inset-shadow, wird
+ * nicht von overflow:hidden der Liste geclippt), Header getönt, Body weiß,
+ * klare Ober/Unterlinie. So sind zwei offene Einträge untereinander eindeutig
+ * zu unterscheiden. `.sprog-inbox--list`-Prefix für Specificity-Parität mit
+ * den früheren Hover/Focus-Regeln.
+ */
+.sprog-inbox--list .sprog-inbox--unit[open],
+.sprog-inbox--list .sprog-inbox--unit[open]:hover {
+    background: var(--sprog-color-bg, #ffffff);
+    box-shadow: inset 3px 0 0 0 var(--sprog-color-accent, #4b9ad9);
+    border-top: 1px solid var(--sprog-color-border, #dde2e8);
+    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
+}
+.sprog-inbox--list .sprog-inbox--unit[open] > .sprog-inbox--unit-summary {
+    background: color-mix(in srgb, var(--sprog-color-accent, #4b9ad9) 9%, transparent);
+}
+
+/*
+ * Konflikt-Hinweis im aufgeklappten Eintrag — sauber gesetzt: Icon oben-links
+ * fixiert, Text linksbündig fließend (ersetzt das frühere unrunde Banner).
+ */
+.sprog-inbox--conflict-note {
+    display: flex;
+    gap: 0.8rem;
+    align-items: flex-start;
+    margin: 1.28rem 0 0.4rem;
+    padding: 1rem 1.28rem;
+    background: color-mix(in srgb, var(--sprog-status-stale, #d35d5d) 8%, var(--sprog-color-bg, #fff));
+    border: 1px solid color-mix(in srgb, var(--sprog-status-stale, #d35d5d) 40%, var(--sprog-color-border, #dde2e8));
+    border-radius: 0.8rem;
+    font-size: 1.3rem;
+    line-height: 1.5;
+    color: var(--sprog-color-fg, #1b2733);
+}
+.sprog-inbox--conflict-note-icon {
+    flex: none;
+    margin-top: 0.1rem;
+    color: var(--sprog-status-stale, #d35d5d);
+}
+.sprog-inbox--conflict-note-icon svg { display: block; }
+.sprog-inbox--conflict-note-text strong { color: var(--sprog-status-stale, #d35d5d); }
+
+/* Konflikt-Filter-Toggle in der Toolbar */
+.sprog-inbox--conflict-toggle {
+    text-decoration: none;
+    gap: 0.6rem;
+}
+.sprog-inbox--conflict-toggle .sprog-inbox--conflict-toggle-icon {
+    display: inline-flex;
+    color: var(--sprog-status-stale, #d35d5d);
+    pointer-events: none;
+}
+.sprog-inbox--conflict-toggle .sprog-inbox--conflict-toggle-icon svg { display: block; }
+.sprog-inbox--conflict-toggle .sprog-inbox--toolbar-cell-label {
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1.3rem;
+    color: inherit;
+    pointer-events: none;
+}
+.sprog-inbox--conflict-toggle.is-active {
+    background: color-mix(in srgb, var(--sprog-color-accent, #4b9ad9) 12%, transparent);
+    border-color: var(--sprog-color-accent, #4b9ad9);
+    color: var(--sprog-color-accent, #4b9ad9);
+}
+
+/* Schmale Viewports: Zeile stapelt (Chevron/Quelle führen, Rest darunter) */
+@media (max-width: 48em) {
+    .sprog-inbox--unit-summary {
+        grid-template-columns: 1.6rem 2.4rem 1fr auto;
+        grid-template-areas:
+            "chev src key   cover"
+            "chev src trans trans"
+            "chev src act   act";
+        row-gap: 0.8rem;
+    }
+    .sprog-inbox--unit-chevron { grid-area: chev; align-self: start; }
+    .sprog-inbox--source-icon  { grid-area: src; align-self: start; }
+    .sprog-inbox--unit-summary .sprog-inbox--key-line {
+        grid-area: key;
+        border-right: none;
+        padding-right: 0;
+    }
+    .sprog-inbox--translation   { grid-area: trans; }
+    .sprog-inbox--unit-actions  { grid-area: act; justify-self: start; }
+    .sprog-inbox--coverage-cell { grid-area: cover; justify-self: end; }
+}
+
+/*
+ * Workflow-Buttons: auf dem jetzt weißen Karten-Body waren weiße Buttons kaum
+ * erkennbar. Aktive Buttons bekommen einen leichten Status-Tint + Status-
+ * Textfarbe (kommuniziert die Wirkung), das 3px Status-Border-Left bleibt als
+ * Akzent erhalten. Disabled bleibt ruhig-grau.
+ */
+.sprog-inbox--row-action {
+    background: var(--sprog-color-surface, #f3f5f8);
+    color: var(--sprog-color-fg, #1b2733);
+    font-weight: 600;
+}
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--translated {
+    background: color-mix(in srgb, var(--sprog-status-translated) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-translated) 78%, #000);
+}
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--revise {
+    background: color-mix(in srgb, var(--sprog-status-revise) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-revise) 70%, #000);
+}
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approved {
+    background: color-mix(in srgb, var(--sprog-status-approved) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-approved) 74%, #000);
+}
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--needs_review {
+    background: color-mix(in srgb, var(--sprog-status-needs_review) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-needs_review) 74%, #000);
+}
+.sprog-inbox--row-action:not(:disabled):hover {
+    filter: brightness(0.96);
+}
+.sprog-inbox--row-action:disabled {
+    background: var(--sprog-color-surface, #f3f5f8);
+    color: var(--sprog-color-muted, #5b6675);
+    opacity: 0.6;
+}
+
+/* Filter-Cell-Labels als gesperrte Versalien — wie im Mockup (SPRACHE/QUELLE/
+   STATUS). Der Konflikt-Toggle überschreibt das bewusst (eigene Selektor-
+   Specificity) auf normale Schreibweise. */
+.sprog-inbox--toolbar-cell-label {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/*
+ * Editor-Zeilen behalten ihre eigene Meta-Spalte (minmax(16rem,20rem), s.o.) —
+ * die Textfelder fluchten untereinander. Keine feste Kopplung an die Header-
+ * Übersetzung mehr, da die Schlüssel-Spalte jetzt content-basiert ist (sonst
+ * müssten Keys wieder abgeschnitten werden).
+ */
+
+/*
+ * Toolbar: einheitliche Höhe aller Steuerelemente (Suchfeld, Filtern, Reset,
+ * Neue Einheit, Filter-Cells, Status-Dropdown, Konflikt-Toggle) — gibt der
+ * Leiste das ausgewogene Bild aus dem Mockup.
+ */
+.sprog-inbox--toolbar-search,
+.sprog-inbox--toolbar-apply,
+.sprog-inbox--search-row .sprog-inbox--button,
+.sprog-inbox--toolbar-reset,
+.sprog-inbox--toolbar-cell,
+.sprog-inbox--toolbar-cell--dropdown,
+.sprog-inbox--conflict-toggle {
+    height: var(--sprog-toolbar-h, 3.6rem);
+    min-height: var(--sprog-toolbar-h, 3.6rem);
+    /* <label>-Cells erben Bootstrap/REDAXO `margin-bottom: 5px` → würde sie
+       ggü. den Buttons/Dropdowns 2.5px nach oben versetzen. Neutralisieren. */
+    margin: 0;
+    box-sizing: border-box;
+}
+/* Steuerelemente, die nicht schon flex sind, vertikal zentrieren */
+.sprog-inbox--toolbar-apply,
+.sprog-inbox--toolbar-reset,
+.sprog-inbox--conflict-toggle {
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+
+/* Auf schmalen Viewports stapelt die Editor-Zeile wieder einspaltig. */
+@media (max-width: 48em) {
+    .sprog-inbox--rows .sprog-inbox--row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/*
+ * Filter-Cells: Hintergrund über Token statt hartem #fff — eine spätere
+ * Feinschliff-Regel hatte #ffffff fest gesetzt und damit im Dark-Mode die
+ * Cells weiß gelassen (heller Text unsichtbar). Jetzt folgen sie --sprog-cell-bg.
+ */
+.sprog-inbox--toolbar-cell,
+.sprog-inbox--toolbar-cell--dropdown {
+    background: var(--sprog-cell-bg, #ffffff);
+}
+
+/*
+ * Primär-Button-Text: REDAXOs Link-Farbe gewinnt sonst per Specificity und
+ * färbt den Text im Dark-Mode cyan-auf-cyan. Mit höherer Specificity fixieren.
+ */
+.sprog-inbox .sprog-inbox--button.sprog-inbox--button-primary {
+    color: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+    .sprog-inbox .sprog-inbox--button.sprog-inbox--button-primary {
+        color: #0b0f19;
+    }
+
+    /*
+     * Workflow-Buttons im Dark-Mode: die Light-Tönungen mischen mit #fff und
+     * wären auf dunklem Body zu hell. Hier mit dunklem Grund + hellerer
+     * Status-Textfarbe mischen.
+     */
+    .sprog-inbox--row-action {
+        background: var(--sprog-color-surface, #161b22);
+        color: var(--sprog-color-fg, #e6edf3);
+    }
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--translated {
+        background: color-mix(in srgb, var(--sprog-status-translated) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-translated) 70%, #fff);
+    }
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--revise {
+        background: color-mix(in srgb, var(--sprog-status-revise) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-revise) 72%, #fff);
+    }
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approved {
+        background: color-mix(in srgb, var(--sprog-status-approved) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-approved) 72%, #fff);
+    }
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--needs_review {
+        background: color-mix(in srgb, var(--sprog-status-needs_review) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-needs_review) 72%, #fff);
+    }
+    .sprog-inbox--row-action:disabled {
+        color: var(--sprog-color-muted, #8d96a0);
     }
 }
 

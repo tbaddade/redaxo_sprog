@@ -32,6 +32,7 @@ final readonly class TranslationListFilter
      * @param ?string       $search    Substring-Suche in unit_key + value; null/leer = kein Filter
      * @param int           $page      1-basiert
      * @param int           $pageSize  1..MAX_PAGE_SIZE
+     * @param bool          $conflictsOnly Nur Units mit Wildcard-Konflikt (Punkt-Trenner-Ambiguität)
      */
     public function __construct(
         public int $clangId,
@@ -40,6 +41,7 @@ final readonly class TranslationListFilter
         public ?string $search,
         public int $page,
         public int $pageSize,
+        public bool $conflictsOnly = false,
     ) {
         if ($clangId <= 0) {
             throw new InvalidArgumentException('clangId muss > 0 sein.');

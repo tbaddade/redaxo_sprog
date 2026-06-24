@@ -259,6 +259,22 @@ final class TranslationListService
             $params['search'] = $like;
         }
 
+        if ($filter->conflictsOnly) {
+            // Konflikt-Filter: nur Units, für die der WildcardConflictService
+            // eine Mehrdeutigkeit meldet (Punkt-Trenner-Ambiguität). Die IDs
+            // sind int-cast, daher direkt in den Query-String — kein User-Input.
+            // Leere Menge → IN (0): findet keine Unit (id ist immer > 0).
+            try {
+                $conflictIds = array_keys(WildcardConflictService::create()->findConflictsByUnitId());
+            } catch (rex_sql_exception) {
+                $conflictIds = [];
+            }
+            $idList = [] === $conflictIds
+                ? '0'
+                : implode(',', array_map(static fn ($id) => (int) $id, $conflictIds));
+            $where[] = 'u.id IN (' . $idList . ')';
+        }
+
         return [implode(' AND ', $where), $params];
     }
 
