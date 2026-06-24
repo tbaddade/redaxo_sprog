@@ -204,9 +204,10 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
     </header>
 
     <?php
-    // Legende der sechs Status — Reihenfolge wie im Workflow durchläuft:
-    // missing → draft → translated → needs_review → approved (+ stale als
-    // Spezialfall bei Quell-Änderung).
+    // Legende aller sieben Status, grob in Workflow-Reihenfolge: der Haupt-
+    // pfad missing → draft → translated → approved, dazwischen die Review-
+    // Status needs_review (jetzt nur noch system-gesetzt) und revise (Rückgabe
+    // durch die Reviewerin), am Ende stale als Spezialfall bei Quell-Änderung.
     $legendOrder = [
         Status::Missing,
         Status::Draft,
