@@ -175,6 +175,7 @@ sprog_dashboard_empty_heading = No translation data yet
 sprog_dashboard_empty_lead = v2 is installed but empty. If this installation has legacy v1 data, start the migration. Otherwise entries appear as soon as you save your first translation.
 sprog_dashboard_empty_cta = Open migration
 sprog_dashboard_no_stats = No entries for this language.
+sprog_dashboard_done = done
 sprog_dashboard_unit_one = unit
 sprog_dashboard_unit_many = units
 

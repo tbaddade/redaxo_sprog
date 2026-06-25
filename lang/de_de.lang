@@ -193,6 +193,7 @@ sprog_dashboard_empty_heading = Noch keine Übersetzungs-Daten
 sprog_dashboard_empty_lead = v2 ist installiert, aber leer. Wenn diese Installation Bestandsdaten aus v1 hat, starte die Migration. Andernfalls werden die ersten Einträge angelegt, sobald du eine Übersetzung speicherst.
 sprog_dashboard_empty_cta = Migration öffnen
 sprog_dashboard_no_stats = Keine Einträge in dieser Sprache.
+sprog_dashboard_done = fertig
 sprog_dashboard_unit_one = Einheit
 sprog_dashboard_unit_many = Einheiten
 

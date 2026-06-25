@@ -303,29 +303,33 @@
  */
 
 .sprog-dashboard {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
+    /* Identische Palette zur Inbox (ruhige Cyan-Neutrals, beruhigte Status). */
+    --sprog-color-bg:            #ffffff;
+    --sprog-color-surface:       #f3f5f8;
+    --sprog-color-fg:            #1b2733;
+    --sprog-color-muted:         #5b6675;
+    --sprog-color-border:        #dde2e8;
+    --sprog-color-accent:        #4b9ad9;
+    --sprog-color-accent-strong: #3f86c0;
 
-    --sprog-status-missing:      #94a3b8;
-    --sprog-status-draft:        #f59e0b;
-    --sprog-status-translated:   #3b82f6;
-    --sprog-status-needs_review: #d97706;
-    --sprog-status-revise:       #a855f7;
-    --sprog-status-approved:     #10b981;
-    --sprog-status-stale:        #ef4444;
+    --sprog-status-missing:      #9aa6b4;
+    --sprog-status-draft:        #cf9436;
+    --sprog-status-translated:   #5a8fcf;
+    --sprog-status-needs_review: #b87333;
+    --sprog-status-revise:       #9069c9;
+    --sprog-status-approved:     #2f9e76;
+    --sprog-status-stale:        #d35d5d;
 
-    --sprog-radius:      0.8rem;
+    --sprog-radius-sm:   0.6rem;
+    --sprog-radius-md:   1.0rem;
+    --sprog-radius-lg:   1.4rem;
+    --sprog-radius:      var(--sprog-radius-md);
     --sprog-radius-pill: 999px;
     --sprog-spacing:     1.6rem;
-    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+    --sprog-shadow:      0 1px 2px rgba(20 30 45 / 5%), 0 1px 3px rgba(20 30 45 / 6%);
 
     display: grid;
-    gap: calc(var(--sprog-spacing) * 1.5);
-    max-width: 1400px;
+    gap: var(--sprog-spacing);
     color: var(--sprog-color-fg);
 }
 
@@ -338,6 +342,11 @@
 .sprog-dashboard--intro {
     display: grid;
     gap: 0.8rem;
+    padding: 1.6rem;
+    /* Rahmen transparent, aber 1px breit: hält den Text exakt bündig zur
+       Legende (1.6rem padding + 1px), ohne sichtbaren Kasten um den Intro. */
+    border: 1px solid transparent;
+    border-radius: var(--sprog-radius-md);
 }
 
 .sprog-dashboard--heading {
@@ -403,190 +412,248 @@
     color: #fff;
 }
 
-.sprog-dashboard--clang {
-    display: grid;
-    gap: var(--sprog-spacing);
-    padding: 2rem;
+/* Status-Legende — erklärt die Balken-Farben (einmal oben). */
+.sprog-dashboard--legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.8rem;
+    padding: 1.2rem 1.6rem;
     background: var(--sprog-color-bg);
     border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
+    border-radius: var(--sprog-radius-md);
+}
+
+.sprog-dashboard--legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 1.25rem;
+    color: var(--sprog-color-fg);
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+.sprog-dashboard--legend-swatch {
+    width: 1.1rem;
+    height: 1.1rem;
+    flex: none;
+    border-radius: 0.3rem;
+    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 60%, #fff);
+}
+
+/* Sprach-Karte */
+.sprog-dashboard--clang {
+    padding: 2rem 2.2rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius-lg);
     box-shadow: var(--sprog-shadow);
+}
+
+.sprog-dashboard--clang--done {
+    border-color: color-mix(in srgb, var(--sprog-status-approved) 45%, var(--sprog-color-border));
 }
 
 .sprog-dashboard--clang-head {
     display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1.6rem;
+    align-items: center;
+    gap: 1.2rem;
     flex-wrap: wrap;
-}
-
-.sprog-dashboard--clang-title {
-    margin: 0;
-    font-size: 1.84rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.96rem;
+    margin-bottom: 1.4rem;
 }
 
 .sprog-dashboard--clang-code {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.75em;
-    padding: 0.15em 0.5em;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-muted) 15%, transparent);
-    color: var(--sprog-color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    padding: 0.4rem 0.9rem;
+    border-radius: 0.6rem;
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-dashboard--clang-name {
+    font-size: 1.9rem;
+    font-weight: 700;
+}
+
+.sprog-dashboard--clang-metric {
+    margin-left: auto;
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
 }
 
 .sprog-dashboard--clang-percent {
-    font-variant-numeric: tabular-nums;
-    font-size: 2.4rem;
-    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
     color: var(--sprog-color-accent);
+    font-variant-numeric: tabular-nums;
 }
 
-.sprog-dashboard--clang-percent[data-percent="100"] {
+.sprog-dashboard--clang--done .sprog-dashboard--clang-percent {
     color: var(--sprog-status-approved);
 }
 
+.sprog-dashboard--clang-pct-label {
+    font-size: 1.2rem;
+    line-height: 1.3;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-dashboard--clang-count {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Stacked-Status-Balken — die Signatur. Segmente in Status-Reihenfolge,
+   Breite = Anteil. Bewusst aufgehellt (Status-Farbe zu 60% auf Weiß), damit
+   die Leiste zu den zarten Inbox-Tints passt. */
+.sprog-dashboard--bar {
+    display: flex;
+    height: 1.2rem;
+    border-radius: var(--sprog-radius-pill);
+    overflow: hidden;
+    background: var(--sprog-color-surface);
+}
+
+.sprog-dashboard--bar--lg {
+    height: 1.4rem;
+}
+
+.sprog-dashboard--bar--empty {
+    box-shadow: inset 0 0 0 1px var(--sprog-color-border);
+}
+
+.sprog-dashboard--seg {
+    height: 100%;
+    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 60%, #fff);
+}
+
+.sprog-dashboard--seg:not(:last-child) {
+    box-shadow: 1px 0 0 var(--sprog-color-bg);
+}
+
+/* Aggregierte Status-Zahlen pro Sprache (Inbox-Pillen-Stil) */
+.sprog-dashboard--stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.2rem;
+}
+
+.sprog-dashboard--stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.2rem 1rem;
+    font-size: 1.2rem;
+    border-radius: var(--sprog-radius-pill);
+    color: var(--c, var(--sprog-color-muted));
+    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 13%, transparent);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-dashboard--stat-count {
+    font-weight: 700;
+}
+
+.sprog-dashboard--stat-label {
+    color: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 78%, var(--sprog-color-fg));
+    text-transform: lowercase;
+    letter-spacing: 0.02em;
+}
+
+/* Quelle-Aufschlüsselung */
 .sprog-dashboard--no-stats {
-    margin: 0;
+    margin: 1.2rem 0 0;
     color: var(--sprog-color-muted);
     font-style: italic;
 }
 
 .sprog-dashboard--namespaces {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: var(--sprog-spacing);
-    margin: 0;
-    padding: 0;
+    gap: 1rem;
+    margin: 1.8rem 0 0;
+    padding: 1.6rem 0 0;
+    border-top: 1px solid var(--sprog-color-surface);
     list-style: none;
 }
 
-.sprog-dashboard--ns-item {
+.sprog-dashboard--ns {
     display: grid;
-    gap: 1.04rem;
-    padding: 1.6rem;
-    background: var(--sprog-color-surface);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
+    grid-template-columns: 13rem 1fr 12rem;
+    align-items: center;
+    gap: 1.4rem;
 }
 
-.sprog-dashboard--ns-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.8rem;
-}
-
-.sprog-dashboard--ns-title {
-    margin: 0;
-    font-size: 1.52rem;
-    font-weight: 600;
-    text-transform: capitalize;
-}
-
-.sprog-dashboard--ns-percent {
-    font-variant-numeric: tabular-nums;
-    font-size: 1.52rem;
-    font-weight: 600;
+.sprog-dashboard--ns-name {
+    font-size: 1.35rem;
     color: var(--sprog-color-fg);
 }
 
-.sprog-dashboard--bar {
-    inline-size: 100%;
-    block-size: 0.72rem;
-    -webkit-appearance: none;
-    appearance: none;
-    border: 0;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
-    overflow: hidden;
+.sprog-dashboard--ns-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: flex-end;
+    gap: 0.8rem;
 }
 
-.sprog-dashboard--bar::-webkit-progress-bar {
-    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
-    border-radius: var(--sprog-radius-pill);
+.sprog-dashboard--ns-percent {
+    min-width: 4.4rem;
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--sprog-color-fg);
+    font-variant-numeric: tabular-nums;
 }
 
-.sprog-dashboard--bar::-webkit-progress-value {
-    background: var(--sprog-color-accent);
-    border-radius: var(--sprog-radius-pill);
-    transition: inline-size 0.4s ease;
-}
-
-.sprog-dashboard--bar::-moz-progress-bar {
-    background: var(--sprog-color-accent);
-    border-radius: var(--sprog-radius-pill);
-}
-
-.sprog-dashboard--ns-total {
-    margin: 0;
-    font-size: 1.312rem;
+.sprog-dashboard--ns-count {
+    font-size: 1.2rem;
     color: var(--sprog-color-muted);
     font-variant-numeric: tabular-nums;
 }
 
-.sprog-dashboard--status-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.56rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
+@media (max-width: 40em) {
+    .sprog-dashboard--ns {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+    .sprog-dashboard--ns-meta { justify-content: flex-start; }
+    .sprog-dashboard--clang-metric { margin-left: 0; }
 }
-
-.sprog-dashboard--status {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.56rem;
-    padding: 0.24rem 0.88rem;
-    font-size: 1.248rem;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-status-color, var(--sprog-color-muted)) 14%, transparent);
-    color: var(--sprog-status-color, var(--sprog-color-muted));
-    font-variant-numeric: tabular-nums;
-}
-
-.sprog-dashboard--status-count {
-    font-weight: 600;
-}
-
-.sprog-dashboard--status-label {
-    text-transform: lowercase;
-    letter-spacing: 0.02em;
-}
-
-.sprog-dashboard--status--missing       { --sprog-status-color: var(--sprog-status-missing); }
-.sprog-dashboard--status--draft         { --sprog-status-color: var(--sprog-status-draft); }
-.sprog-dashboard--status--translated    { --sprog-status-color: var(--sprog-status-translated); }
-.sprog-dashboard--status--needs_review  { --sprog-status-color: var(--sprog-status-needs_review); }
-.sprog-dashboard--status--revise        { --sprog-status-color: var(--sprog-status-revise); }
-.sprog-dashboard--status--approved      { --sprog-status-color: var(--sprog-status-approved); }
-.sprog-dashboard--status--stale         { --sprog-status-color: var(--sprog-status-stale); }
 
 @media (prefers-color-scheme: dark) {
     .sprog-dashboard {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
+        --sprog-color-bg:            #0d1117;
+        --sprog-color-surface:       #161b22;
+        --sprog-color-fg:            #e6edf3;
+        --sprog-color-muted:         #8d96a0;
+        --sprog-color-border:        #30363d;
+        --sprog-color-accent:        #5aa9e6;
+        --sprog-color-accent-strong: #4b9ad9;
 
         --sprog-status-missing:      #6b7280;
-        --sprog-status-draft:        #fbbf24;
-        --sprog-status-translated:   #60a5fa;
-        --sprog-status-needs_review: #f59e0b;
-        --sprog-status-revise:       #c084fc;
-        --sprog-status-approved:     #34d399;
-        --sprog-status-stale:        #f87171;
+        --sprog-status-draft:        #d6a44a;
+        --sprog-status-translated:   #6fa8e0;
+        --sprog-status-needs_review: #cd8b46;
+        --sprog-status-revise:       #b08ce0;
+        --sprog-status-approved:     #3fae84;
+        --sprog-status-stale:        #e07a7a;
 
         --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+    /* Segmente/Swatches im Dark mit dunklem Grund mischen statt Weiß. */
+    .sprog-dashboard--seg,
+    .sprog-dashboard--legend-swatch {
+        background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 58%, #0d1117);
+    }
+    .sprog-dashboard--cta {
+        color: #0b0f19;
     }
 }
 
@@ -702,6 +769,11 @@
 .sprog-inbox--intro {
     display: grid;
     gap: 0.64rem;
+    padding: 1.6rem;
+    /* Rahmen transparent, aber 1px breit: hält den Text exakt bündig zur
+       Legende (1.6rem padding + 1px), ohne sichtbaren Kasten um den Intro. */
+    border: 1px solid transparent;
+    border-radius: var(--sprog-radius-md);
 }
 
 .sprog-inbox--heading {
@@ -2982,12 +3054,13 @@
 }
 
 /*
- * Article selbst auf weißen Hintergrund, ohne page-fill. Der ursprüngliche
- * sprog.css-Reset gibt der Seite einen leicht grauen Surface — das setzen
- * wir hier für die v2-Inbox lokal außer Kraft.
+ * Article transparent: Inhalte sitzen als weiße Karten/Panels auf der hell-
+ * blaugrauen REDAXO-Backend-Fläche — einheitlich mit dem Dashboard. Liste,
+ * Legende und Modal tragen ihre eigene weiße Fläche; der List-Header ist weiß
+ * (s.u.), damit das Listen-Panel auf dem grauen Grund klar abgesetzt bleibt.
  */
 .sprog-inbox {
-    background: #ffffff;
+    background: transparent;
 }
 
 /*
@@ -3407,7 +3480,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  * Dark-Mode-Variante der gleichen Override-Regeln.
  */
 @media (prefers-color-scheme: dark) {
-    .sprog-inbox,
+    /* Article bleibt auch im Dark transparent (REDAXO-Dark-Grund scheint durch);
+       nur die Komponenten tragen ihre dunkle Fläche. */
     .sprog-inbox--unit,
     .sprog-inbox--list,
     .sprog-inbox--list-header {
@@ -3426,13 +3500,15 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  */
 
 .sprog-inbox {
-    padding: 1.92rem;
+    /* kein eigenes padding — der REDAXO-Content-Bereich gibt die Ränder vor
+       (einheitlich mit dem Dashboard). */
+    padding: 0;
 }
 
-/* List-Header bekommt jetzt einen Hintergrund, damit er sich klar von der
- * darunterliegenden weißen Liste absetzt. */
+/* List-Header weiß (wie die Liste): das Panel ist durchgehend weiß und hebt
+ * sich vom grauen Backend-Grund ab — die border-bottom trennt Header und Liste. */
 .sprog-inbox--list-header {
-    background: var(--sprog-color-surface);
+    background: var(--sprog-color-bg);
 }
 
 /*
