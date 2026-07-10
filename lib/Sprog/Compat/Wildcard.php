@@ -71,11 +71,6 @@ class Wildcard
         return '@(?<complete>' . preg_quote(trim(self::getOpenTag())) . '\s*(?<wildcard>' . $value . ')\s*((\|(?<filter>\s*[a-z]+)\(?(?<arguments>.*?)?\)?))?\s*' . preg_quote(trim(self::getCloseTag())) . ')@';
     }
 
-    public static function isClangSwitchMode(): bool
-    {
-        return (1 == rex_config::get('sprog', 'wildcard_clang_switch', '1')) ? true : false;
-    }
-
     /**
      * Returns the replaced wildcard.
      *
