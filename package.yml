@@ -27,9 +27,6 @@ page:
             title: 'translate:sprog_dashboard_subpage'
         inbox:
             title: 'translate:sprog_inbox_subpage'
-        editor:
-            title: 'translate:sprog_editor_subpage'
-            hidden: true
         create:
             title: 'translate:sprog_create_subpage'
             hidden: true
@@ -67,13 +64,7 @@ page:
         settings:
             title: 'translate:settings'
             perm: admin[]
-            subpages:
-                general:
-                    title: 'translate:sprog_settings_general_subpage'
-                    subPath: pages/settings.php
-                mt:
-                    title: 'translate:sprog_settings_mt_subpage'
-                    subPath: pages/settings.mt.php
+            subPath: pages/settings.php
         help:
             title: 'translate:help'
             subPath: README.md
@@ -111,3 +102,4 @@ default_config:
     wildcard_open_tag: '{{ '
     wildcard_close_tag: ' }}'
     chunk_size_articles: 4
+    workflow_dev_self_approve: false
