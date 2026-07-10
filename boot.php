@@ -24,6 +24,10 @@ class_alias('\Sprog\Wildcard', 'Wildcard');
 rex_perm::register('sprog[abbreviation]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
+// Workflow-Rollen (je Sprache über die clang-Zuweisung wirksam): translator
+// reicht Übersetzungen zur Prüfung ein, reviewer gibt frei / gibt zurück.
+rex_perm::register('sprog[translator]', null, rex_perm::OPTIONS);
+rex_perm::register('sprog[reviewer]', null, rex_perm::OPTIONS);
 
 require_once __DIR__ . '/functions/sprog.php';
 
@@ -36,11 +40,13 @@ if (!rex::isBackend()) {
 }
 
 if (rex::isBackend() && rex::getUser()) {
-    // ART_*/CAT_*-Hooks: LATE, damit MetaInfo seine Daten zuerst persistiert.
-    rex_extension::register('ART_STATUS', [Extension::class, 'articleUpdated']);
+    // Status separat (nur echter Statuswechsel gleicht den Status an).
+    rex_extension::register('ART_STATUS', [Extension::class, 'statusUpdated']);
+    rex_extension::register('CAT_STATUS', [Extension::class, 'statusUpdated']);
+    // Name/Template/MetaInfo bei Update. META_UPDATED/CAT_UPDATED LATE, damit
+    // der MetaInfo-Handler seine Daten zuerst persistiert.
     rex_extension::register('ART_UPDATED', [Extension::class, 'articleUpdated']);
     rex_extension::register('ART_META_UPDATED', [Extension::class, 'articleMetadataUpdated'], rex_extension::LATE);
-    rex_extension::register('CAT_STATUS', [Extension::class, 'categoryUpdated']);
     rex_extension::register('CAT_UPDATED', [Extension::class, 'categoryUpdated'], rex_extension::LATE);
 
     // Medienpool ist noch nicht mehrsprachig — MEDIA_* daher bewusst aus.

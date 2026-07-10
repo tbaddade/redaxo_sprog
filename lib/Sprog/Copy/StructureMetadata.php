@@ -10,7 +10,7 @@ use rex_article_cache;
 use rex_article_content;
 use rex_clang;
 use rex_sql;
-use Sprog\Compat\Sync;
+use Sprog\Service\StructureSyncService;
 
 use function count;
 
@@ -77,12 +77,8 @@ class StructureMetadata extends Copy
     {
         if (rex_addon::get('structure')->isAvailable() && $params['clangFrom'] != $params['clangTo']) {
             foreach ($items as $item) {
-                $syncParams = [
-                    'id' => $item[0],
-                    'clang' => $params['clangFrom'],
-                ];
-                $syncFields = explode(',', $params['fields']);
-                Sync::articleMetainfo($syncParams, $syncFields, $params['clangTo']);
+                $syncFields = array_values(array_filter(explode(',', $params['fields']), static fn (string $f): bool => '' !== $f));
+                StructureSyncService::syncMetainfoAcrossLanguages((int) $item[0], (int) $params['clangFrom'], $syncFields, (int) $params['clangTo']);
 
                 // generate content
                 $article = new rex_article_content($item[0], $params['clangTo']);

@@ -21,9 +21,10 @@ use rex_sql;
 use rex_sql_exception;
 use Sprog\Compat\Abbreviation;
 use Sprog\Compat\Foreignword;
-use Sprog\Compat\Sync;
 use Sprog\Compat\Wildcard;
+use Sprog\Service\StructureSyncService;
 
+use function array_values;
 use function count;
 
 class Extension
@@ -53,55 +54,78 @@ class Extension
     }
 
     /**
+     * Statuswechsel (ART_STATUS / CAT_STATUS) auf die anderen Sprachen spiegeln.
+     * Bewusst getrennt von articleUpdated/categoryUpdated: nur ein echter
+     * Statuswechsel soll den Status angleichen, nicht jeder Namens-/Template-Edit.
+     *
+     * @param rex_extension_point<mixed> $ep
+     */
+    public static function statusUpdated(rex_extension_point $ep): void
+    {
+        if (!rex_addon::get('sprog')->getConfig('sync_structure_status')) {
+            return;
+        }
+
+        $params = $ep->getParams();
+        StructureSyncService::syncStatusAcrossLanguages((int) $params['id'], (int) $params['clang'], (int) $params['status']);
+    }
+
+    /**
+     * Artikel-Update (ART_UPDATED): Startartikelname → Kategoriename (innerhalb
+     * der Sprache) und Template → andere Sprachen.
+     *
      * @param rex_extension_point<mixed> $ep
      */
     public static function articleUpdated(rex_extension_point $ep): void
     {
         $addon = rex_addon::get('sprog');
+        $params = $ep->getParams();
 
         if ($addon->getConfig('sync_structure_article_name_to_category_name')) {
-            Sync::articleNameToCategoryName($ep->getParams());
-        }
-
-        if ($addon->getConfig('sync_structure_status')) {
-            Sync::articleStatus($ep->getParams());
+            StructureSyncService::syncArticleNameToCategoryName((int) $params['id'], (int) $params['clang'], (string) ($params['name'] ?? ''));
         }
 
         if ($addon->getConfig('sync_structure_template')) {
-            Sync::articleTemplate($ep->getParams());
+            StructureSyncService::syncTemplateAcrossLanguages((int) $params['id'], (int) $params['clang'], (int) ($params['template_id'] ?? 0));
         }
     }
 
     /**
+     * Artikel-MetaInfo (ART_META_UPDATED): ausgewählte Felder → andere Sprachen.
+     *
      * @param rex_extension_point<mixed> $ep
      */
     public static function articleMetadataUpdated(rex_extension_point $ep): void
     {
-        $addon = rex_addon::get('sprog');
-        $fields = $addon->getConfig('sync_metainfo_art', []);
-        if (count($fields)) {
-            Sync::articleMetainfo($ep->getParams(), $fields);
+        $fields = (array) rex_addon::get('sprog')->getConfig('sync_metainfo_art', []);
+        if (0 === count($fields)) {
+            return;
         }
+
+        $params = $ep->getParams();
+        StructureSyncService::syncMetainfoAcrossLanguages((int) $params['id'], (int) $params['clang'], array_values($fields));
     }
 
     /**
+     * Kategorie-Update (CAT_UPDATED, LATE): Kategoriename → Startartikelname
+     * (innerhalb der Sprache) und Kategorie-MetaInfo → andere Sprachen. Der Core
+     * feuert kein CAT_META_UPDATED, daher läuft die MetaInfo-Sync hier — LATE,
+     * damit der MetaInfo-Handler seine Felder zuerst persistiert.
+     *
      * @param rex_extension_point<mixed> $ep
      */
     public static function categoryUpdated(rex_extension_point $ep): void
     {
         $addon = rex_addon::get('sprog');
+        $params = $ep->getParams();
 
         if ($addon->getConfig('sync_structure_category_name_to_article_name')) {
-            Sync::categoryNameToArticleName($ep->getParams());
+            StructureSyncService::syncCategoryNameToArticleName((int) $params['id'], (int) $params['clang'], (string) ($params['name'] ?? ''));
         }
 
-        $fields = $addon->getConfig('sync_metainfo_cat', []);
-        if (count($fields)) {
-            Sync::categoryMetainfo($ep->getParams(), $fields);
-        }
-
-        if ($addon->getConfig('sync_structure_status')) {
-            Sync::articleStatus($ep->getParams());
+        $fields = (array) $addon->getConfig('sync_metainfo_cat', []);
+        if (count($fields) > 0) {
+            StructureSyncService::syncMetainfoAcrossLanguages((int) $params['id'], (int) $params['clang'], array_values($fields));
         }
     }
 
