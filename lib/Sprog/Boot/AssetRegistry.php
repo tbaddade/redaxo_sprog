@@ -49,17 +49,19 @@ final class AssetRegistry
         // Inline-`window.sprog*`-Bootstrap-Block in der jeweiligen Page muss
         // garantiert vor diesem External-Script parsen — sonst stolpern die
         // Click-Handler über noch nicht gesetzte Globals.
-        // (string)-Cast: getCurrentPagePart() liefert null, wenn es keinen
-        // zweiten Page-Part gibt — null als Array-Offset ist ab PHP 8.1
-        // deprecated. '' trifft schlicht keinen Bundle-Key.
-        $pagePart2 = (string) rex_be_controller::getCurrentPagePart(2);
+        //
+        // Gekeyed auf das LETZTE Page-Segment (Leaf), damit das Matching
+        // unabhängig von der Verschachtelung ist — z. B. liegt „migration"
+        // jetzt unter „datenpflege" (sprog/datenpflege/migration).
+        $pageParts = explode('/', (string) rex_be_controller::getCurrentPage());
+        $leaf = (string) end($pageParts);
         $deferredBundles = [
             'migration' => 'js/sprog.migration.js',
             'inbox' => 'js/sprog.inbox.js',
         ];
-        if (isset($deferredBundles[$pagePart2])) {
+        if (isset($deferredBundles[$leaf])) {
             rex_view::addJsFile(
-                $addon->getAssetsUrl($deferredBundles[$pagePart2] . '?v=' . $version),
+                $addon->getAssetsUrl($deferredBundles[$leaf] . '?v=' . $version),
                 [rex_view::JS_DEFERED => true],
             );
         }

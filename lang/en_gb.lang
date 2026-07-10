@@ -157,6 +157,7 @@ sprog_source_yform = YForm
 sprog_source_media = media
 sprog_source_custom = other
 
+sprog_datenpflege_subpage = Data maintenance
 sprog_migration_subpage = Migration v1 → v2
 sprog_migration_heading = Migration v1 → v2
 sprog_migration_lead = Transfer of legacy data into the new Sprog v2 schema. Idempotent — chunks can be retried at will without producing duplicates. For each source the v1 table is read and copied into <code>sprog_unit</code> + <code>sprog_translation</code>.

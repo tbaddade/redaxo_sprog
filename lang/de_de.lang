@@ -175,6 +175,7 @@ sprog_source_yform = YForm
 sprog_source_media = Medium
 sprog_source_custom = Sonstige
 
+sprog_datenpflege_subpage = Datenpflege
 sprog_migration_subpage = Migration v1 → v2
 sprog_migration_heading = Migration v1 → v2
 sprog_migration_lead = Übertragung der Bestandsdaten in das neue Sprog-v2-Schema. Idempotent — Chunks können beliebig oft wiederholt werden, ohne Duplikate zu erzeugen. Pro Quelle wird die ältere v1-Tabelle gelesen und in <code>sprog_unit</code> plus <code>sprog_translation</code> übertragen.

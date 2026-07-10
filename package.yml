@@ -39,28 +39,27 @@ page:
         abbreviation:
             title: 'translate:abbreviations'
             perm: sprog[abbreviation]
-        copy:
-            title: 'translate:copy_content'
+        datenpflege:
+            title: 'translate:sprog_datenpflege_subpage'
             perm: admin[]
             subpages:
-                structure_content:
+                copy_structure_content:
                     title: 'translate:copy_structure_content'
-                structure_metadata:
+                    subPath: pages/copy.structure_content.php
+                copy_structure_metadata:
                     title: 'translate:copy_structure_metadata'
-        artefact:
-            title: 'translate:artefact'
-            perm: admin[]
-            pjax: false
-            subpages:
+                    subPath: pages/copy.structure_metadata.php
                 import:
                     title: 'translate:import'
+                    subPath: pages/artefact.import.php
+                    pjax: false
                 export:
                     title: 'translate:export'
-#                cleanup:
-#                    title: 'translate:cleanup'
-        migration:
-            title: 'translate:sprog_migration_subpage'
-            perm: admin[]
+                    subPath: pages/artefact.export.php
+                    pjax: false
+                migration:
+                    title: 'translate:sprog_migration_subpage'
+                    subPath: pages/migration.php
         settings:
             title: 'translate:settings'
             perm: admin[]
