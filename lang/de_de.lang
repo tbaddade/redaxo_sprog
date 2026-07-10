@@ -70,24 +70,22 @@ sprog_help = Hilfe
 
 
 sprog_import = Importieren
-sprog_import_delimiter = Trennzeichen
-sprog_import_delimiter_comma = Komma
-sprog_import_delimiter_semicolon = Semikolon
-sprog_import_delimiter_tab = Tabulator
-sprog_import_description = Hier kann man Platzhalter in Sprog importieren. Bitte beachten, dass nur CSV-Dateien importiert werden können. In der ersten Zeile sollten die Definitionen wie folgt enthalten sein: <code>wildcard</code> | <code>de</code> | <code>en</code>. Hierbei entsprechen <b>de</b> und <b>en</b> die in der Instanz hinterlegten Sprachcodes in der jeweiligen Sprache. Wird ein der Instanz unbekannter Sprachcode gefunden, kann optional die Sprache direkt mit angelegt werden. Weiterhin sollte das Encoding der Importdatei UTF-8 sein.
-sprog_import_file = Datei
-sprog_import_heading = CSV-Datei importieren
-sprog_import_missing_language_add = Sprache der Instanz hinzufügen
-sprog_import_missing_language_ignore = ignorieren
-sprog_import_missing_language_label = Wenn der Sprachcode nicht in der Instanz vorhanden ist, dann
-sprog_import_title = Import
-sprog_import_wildcard_added = {0} Platzhalter wurden hinzugefügt
-sprog_import_wildcard_updated = {0} Platzhalter wurden aktualisiert
+sprog_import_heading = Inbox importieren
+sprog_import_lead = Liest eine CSV im Export-Format und aktualisiert die Übersetzungen. Fehlende Einheiten werden angelegt, freigegebene bleiben unangetastet.
+sprog_import_file = CSV-Datei
+sprog_import_format_hint = Spalten: namespace ; context ; key ; notes ; danach je Sprachcode eine Spalte (z. B. de ; en).
+sprog_import_button = Importieren
+sprog_import_no_file = Bitte eine CSV-Datei auswählen.
+sprog_import_result = Import abgeschlossen: {0} Einheiten angelegt, {1} Übersetzungen gesetzt, {2} freigegebene übersprungen, {3} leer.
+sprog_import_errors = {0} Zeilen mit Fehler übersprungen.
+sprog_import_language_ignored = Unbekannte Sprachspalte „{0}“ ignoriert.
 
 sprog_export = Exportieren
-sprog_export_description = Hier kann man alle Platzhalter in allen Sprachen als CSV-Datei herunterladen. Nach dem Bearbeiten kann die CSV-Datei wieder importiert werden.
-sprog_export_heading = CSV-Datei exportieren
-sprog_export_title = Export
+sprog_export_heading = Inbox exportieren
+sprog_export_lead = Exportiert alle Übersetzungseinheiten der Inbox als CSV – eine Zeile pro Einheit, je Sprache eine Spalte.
+sprog_export_namespace = Namespace
+sprog_export_all = Alle
+sprog_export_button = Exportieren
 
 sprog_cleanup = Aufräumen
 

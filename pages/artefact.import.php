@@ -10,199 +10,137 @@
  * file that was distributed with this source code.
  */
 
+use Sprog\Enum\Status;
+use Sprog\Model\Unit;
+use Sprog\Repository\TranslationRepository;
+use Sprog\Repository\UnitRepository;
+use Sprog\Service\TranslationService;
 use Symfony\Component\Serializer\Encoder\CsvEncoder;
 
-$addon = rex_addon::get('sprog');
-
-$csrfToken = rex_csrf_token::factory('sprog_settings');
-
-$func = rex_request('func', 'string');
-$missing_language = rex_request('missing_language', 'string', '');
-$delimiter = rex_request('delimiter', 'string', ';');
-
-$delimiterOptions = [
-    ';' => rex_i18n::msg('sprog_import_delimiter_semicolon') . ' (;)',
-    ',' => rex_i18n::msg('sprog_import_delimiter_comma') . ' (,)',
-    'tab' => rex_i18n::msg('sprog_import_delimiter_tab') . '',
-];
-
-if (!isset($delimiterOptions[$delimiter])) {
-    $delimiter = ';';
-}
-
+$csrf = rex_csrf_token::factory('sprog_artefact_import');
 $messages = [];
 
-if ('import-csv' == $func && !$csrfToken->isValid()) {
-    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
-} elseif ('import-csv' == $func) {
-    $file = rex_files('upload_file');
+/*
+ |-----------------------------------------------------------------------------
+ | Import: CSV im Export-Format → Inbox. Units per (namespace, context, key)
+ | matchen; fehlende anlegen. Werte über den normalen updateValue-Pfad setzen
+ | (origin=import, Auto-Status wie beim Inbox-Edit). Freigegebene bleiben
+ | unangetastet, leere Zellen werden übersprungen.
+ |-----------------------------------------------------------------------------
+ */
+if ('post' === rex_request::requestMethod()) {
+    $file = rex_files('import_file');
 
-    $decoder = new CsvEncoder();
-    $records = $decoder->decode(rex_file::get($file['tmp_name']), 'csv', [
-        CsvEncoder::DELIMITER_KEY => $delimiter,
-    ]);
+    if (!$csrf->isValid()) {
+        $messages[] = rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+    } elseif (!is_array($file) || empty($file['tmp_name'])) {
+        $messages[] = rex_view::error($this->i18n('import_no_file'));
+    } else {
+        $records = (new CsvEncoder())->decode(rex_file::get($file['tmp_name']), 'csv', [CsvEncoder::DELIMITER_KEY => ';']);
+        if (!is_array($records) || !isset($records[0])) {
+            $records = [];
+        }
 
-    if (isset($records[0])) {
-        $headers = array_keys($records[0]);
-
-        $clangsExists = [];
+        $clangByCode = [];
         foreach (rex_clang::getAll() as $clang) {
-            $clangsExists[strtolower($clang->getCode())] = $clang->getId();
+            $clangByCode[strtolower($clang->getCode())] = $clang->getId();
         }
+        $reserved = ['namespace', 'context', 'key', 'notes'];
 
-        foreach ($headers as $index => $column) {
-            if (0 === $index) {
-                // wildcard column
+        $unitRepo = new UnitRepository();
+        $translationRepo = new TranslationRepository();
+        $service = TranslationService::create();
+        $userId = null !== rex::getUser() ? (int) rex::getUser()->getId() : null;
+
+        $unitsCreated = 0;
+        $valuesSet = 0;
+        $skippedApproved = 0;
+        $skippedEmpty = 0;
+        $errors = 0;
+        $ignoredColumns = [];
+
+        foreach ($records as $record) {
+            // Header-Keys normalisieren (BOM aus dem Export + Whitespace).
+            $row = [];
+            foreach ($record as $key => $value) {
+                $row[strtolower(trim(str_replace("\u{FEFF}", '', (string) $key)))] = $value;
+            }
+
+            $namespace = trim((string) ($row['namespace'] ?? ''));
+            $unitKey = trim((string) ($row['key'] ?? ''));
+            $context = trim((string) ($row['context'] ?? ''));
+            $notes = (string) ($row['notes'] ?? '');
+
+            if ('' === $namespace || '' === $unitKey) {
                 continue;
             }
 
-            $column = strtolower(trim($column));
-
-            if (isset($clangsExists[$column])) {
-                continue;
+            $unit = $unitRepo->findByKey($namespace, $unitKey, $context);
+            if (null === $unit) {
+                $unit = $unitRepo->save(new Unit(null, $namespace, $unitKey, $context, notes: '' !== $notes ? $notes : null));
+                ++$unitsCreated;
             }
 
-            if ('add' === $missing_language) {
-                $priority = rex_clang::count() + 1;
-                rex_clang_service::addCLang($column, $column, $priority);
-                $clangs = rex_clang::getAllIds();
-                $clangsExists[$column] = $clangs[array_key_last($clangs)];
-                $messages[] = rex_view::success(rex_i18n::msg('sprog_import_language_added', $column));
-            } else {
-                $messages[] = rex_view::warning(rex_i18n::msg('sprog_import_language_ignored', $column));
-            }
-        }
-
-        $sql = rex_sql::factory();
-        $items = $sql->getArray('SELECT id, clang_id, wildcard FROM ' . rex::getTable('sprog_wildcard'));
-        $wildcards = [];
-        foreach ($items as $item) {
-            $wildcards[$item['wildcard']][$item['clang_id']] = (int) $item['id'];
-        }
-
-        $countInserts = 0;
-        $countUpdates = 0;
-        foreach ($records as $offset => $record) {
-            $wildcard = $record['wildcard'];
-            unset($record['wildcard']);
-
-            foreach ($record as $clangCode => $replace) {
-                $clangCode = strtolower(trim($clangCode));
-
-                if (!isset($clangsExists[$clangCode])) {
+            foreach ($row as $column => $value) {
+                if (in_array($column, $reserved, true)) {
+                    continue;
+                }
+                if (!isset($clangByCode[$column])) {
+                    $ignoredColumns[$column] = $column;
                     continue;
                 }
 
-                $clangId = $clangsExists[$clangCode];
+                $value = (string) $value;
+                if ('' === trim($value)) {
+                    ++$skippedEmpty;
+                    continue;
+                }
 
-                $sql = rex_sql::factory();
-                $sql->setTable(rex::getTable('sprog_wildcard'));
-                $sql->addGlobalUpdateFields();
-                $sql->setValue('replace', $replace);
-                if (isset($wildcards[$wildcard][$clangId])) {
-                    $sql->addGlobalUpdateFields();
-                    $sql->setWhere('wildcard = :wildcard AND clang_id = :clangId', ['wildcard' => $wildcard, 'clangId' => $clangId]);
-                    $sql->update();
-                    ++$countUpdates;
-                } else {
-                    if (!isset($id) || !$id) {
-                        $id = $sql->setNewId('id');
-                    } else {
-                        $sql->setValue('id', $id);
-                    }
-                    $sql->addGlobalCreateFields();
-                    $sql->setValue('id', $id);
-                    $sql->setValue('clang_id', $clangId);
-                    $sql->setValue('wildcard', $wildcard);
-                    $sql->insert();
-                    ++$countInserts;
+                $clangId = $clangByCode[$column];
+                $current = $translationRepo->findForUnitAndClang((int) $unit->id, $clangId);
+                if (null !== $current && Status::Approved === $current->status) {
+                    ++$skippedApproved;
+                    continue;
+                }
+
+                try {
+                    $service->updateValue($unit, $clangId, $value, $userId, origin: 'import');
+                    ++$valuesSet;
+                } catch (Throwable) {
+                    ++$errors;
                 }
             }
-
-            unset($id);
         }
 
-        $messages[] = rex_view::success(rex_i18n::msg('sprog_import_wildcard_added', $countInserts));
-        $messages[] = rex_view::success(rex_i18n::msg('sprog_import_wildcard_updated', $countUpdates));
-
-        Wildcard::checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary();
+        foreach ($ignoredColumns as $column) {
+            $messages[] = rex_view::warning($this->i18n('import_language_ignored', $column));
+        }
+        $messages[] = rex_view::success($this->i18n('import_result', $unitsCreated, $valuesSet, $skippedApproved, $skippedEmpty));
+        if ($errors > 0) {
+            $messages[] = rex_view::warning($this->i18n('import_errors', $errors));
+        }
     }
 }
 
-if (count($messages)) {
-    echo implode('', $messages);
-}
+echo implode('', $messages);
+?>
+<article class="sprog-ui sprog-copy">
+    <header class="sprog-intro">
+        <h1 class="sprog-heading"><?= rex_escape($this->i18n('import_heading')) ?></h1>
+        <p class="sprog-lead"><?= rex_escape($this->i18n('import_lead')) ?></p>
+    </header>
 
-$panelElements = '';
-$formElements = [];
-
-$n = [];
-$n['label'] = '<label>' . rex_i18n::msg('sprog_import_missing_language_ignore') . '</label>';
-$n['field'] = '<input type="radio" name="missing_language" value=""' . (('' == $missing_language) ? 'checked' : '') . ' />';
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . rex_i18n::msg('sprog_import_missing_language_add') . '</label>';
-$n['field'] = '<input type="radio" name="missing_language" value="add"' . (('add' == $missing_language) ? 'checked' : '') . ' />';
-$formElements[] = $n;
-
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$radios = $fragment->parse('core/form/radio.php');
-
-$formElements = [];
-$n = [];
-$n['label'] = '<label>' . rex_i18n::msg('sprog_import_missing_language_label') . '</label>';
-$n['field'] = $radios;
-$formElements[] = $n;
-
-$a = new rex_select();
-$a->setName('delimiter');
-$a->setId('delimiter');
-$a->addOptions($delimiterOptions);
-$a->setSelected($delimiter);
-
-$n = [];
-$n['label'] = '<label>' . rex_i18n::msg('sprog_import_delimiter') . '</label>';
-$n['field'] = '<div class="rex-style">' . $a->get() . '</div>';
-$formElements[] = $n;
-
-$n = [];
-$n['label'] = '<label>' . rex_i18n::msg('sprog_import_file') . '</label>';
-$n['field'] = '<input class="form-control text-right" type="file" name="upload_file" />';
-$formElements[] = $n;
-
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$panelElements .= $fragment->parse('core/form/form.php');
-
-$formElements = [];
-$n = [];
-$n['field'] = '<button class="btn btn-apply rex-form-aligned" type="submit" name="send" value="1">' . $addon->i18n('import') . '</button>';
-$formElements[] = $n;
-
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$buttons = $fragment->parse('core/form/submit.php');
-
-$panelBody = '
-    <fieldset>
-        <input type="hidden" name="func" value="import-csv" />
-        ' . $csrfToken->getHiddenField() . '
-        <h3>' . $addon->i18n('import_heading') . '</h3>
-        <p>' . $addon->i18n('import_description') . '</p>
-        ' . $panelElements . '
-    </fieldset>';
-
-$fragment = new rex_fragment();
-$fragment->setVar('class', 'edit', false);
-$fragment->setVar('title', $addon->i18n('import_title'), false);
-$fragment->setVar('body', $panelBody, false);
-$fragment->setVar('buttons', $buttons, false);
-$section = $fragment->parse('core/page/section.php');
-
-echo '
-    <form action="' . rex_url::currentBackendPage() . '" method="post" data-pjax="false" enctype="multipart/form-data">
-        ' . $section . '
-    </form>
-';
+    <section class="sprog-panel sprog-copy--panel">
+        <form class="sprog-copy--form" method="post" action="<?= rex_url::currentBackendPage() ?>" enctype="multipart/form-data" data-pjax="false">
+            <?= $csrf->getHiddenField() ?>
+            <label class="sprog-field">
+                <span class="sprog-field--label"><?= rex_escape($this->i18n('import_file')) ?></span>
+                <input type="file" name="import_file" accept=".csv,text/csv" class="sprog-control">
+            </label>
+            <p class="sprog-hint"><?= rex_escape($this->i18n('import_format_hint')) ?></p>
+            <div class="sprog-copy--actions">
+                <button type="submit" class="sprog-btn sprog-btn--primary"><?= rex_escape($this->i18n('import_button')) ?></button>
+            </div>
+        </form>
+    </section>
+</article>

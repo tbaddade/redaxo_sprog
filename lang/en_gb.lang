@@ -67,24 +67,22 @@ sprog_help = Help
 
 
 sprog_import = Import
-sprog_import_delimiter = Delimiter
-sprog_import_delimiter_comma = Comma
-sprog_import_delimiter_semicolon = Semicolon
-sprog_import_delimiter_tab = Tab
-sprog_import_description = Placeholders can be imported to Sprog here. Please note that only CSV files can be imported. The first line should contain the definitions as follows: <code>wildcard</code> | <code>de</code> | <code>en</code>. Where <b>de</b> and <b>en</b> reflect the language codes defined in the respective language under system. If a language code is found which isn't available in the system it can be added automatically. The import files encoding should be set to UTF-8.
-sprog_import_file = File
-sprog_import_heading = Import CSV file
-sprog_import_missing_language_add = add missing language to system
-sprog_import_missing_language_ignore = ignore language
-sprog_import_missing_language_label = If an imported language is not available in the system
-sprog_import_title = Import
-sprog_import_wildcard_added = {0} has been added
-sprog_import_wildcard_updated = {0} has been updated
+sprog_import_heading = Import inbox
+sprog_import_lead = Reads a CSV in export format and updates the translations. Missing units are created, approved translations are left untouched.
+sprog_import_file = CSV file
+sprog_import_format_hint = Columns: namespace ; context ; key ; notes ; then one column per language code (e.g. de ; en).
+sprog_import_button = Import
+sprog_import_no_file = Please choose a CSV file.
+sprog_import_result = Import finished: {0} units created, {1} translations set, {2} approved skipped, {3} empty.
+sprog_import_errors = {0} rows skipped due to errors.
+sprog_import_language_ignored = Unknown language column „{0}“ ignored.
 
 sprog_export = Export
-sprog_export_description = Download all placeholders in all languages in a CSV file. The edited file can be re-imported.
-sprog_export_heading = Export CSV file
-sprog_export_title = Export
+sprog_export_heading = Export inbox
+sprog_export_lead = Exports all inbox translation units as CSV – one row per unit, one column per language.
+sprog_export_namespace = Namespace
+sprog_export_all = All
+sprog_export_button = Export
 
 sprog_cleanup = Clean up
 

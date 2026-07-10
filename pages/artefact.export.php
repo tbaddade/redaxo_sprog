@@ -11,79 +11,95 @@
  */
 
 use Sprog\Export\CsvExport;
+use Sprog\Support\Labels;
 
-$addon = rex_addon::get('sprog');
+$csrf = rex_csrf_token::factory('sprog_artefact_export');
 
-$csrfToken = rex_csrf_token::factory('sprog_settings');
+/*
+ |-----------------------------------------------------------------------------
+ | Export: alle Inbox-Einheiten als CSV (eine Zeile pro Unit, je Sprache eine
+ | Spalte). Format: namespace; context; key; notes; <sprachcode> …
+ |-----------------------------------------------------------------------------
+ */
+if ('export' === rex_request('func', 'string', '')) {
+    if (!$csrf->isValid()) {
+        echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
+    } else {
+        rex_response::cleanOutputBuffers();
 
-$func = rex_request('func', 'string');
+        $namespace = rex_request('namespace', 'string', '');
+        $sql = rex_sql::factory();
 
-if ('export' == $func && !$csrfToken->isValid()) {
-    echo rex_view::error(rex_i18n::msg('csrf_token_invalid'));
-} elseif ('export' == $func) {
-    rex_response::cleanOutputBuffers();
-    $sql = rex_sql::factory();
-    $items = $sql->getArray('SELECT `id`, `clang_id`, `wildcard`, `replace` FROM ' . rex::getTable('sprog_wildcard') . ' ORDER BY `wildcard`, `clang_id`');
-
-    $rows = [];
-    $data = [];
-    $clang_ids = [];
-    foreach ($items as $index => $item) {
-        $data[$item['wildcard']][$item['clang_id']] = str_replace("\r", '', $item['replace']);
-        $clang_ids[$item['clang_id']] = '';
-    }
-
-    ksort($data);
-
-    $header = ['wildcard'];
-    foreach ($clang_ids as $clang_id => $value) {
-        $header[] = ($clang = rex_clang::get($clang_id)) ? $clang->getCode() : $clang_id;
-    }
-
-    $csv = new CsvExport();
-    $csv->addHeaders($header);
-
-    foreach ($data as $wildcard => $clangs) {
-        $record = [$wildcard];
-        foreach ($clang_ids as $clang_id => $empty) {
-            if (isset($clangs[$clang_id])) {
-                $record[] = $clangs[$clang_id]; // replace value
-            } else {
-                $record[] = ''; // empty replace value for missing clang_id record
-            }
+        $where = '';
+        $params = [];
+        if ('' !== $namespace) {
+            $where = ' WHERE `namespace` = :ns';
+            $params['ns'] = $namespace;
         }
-        $csv->addItem($record);
-    }
+        $units = $sql->getArray(
+            'SELECT `id`, `namespace`, `context`, `unit_key`, `notes` FROM ' . rex::getTable('sprog_unit') . $where . ' ORDER BY `namespace`, `context`, `unit_key`',
+            $params,
+        );
 
-    $csv->sendFile('sprog-' . date('Ymd-His') . '.csv');
+        $translations = [];
+        foreach ($sql->getArray('SELECT `unit_id`, `clang_id`, `value` FROM ' . rex::getTable('sprog_translation')) as $row) {
+            $translations[(int) $row['unit_id']][(int) $row['clang_id']] = (string) $row['value'];
+        }
+
+        $clangs = rex_clang::getAll();
+
+        $csv = new CsvExport();
+        $header = ['namespace', 'context', 'key', 'notes'];
+        foreach ($clangs as $clang) {
+            $header[] = $clang->getCode();
+        }
+        $csv->addHeaders($header);
+
+        foreach ($units as $unit) {
+            $record = [
+                (string) $unit['namespace'],
+                (string) $unit['context'],
+                (string) $unit['unit_key'],
+                (string) ($unit['notes'] ?? ''),
+            ];
+            foreach ($clangs as $clang) {
+                $record[] = str_replace("\r", '', $translations[(int) $unit['id']][$clang->getId()] ?? '');
+            }
+            $csv->addItem($record);
+        }
+
+        $csv->sendFile('sprog-inbox-' . date('Ymd-His') . '.csv');
+    }
 }
 
-$formElements = [];
-$n = [];
-$n['field'] = '<button class="btn btn-save" type="submit" name="send" value="1">' . rex_i18n::msg('sprog_export') . '</button>';
-$formElements[] = $n;
+$namespaces = rex_sql::factory()->getArray('SELECT DISTINCT `namespace` FROM ' . rex::getTable('sprog_unit') . ' ORDER BY `namespace`');
 
-$fragment = new rex_fragment();
-$fragment->setVar('elements', $formElements, false);
-$buttons = $fragment->parse('core/form/submit.php');
+$nsSelect = new rex_select();
+$nsSelect->setId('sprog-export-namespace');
+$nsSelect->setName('namespace');
+$nsSelect->setAttribute('class', 'sprog-control');
+$nsSelect->addOption($this->i18n('export_all'), '');
+foreach ($namespaces as $ns) {
+    $nsSelect->addOption(Labels::forNamespace((string) $ns['namespace']), (string) $ns['namespace']);
+}
+?>
+<article class="sprog-ui sprog-copy">
+    <header class="sprog-intro">
+        <h1 class="sprog-heading"><?= rex_escape($this->i18n('export_heading')) ?></h1>
+        <p class="sprog-lead"><?= rex_escape($this->i18n('export_lead')) ?></p>
+    </header>
 
-$panelBody = '
-    <fieldset>
-        <input type="hidden" name="func" value="export" />
-        ' . $csrfToken->getHiddenField() . '
-        <h3>' . rex_i18n::msg('sprog_export_heading') . '</h3>
-        <p>' . rex_i18n::msg('sprog_export_description') . '</p>
-    </fieldset>';
-
-$fragment = new rex_fragment();
-$fragment->setVar('class', 'edit', false);
-$fragment->setVar('title', rex_i18n::msg('sprog_export_title'), false);
-$fragment->setVar('body', $panelBody, false);
-$fragment->setVar('buttons', $buttons, false);
-$section = $fragment->parse('core/page/section.php');
-
-echo '
-    <form action="' . rex_url::currentBackendPage() . '" method="post">
-        ' . $section . '
-    </form>
-';
+    <section class="sprog-panel sprog-copy--panel">
+        <form class="sprog-copy--form" method="post" action="<?= rex_url::currentBackendPage() ?>">
+            <?= $csrf->getHiddenField() ?>
+            <input type="hidden" name="func" value="export">
+            <label class="sprog-field">
+                <span class="sprog-field--label"><?= rex_escape($this->i18n('export_namespace')) ?></span>
+                <?= $nsSelect->get() ?>
+            </label>
+            <div class="sprog-copy--actions">
+                <button type="submit" class="sprog-btn sprog-btn--primary"><?= rex_escape($this->i18n('export_button')) ?></button>
+            </div>
+        </form>
+    </section>
+</article>
