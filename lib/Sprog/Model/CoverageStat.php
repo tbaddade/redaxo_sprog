@@ -35,13 +35,12 @@ final readonly class CoverageStat
     }
 
     /**
-     * Erledigt = translated + approved. Wir trennen das bewusst von "open",
-     * statt "everything not missing" zu nehmen, weil draft/stale/needs_review
-     * fachlich auch noch Arbeit bedeuten.
+     * Erledigt = ausschließlich approved (freigegeben). needs_review/revise/
+     * draft/stale bedeuten fachlich noch Arbeit und zählen als offen.
      */
     public function done(): int
     {
-        return $this->count(Status::Translated) + $this->count(Status::Approved);
+        return $this->count(Status::Approved);
     }
 
     public function open(): int
@@ -49,6 +48,7 @@ final readonly class CoverageStat
         return $this->count(Status::Missing)
             + $this->count(Status::Draft)
             + $this->count(Status::NeedsReview)
+            + $this->count(Status::Revise)
             + $this->count(Status::Stale);
     }
 

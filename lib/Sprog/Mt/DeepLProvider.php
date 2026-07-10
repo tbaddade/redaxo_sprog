@@ -211,7 +211,8 @@ final class DeepLProvider implements ProviderInterface
         $errno = curl_errno($ch);
         $errstr = curl_error($ch);
         $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
+        // Kein curl_close(): seit PHP 8.0 wirkungslos, seit 8.5 deprecated —
+        // der CurlHandle wird beim Verlassen des Scopes freigegeben.
 
         if (false === $body || 0 !== $errno) {
             // Fehlertext sanitisieren — falls cURL aus irgendwelchen Gründen

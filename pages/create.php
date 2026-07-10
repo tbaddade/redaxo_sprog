@@ -76,9 +76,11 @@ if ('post' === rex_request::requestMethod()) {
                  */
                 TranslationService::create()->ensureRowsForUnit($unit);
 
+                // No-JS-Fallback (mit JS läuft das Anlegen im Inbox-Modal):
+                // zurück in die Inbox mit der frisch angelegten Unit aufgeklappt.
                 rex_response::sendRedirect(rex_url::backendPage(
-                    'sprog/editor',
-                    ['unit' => $unit->id],
+                    'sprog/inbox',
+                    ['open_unit' => $unit->id],
                     false,
                 ));
                 exit;
@@ -94,25 +96,25 @@ if ('post' === rex_request::requestMethod()) {
 }
 
 ?>
-<article class="sprog-create">
-    <header class="sprog-create--intro">
+<article class="sprog-ui sprog-create">
+    <header class="sprog-intro">
         <a class="sprog-create--back" href="<?= rex_escape(rex_url::backendPage('sprog/inbox', [], false)) ?>">
             <?= rex_i18n::msg('sprog_create_back') ?>
         </a>
-        <h1 class="sprog-create--heading"><?= rex_i18n::msg('sprog_create_heading') ?></h1>
-        <p class="sprog-create--lead"><?= rex_i18n::rawMsg('sprog_create_lead') ?></p>
+        <h1 class="sprog-heading"><?= rex_i18n::msg('sprog_create_heading') ?></h1>
+        <p class="sprog-lead"><?= rex_i18n::rawMsg('sprog_create_lead') ?></p>
     </header>
 
     <?php foreach ($flashMessages as $msg) {
         echo $msg;
     } ?>
 
-    <form method="post" class="sprog-create--form">
+    <form method="post" class="sprog-panel sprog-create--form">
         <?= $csrf->getHiddenField() ?>
 
-        <label class="sprog-create--field">
-            <span class="sprog-create--label"><?= rex_i18n::msg('sprog_create_namespace_label') ?></span>
-            <select name="namespace" class="sprog-create--select" required>
+        <label class="sprog-field">
+            <span class="sprog-field--label"><?= rex_i18n::msg('sprog_create_namespace_label') ?></span>
+            <select name="namespace" class="sprog-control" required>
                 <?php foreach (SourceType::values() as $ns) : ?>
                     <option
                         value="<?= rex_escape($ns) ?>"
@@ -120,15 +122,15 @@ if ('post' === rex_request::requestMethod()) {
                     ><?= Labels::forNamespace($ns) ?></option>
                 <?php endforeach ?>
             </select>
-            <span class="sprog-create--hint"><?= rex_i18n::msg('sprog_create_namespace_hint') ?></span>
+            <span class="sprog-hint"><?= rex_i18n::msg('sprog_create_namespace_hint') ?></span>
         </label>
 
-        <label class="sprog-create--field">
-            <span class="sprog-create--label"><?= rex_i18n::msg('sprog_create_unitkey_label') ?></span>
+        <label class="sprog-field">
+            <span class="sprog-field--label"><?= rex_i18n::msg('sprog_create_unitkey_label') ?></span>
             <input
                 type="text"
                 name="unit_key"
-                class="sprog-create--input"
+                class="sprog-control"
                 value="<?= rex_escape($unitKeyInput) ?>"
                 required
                 maxlength="191"
@@ -136,14 +138,14 @@ if ('post' === rex_request::requestMethod()) {
                 autocapitalize="off"
                 spellcheck="false"
             >
-            <span class="sprog-create--hint"><?= rex_i18n::rawMsg('sprog_create_unitkey_hint') ?></span>
+            <span class="sprog-hint"><?= rex_i18n::rawMsg('sprog_create_unitkey_hint') ?></span>
         </label>
 
-        <label class="sprog-create--field">
-            <span class="sprog-create--label"><?= rex_i18n::msg('sprog_create_notes_label') ?></span>
+        <label class="sprog-field">
+            <span class="sprog-field--label"><?= rex_i18n::msg('sprog_create_notes_label') ?></span>
             <textarea
                 name="notes"
-                class="sprog-create--textarea"
+                class="sprog-control sprog-control--textarea"
                 maxlength="500"
                 rows="3"
                 placeholder="<?= rex_i18n::msg('sprog_create_notes_placeholder') ?>"
@@ -151,11 +153,11 @@ if ('post' === rex_request::requestMethod()) {
         </label>
 
         <div class="sprog-create--actions">
-            <button type="submit" class="sprog-create--button sprog-create--button-primary">
+            <button type="submit" class="sprog-btn sprog-btn--primary">
                 <?= rex_i18n::msg('sprog_create_submit') ?>
             </button>
             <a
-                class="sprog-create--button sprog-create--button-ghost"
+                class="sprog-btn"
                 href="<?= rex_escape(rex_url::backendPage('sprog/inbox', [], false)) ?>"
             ><?= rex_i18n::msg('sprog_create_cancel') ?></a>
         </div>

@@ -49,6 +49,26 @@ final class GlossaryService
     }
 
     /**
+     * Liste über alle erlaubten Sprachpaare, optional nach Quelle/Ziel/Suchtext
+     * gefiltert. 0 oder null bei Quelle/Ziel bedeutet „alle".
+     *
+     * @param list<int> $allowedClangIds Sprachen mit Lese-Berechtigung (Perm-Gate)
+     * @return list<GlossaryEntry>
+     */
+    public function listAll(
+        array $allowedClangIds,
+        ?int $sourceClangId = null,
+        ?int $targetClangId = null,
+        ?string $search = null,
+    ): array {
+        $source = null !== $sourceClangId && $sourceClangId > 0 ? $sourceClangId : null;
+        $target = null !== $targetClangId && $targetClangId > 0 ? $targetClangId : null;
+        $needle = null !== $search && '' !== trim($search) ? trim($search) : null;
+
+        return $this->repository->findAll($allowedClangIds, $source, $target, $needle);
+    }
+
+    /**
      * Wird vom MtService genutzt, um Provider mit dem Glossar anzureichern.
      *
      * @return array<string, string>
@@ -56,6 +76,14 @@ final class GlossaryService
     public function mapForPair(int $sourceClangId, int $targetClangId): array
     {
         return $this->repository->mapForPair($sourceClangId, $targetClangId);
+    }
+
+    /**
+     * Einzelnen Eintrag laden — für die Edit-Vorbefüllung der Backend-Page.
+     */
+    public function find(int $id): ?GlossaryEntry
+    {
+        return $this->repository->find($id);
     }
 
     /**
@@ -87,12 +115,15 @@ final class GlossaryService
     }
 
     /**
-     * Aktualisiert einen Eintrag. Sprach-Paar bleibt fix; wenn der User
-     * die Sprache eines Eintrags ändern will, soll er löschen und neu anlegen
-     * (weil sich sonst die UNIQUE-Constraint hinterrücks verschiebt).
+     * Aktualisiert einen Eintrag. Die Quellsprache bleibt fix (immer die
+     * Basissprache), die **Zielsprache darf geändert werden** — auch auf 0
+     * („Alle Sprachen"). Eine dadurch entstehende Dublette (gleicher Quell-Term
+     * im selben Ziel) meldet der UNIQUE-Index als rex_sql_exception, die die
+     * Page als „bereits vorhanden" abfängt.
      */
     public function update(
         int $id,
+        int $targetClangId,
         string $sourceTerm,
         string $targetTerm,
         ?string $notes = null,
@@ -102,6 +133,7 @@ final class GlossaryService
             throw new InvalidArgumentException('Glossar-Eintrag ' . $id . ' nicht gefunden.');
         }
 
+        $this->assertValidPair($existing->sourceClangId, $targetClangId);
         $this->assertValidTerm($sourceTerm, 'sourceTerm');
         $this->assertValidTerm($targetTerm, 'targetTerm');
         $this->assertValidNotes($notes);
@@ -109,7 +141,7 @@ final class GlossaryService
         return $this->repository->save(new GlossaryEntry(
             id: $existing->id,
             sourceClangId: $existing->sourceClangId,
-            targetClangId: $existing->targetClangId,
+            targetClangId: $targetClangId,
             sourceTerm: trim($sourceTerm),
             targetTerm: trim($targetTerm),
             notes: $this->normalizeNotes($notes),
@@ -126,11 +158,14 @@ final class GlossaryService
         if ($sourceClangId <= 0 || !rex_clang::exists($sourceClangId)) {
             throw new InvalidArgumentException('Ungültige sourceClangId: ' . $sourceClangId);
         }
-        if ($targetClangId <= 0 || !rex_clang::exists($targetClangId)) {
-            throw new InvalidArgumentException('Ungültige targetClangId: ' . $targetClangId);
-        }
-        if ($sourceClangId === $targetClangId) {
-            throw new InvalidArgumentException('Quell- und Ziel-Sprache müssen unterschiedlich sein.');
+        // targetClangId 0 = „Alle Sprachen" (Sentinel) — bewusst erlaubt.
+        if (0 !== $targetClangId) {
+            if ($targetClangId < 0 || !rex_clang::exists($targetClangId)) {
+                throw new InvalidArgumentException('Ungültige targetClangId: ' . $targetClangId);
+            }
+            if ($sourceClangId === $targetClangId) {
+                throw new InvalidArgumentException('Quell- und Ziel-Sprache müssen unterschiedlich sein.');
+            }
         }
     }
 

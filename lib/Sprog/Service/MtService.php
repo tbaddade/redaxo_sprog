@@ -7,6 +7,7 @@ namespace Sprog\Service;
 use InvalidArgumentException;
 use rex_config;
 use Sprog\Exception\ProviderException;
+use Sprog\Mt\AiPlatformProvider;
 use Sprog\Mt\DeepLProvider;
 use Sprog\Mt\NoopProvider;
 use Sprog\Mt\ProviderInterface;
@@ -32,16 +33,13 @@ use function strlen;
 final class MtService
 {
     /**
-     * ISO 639-1: genau zwei lowercase Buchstaben. Strenger als nötig (es gibt
-     * 3-Buchstaben-Codes), aber das ist v2-Scope; Erweiterung später möglich.
-     *
-     * TODO(v3): Locale-Codes (de_AT, pt-BR, zh-CN, …) zulassen, damit DeepL
-     * regionale Varianten und Editor mit nicht-trivialen REDAXO-Clang-Codes
-     * funktionieren. Bis dahin fängt pages/editor.php Locale-Codes vorab ab
-     * (sprog_editor_mt_locale_unsupported), damit die UX nicht im generic
-     * mt_failed-Pfad landet.
+     * Sprachcode: ISO-639-1/-2 mit optionalen Region-/Script-Suffixen
+     * (de, en, de_at, pt_br, zh_hans). Bewusst tolerant — WELCHE Richtung ein
+     * Provider tatsächlich kann, entscheidet dessen supports(): DeepL lehnt
+     * Locale-Codes über seine 2-Zeichen-Whitelist ab, der LLM-Provider
+     * (ai_platform) akzeptiert sie.
      */
-    private const LANG_REGEX = '/^[a-z]{2}$/';
+    private const LANG_REGEX = '/^[a-z]{2,3}([_-][a-z0-9]{2,8})*$/i';
 
     /** Maximale Länge für Context-Hint. Schützt Prompt-Größe bei LLM-Providern. */
     private const MAX_CONTEXT_LENGTH = 500;
@@ -79,6 +77,13 @@ final class MtService
         if ('' !== trim($deeplKey)) {
             $deepl = new DeepLProvider($deeplKey);
             $providers[$deepl->name()] = $deepl;
+        }
+
+        // KI-Provider (ai_platform) — weiche Abhängigkeit: registriert sich nur,
+        // wenn das AddOn verfügbar UND ein Text-Profil als Default gesetzt ist.
+        $ai = new AiPlatformProvider();
+        if ($ai->isConfigured()) {
+            $providers[$ai->name()] = $ai;
         }
 
         return new self($providers);
@@ -164,7 +169,7 @@ final class MtService
     private function assertValidLang(string $code, string $argName): void
     {
         if (1 !== preg_match(self::LANG_REGEX, $code)) {
-            throw new InvalidArgumentException(sprintf('%s "%s" ist kein ISO-639-1-Code (zwei Kleinbuchstaben erwartet).', $argName, $code));
+            throw new InvalidArgumentException(sprintf('%s "%s" ist kein gültiger Sprachcode.', $argName, $code));
         }
     }
 

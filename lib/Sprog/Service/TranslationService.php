@@ -11,8 +11,10 @@ use Sprog\Enum\Status;
 use Sprog\Exception\OptimisticLockException;
 use Sprog\Model\Translation;
 use Sprog\Model\Unit;
+use Sprog\Repository\TranslationHistoryRepository;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
+use Sprog\Support\BaseLang;
 use Sprog\Support\ContentHash;
 
 use function sprintf;
@@ -33,11 +35,17 @@ use function sprintf;
  */
 final class TranslationService
 {
+    /** Maximale Anzahl behaltener Versionen pro Übersetzung (Retention). */
+    private const HISTORY_KEEP = 50;
+
+    // $history ist nullbar mit Default, damit bestehende `new`-Aufrufer (Tests)
+    // ohne Historie funktionieren; die Factory create() injiziert sie stets.
     public function __construct(
         private readonly TranslationRepository $translations,
         private readonly UnitRepository $units,
         private readonly ActivityService $activity,
         private readonly ?CacheInvalidationBus $cacheBus = null,
+        private readonly ?TranslationHistoryRepository $history = null,
     ) {}
 
     /**
@@ -54,6 +62,7 @@ final class TranslationService
             new UnitRepository(),
             ActivityService::create(),
             CacheInvalidationBus::default(),
+            new TranslationHistoryRepository(),
         );
     }
 
@@ -146,8 +155,7 @@ final class TranslationService
      *
      * Defaults für Status nach Wert-Update:
      *   - Wenn der neue Wert leer ist:                       → Missing (Reset)
-     *   - Wenn der bisherige Status 'missing' war:           → Draft
-     *   - Wenn der bisherige Status 'stale' war:             → Translated (Auffrischung erledigt)
+     *   - Wenn der bisherige Status missing/stale/revise war: → Draft (zurück in Bearbeitung)
      *   - Sonst                                              → bleibt unverändert
      *
      * $targetStatus kann das explizit überschreiben (z.B. UI-Aktion "Speichern und Review anfordern").
@@ -164,6 +172,7 @@ final class TranslationService
         ?string $mtProvider = null,
         ?float $mtConfidence = null,
         ?int $expectedRevision = null,
+        ?string $origin = null,
     ): Translation {
         if (null === $unit->id) {
             throw new InvalidArgumentException('Unit muss persistiert sein (id != null).');
@@ -191,11 +200,11 @@ final class TranslationService
             $current = $this->ensureMissing($unit, $clangId);
         }
 
-        $nextStatus = $targetStatus ?? $this->autoStatusForUpdate($current->status, $value);
+        $nextStatus = $targetStatus ?? $this->autoStatusForUpdate($current->status, $value, $current->value !== $value);
 
         // Reset-Pfad: leerer Wert + Ziel-Status Missing umgeht die Transition-
         // Whitelist. Das ist semantisch eine Re-Initialisierung der Übersetzung
-        // (kein Workflow-Schritt), und Translated/Approved/etc. → Missing wäre
+        // (kein Workflow-Schritt), und Approved/NeedsReview/etc. → Missing wäre
         // ohne diese Sonderbehandlung blockiert.
         if (!('' === $value && Status::Missing === $nextStatus)) {
             $this->assertCanTransition($current->status, $nextStatus);
@@ -220,6 +229,48 @@ final class TranslationService
             ? $this->translations->saveWithLock($next)
             : $this->translations->save($next);
 
+        // Versions-Historie: nur bei echter Wert-Änderung einen Snapshot
+        // anhängen (reine Status-Wechsel laufen über transition() und stehen im
+        // Audit-Log, nicht in der Wert-Historie).
+        if (null !== $this->history && $current->value !== $saved->value) {
+            $translationId = (int) $saved->id;
+
+            // Baseline-Seed: beim allerersten Historie-Eintrag dieser Übersetzung
+            // den vorherigen (nicht-leeren) Wert mitsichern — mit dessen echtem
+            // Zeitstempel/Autor —, damit schon der erste Undo auf den Stand VOR
+            // dieser Änderung zurückgehen kann.
+            if ('' !== $current->value && !$this->history->existsForTranslation($translationId)) {
+                $this->history->insert(
+                    translationId: $translationId,
+                    unitId: $saved->unitId,
+                    clangId: $saved->clangId,
+                    value: $current->value,
+                    valueHash: $current->valueHash,
+                    status: $current->status->value,
+                    mtProvider: $current->mtProvider,
+                    mtConfidence: $current->mtConfidence,
+                    origin: null !== $current->mtProvider ? 'mt' : 'manual',
+                    userId: $current->translatorId,
+                    createdAt: $current->updatedAt,
+                );
+            }
+
+            $this->history->insert(
+                translationId: $translationId,
+                unitId: $saved->unitId,
+                clangId: $saved->clangId,
+                value: $saved->value,
+                valueHash: $saved->valueHash,
+                status: $saved->status->value,
+                mtProvider: $saved->mtProvider,
+                mtConfidence: $saved->mtConfidence,
+                origin: $origin ?? (null !== $saved->mtProvider ? 'mt' : 'manual'),
+                userId: $userId,
+            );
+
+            $this->history->pruneKeepingLast($translationId, self::HISTORY_KEEP);
+        }
+
         $this->activity->logTranslationUpdated(
             unitId: $saved->unitId,
             translationId: (int) $saved->id,
@@ -240,6 +291,18 @@ final class TranslationService
                 provider: $mtProvider,
                 confidence: $mtConfidence,
             );
+        }
+
+        // Wurde der Quelltext (Basissprache) geändert, veralten alle abhängigen
+        // Übersetzungen dieser Unit (needs_review/approved → stale). Der Trigger
+        // sitzt bewusst hier im zentralen Schreibpfad: so kann KEINE Stelle die
+        // Basissprache ändern, ohne die Stale-Erkennung auszulösen. Guard auf die
+        // echte Wert-Änderung ($current->value !== $saved->value) verhindert
+        // Fehl-Stale bei reinen Status-Saves; markSourceChanged ist zusätzlich
+        // hash-idempotent und schließt die Basissprache selbst aus.
+        if ($clangId === BaseLang::clangId() && $current->value !== $saved->value) {
+            $newSourceHash = '' === $saved->value ? null : ContentHash::of($saved->value);
+            $this->markSourceChanged($unit, $clangId, $newSourceHash, $userId);
         }
 
         $this->cacheBus?->clangChanged($saved->clangId);
@@ -324,11 +387,13 @@ final class TranslationService
     /**
      * Quell-Wert hat sich geändert: aktualisiert source_hash der Unit und
      * markiert alle finalen Übersetzungen als 'stale', damit Übersetzer
-     * darüber stolpern.
+     * darüber stolpern. $sourceClangId ist die Quell-/Basissprache, deren Text
+     * sich geändert hat — sie wird von der Stale-Markierung ausgenommen (die
+     * Quelle veraltet nicht gegen sich selbst).
      *
      * @return int Anzahl der als stale markierten Übersetzungen
      */
-    public function markSourceChanged(Unit $unit, ?string $newSourceHash, ?int $userId = null): int
+    public function markSourceChanged(Unit $unit, int $sourceClangId, ?string $newSourceHash, ?int $userId = null): int
     {
         if (null === $unit->id) {
             throw new InvalidArgumentException('Unit muss persistiert sein (id != null).');
@@ -341,7 +406,7 @@ final class TranslationService
         }
 
         $this->units->updateSourceHash($unit->id, $newSourceHash);
-        $staleCount = $this->translations->markStaleForUnit($unit->id);
+        $staleCount = $this->translations->markStaleForUnit($unit->id, $sourceClangId);
 
         $this->activity->logSourceChanged(
             unitId: $unit->id,
@@ -362,9 +427,8 @@ final class TranslationService
      * Validiert einen Status-Übergang gegen die Whitelist im Status-Enum.
      * Wirft `InvalidArgumentException`, wenn der Übergang nicht erlaubt ist.
      *
-     * Die Whitelist selbst lebt in `Status::allowedNextStates()` — Single
-     * source of truth, von der auch die UI-Buttons (über `userActions()`)
-     * abgeleitet sind.
+     * Die Whitelist selbst lebt in `Status::allowedNextStates()` — die
+     * rollenabhängige Button-/Autorisierungs-Logik darüber im WorkflowService.
      */
     private function assertCanTransition(Status $from, Status $to): void
     {
@@ -375,7 +439,7 @@ final class TranslationService
         throw new InvalidArgumentException(sprintf('Status-Übergang "%s" → "%s" ist nicht erlaubt.', $from->value, $to->value));
     }
 
-    private function autoStatusForUpdate(Status $current, string $value): Status
+    private function autoStatusForUpdate(Status $current, string $value, bool $valueChanged): Status
     {
         // Leerer Wert ist semantisch "keine Übersetzung" — egal aus welchem
         // Status wir kommen, der saubere Folge-Status ist Missing. Sonst hätten
@@ -385,11 +449,14 @@ final class TranslationService
         }
 
         return match ($current) {
-            Status::Missing => Status::Draft,
-            Status::Stale => Status::Translated,
-            // Reviewer hat Überarbeitung angefordert — sobald der Übersetzer
-            // den Wert antippt, geht's zurück in den aktiven Bearbeitungs-Pfad.
-            Status::Revise => Status::Draft,
+            // Aus Bearbeitungs-/Auffrischungs-Status zurück in den aktiven Pfad,
+            // sobald der Wert angetippt wird (missing = erste Eingabe, stale =
+            // Quelle geändert, revise = Reviewer hat zurückgegeben).
+            Status::Missing, Status::Stale, Status::Revise => Status::Draft,
+            // Freigegebener Text inhaltlich geändert → das Freigabe-Siegel galt
+            // dem alten Text, gilt also nicht mehr: zurück in Bearbeitung. Ein
+            // No-Op-Save (Wert unverändert) lässt die Freigabe bestehen.
+            Status::Approved => $valueChanged ? Status::Draft : $current,
             default => $current,
         };
     }

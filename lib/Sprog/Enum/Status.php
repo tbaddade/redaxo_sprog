@@ -9,38 +9,32 @@ use function in_array;
 /**
  * Workflow-Status einer Übersetzung.
  *
- * Übergänge sind erlaubt:
- *   missing       → draft, translated
- *   draft         → translated, needs_review, missing
- *   translated    → needs_review, approved, revise, stale, draft
- *   needs_review  → approved, revise, translated, stale, draft
- *   approved      → stale, needs_review, revise
- *   revise        → draft, translated, needs_review
- *   stale         → draft, translated, needs_review
+ * Erlaubte Übergänge (rollen-agnostische Whitelist; WER welchen Übergang
+ * auslösen darf, entscheidet der WorkflowService anhand der Rollen):
+ *   missing      → draft
+ *   draft        → needs_review (》Zur Prüfung《), approved (Direkt-Freigabe)
+ *   needs_review → approved (》Freigeben《), revise (》Zurückgeben《)
+ *   revise       → draft (Nacharbeit), approved (Direkt-Freigabe)
+ *   approved     → revise (》Zurückgeben《 auf Freigegebenem), stale (System),
+ *                  draft (inhaltlicher Edit an Freigegebenem — Siegel gilt nicht mehr)
+ *   stale        → draft, approved
  *
- * Die Übergangslogik selbst lebt im TranslationService; das Enum
- * beschreibt nur die Werte. Persistiert wird der string-Wert in
- * sprog_translation.status (varchar(32)).
+ * Rollen (WorkflowService): `sprog[translator]` reicht ein (》Zur Prüfung《),
+ * `sprog[reviewer]` gibt frei / gibt zurück. Wer beides darf (oder Admin),
+ * gibt direkt frei (kein Zwischenschritt). `needs_review` ist damit wieder
+ * ein aktiver Nutzer-Status (nicht mehr rein system-gesetzt).
  *
- * Ein-Reviewer-Modell (seit 2026-06-20): `needs_review` ist als
- * USER-Aktion aus dem Inbox-UI raus — wer den Workflow-Button klickt,
- * IST der Reviewer und gibt entweder frei (`approved`) oder schickt
- * zurück (`revise`). `needs_review` bleibt im Enum als System-Status
- * für MT-Auto-Flagging und Bestandsdaten und kann von dort über die
- * normalen Reviewer-Aktionen weiterbearbeitet werden.
+ * Persistiert wird der string-Wert in sprog_translation.status (varchar(32)).
  */
 enum Status: string
 {
     /** Quell-Wert existiert, Übersetzung fehlt komplett. */
     case Missing = 'missing';
 
-    /** Übersetzung existiert, ist aber noch nicht final (z.B. MT-Vorschlag). */
+    /** Übersetzung existiert, ist aber noch nicht zur Prüfung eingereicht. */
     case Draft = 'draft';
 
-    /** Übersetzung vom Übersetzer abgeschlossen, wartet ggf. auf Review. */
-    case Translated = 'translated';
-
-    /** Wurde markiert, dass ein Reviewer drüberschauen soll. */
+    /** Übersetzung eingereicht, wartet auf die Prüfung durch einen Reviewer. */
     case NeedsReview = 'needs_review';
 
     /** Reviewer hat Änderungen angefordert; Übersetzer muss überarbeiten. */
@@ -73,71 +67,39 @@ enum Status: string
 
     /**
      * Status, die anzeigen, dass an dieser Übersetzung noch Arbeit ansteht.
+     * Fertig ist ausschließlich `approved`.
      */
     public function isOpen(): bool
     {
         return match ($this) {
             self::Missing, self::Draft, self::NeedsReview, self::Revise, self::Stale => true,
-            self::Translated, self::Approved => false,
+            self::Approved => false,
         };
     }
 
     /**
-     * Vollständige Whitelist erlaubter Folge-Status.
+     * Vollständige Whitelist erlaubter Folge-Status (rollen-agnostisch).
      *
-     * Wird sowohl im TranslationService genutzt (Validierung über
-     * `assertCanTransition`) als auch von Pages, um anzuzeigen, ob eine
-     * Aktion grundsätzlich möglich ist. Single source of truth.
+     * Wird im TranslationService zur Validierung genutzt (`assertCanTransition`).
+     * Welche dieser Übergänge einem konkreten Nutzer als Button angeboten und
+     * serverseitig autorisiert werden, entscheidet der WorkflowService anhand
+     * der Rollen (`sprog[translator]` / `sprog[reviewer]` / Admin).
      *
-     * Enthält auch destruktive Rückwege (z.B. Translated → Draft) und
-     * System-induzierte Übergänge (Stale, Missing-Reset bei leerem Wert).
-     * Forward-Workflow-Buttons im UI verwenden stattdessen `userActions()`.
+     * Enthält Rückwege (Revise → Draft) und System-Übergänge (Stale). Der
+     * Reset auf `missing` bei leerem Wert umgeht diese Whitelist bewusst
+     * (siehe TranslationService::updateValue).
      *
      * @return list<Status>
      */
     public function allowedNextStates(): array
     {
         return match ($this) {
-            self::Missing => [self::Draft, self::Translated],
-            self::Draft => [self::Translated, self::NeedsReview, self::Missing],
-            self::Translated => [self::NeedsReview, self::Approved, self::Revise, self::Stale, self::Draft],
-            self::NeedsReview => [self::Approved, self::Revise, self::Translated, self::Stale, self::Draft],
-            self::Revise => [self::Draft, self::Translated, self::NeedsReview],
-            self::Approved => [self::Stale, self::NeedsReview, self::Revise],
-            self::Stale => [self::Draft, self::Translated, self::NeedsReview],
-        };
-    }
-
-    /**
-     * UI-Subset von `allowedNextStates()`: nur die für den Reviewer-Alltag
-     * relevanten Vorwärts-Aktionen. Reihenfolge nach Muster „nächster
-     * natürlicher Workflow-Schritt zuerst, Alternativen danach".
-     *
-     * Die Reihenfolge bestimmt die Reihenfolge der Buttons im UI.
-     *
-     * Bewusst NICHT enthalten:
-     * - Status::Missing als Ziel (Auto-Reset über leeren Wert, nicht User-Aktion)
-     * - Status::Stale als Ziel (System-Status, wird per Hash-Detection gesetzt)
-     * - Status::NeedsReview als Ziel (Ein-Reviewer-Modell: wer den Button klickt,
-     *   IST der Reviewer. Eine eigene „bitte review mich"-Aktion gibt es nicht
-     *   mehr; NeedsReview wird nur noch system-seitig gesetzt, z.B. bei
-     *   MT-Drafts oder Bulk-Auto-Flagging.)
-     * - destruktive Rückwege auf Draft (Wert geht nicht verloren, aber das
-     *   Konzept „Reviewer wirft auf Draft zurück" hat seinen eigenen Status
-     *   `Revise`)
-     *
-     * @return list<Status>
-     */
-    public function userActions(): array
-    {
-        return match ($this) {
-            self::Missing => [],
-            self::Draft => [self::Translated],
-            self::Translated => [self::Revise, self::Approved],
-            self::NeedsReview => [self::Revise, self::Approved],
-            self::Revise => [self::Translated],
-            self::Approved => [self::Revise],
-            self::Stale => [self::Translated],
+            self::Missing => [self::Draft],
+            self::Draft => [self::NeedsReview, self::Approved],
+            self::NeedsReview => [self::Approved, self::Revise],
+            self::Revise => [self::Draft, self::Approved],
+            self::Approved => [self::Revise, self::Stale, self::Draft],
+            self::Stale => [self::Draft, self::Approved],
         };
     }
 

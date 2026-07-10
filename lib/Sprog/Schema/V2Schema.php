@@ -36,6 +36,7 @@ final class V2Schema
         self::ensureGlossaryTable();
         self::ensureTranslationMemoryTable();
         self::ensureActivityTable();
+        self::ensureTranslationHistoryTable();
     }
 
     /**
@@ -47,6 +48,7 @@ final class V2Schema
      */
     public static function drop(): void
     {
+        rex_sql_table::get(rex::getTable('sprog_translation_history'))->drop();
         rex_sql_table::get(rex::getTable('sprog_activity'))->drop();
         rex_sql_table::get(rex::getTable('sprog_tm'))->drop();
         rex_sql_table::get(rex::getTable('sprog_glossary'))->drop();
@@ -266,6 +268,55 @@ final class V2Schema
             // Cronjob aktiv wird, hält der Index die DELETE-Laufzeit kurz und
             // verhindert eine längere Sperre der Audit-Tabelle.
             ->ensureIndex(new rex_sql_index('activity_created_at', ['created_at']))
+            ->ensure();
+    }
+
+    /**
+     * Versions-Historie: pro gespeicherter Wert-Änderung einer Übersetzung ein
+     * Snapshot. Basis für mehrstufiges Undo („Verlauf"/„Wiederherstellen") im
+     * Inbox-Akkordeon.
+     *
+     * Abgrenzung zu sprog_activity: das Activity-Log ist ein schlankes
+     * Audit-Log (nur Hashes, keine Klartext-Werte). Die Historie speichert die
+     * VOLLEN Werte, damit ein früherer Stand tatsächlich zurückgeholt werden
+     * kann. Wie Activity append-only (kein ensureGlobalColumns), bigint(20)-id.
+     */
+    private static function ensureTranslationHistoryTable(): void
+    {
+        rex_sql_table::get(rex::getTable('sprog_translation_history'))
+            ->ensureColumn(new rex_sql_column('id', 'bigint(20) unsigned', false, null, 'auto_increment'))
+            ->setPrimaryKey('id')
+
+            // FK auf sprog_translation.id (wie sprog_activity.translation_id).
+            // unit_id/clang_id sind Komfort-Backrefs für Anzeige und Prune, ohne
+            // dass die Translation nachgeladen werden muss.
+            ->ensureColumn(new rex_sql_column('translation_id', 'int(11) unsigned'))
+            ->ensureColumn(new rex_sql_column('unit_id', 'int(11) unsigned'))
+            ->ensureColumn(new rex_sql_column('clang_id', 'int(11) unsigned'))
+
+            // Voller Snapshot des Wertes zu dieser Version (mediumtext wie
+            // sprog_translation.value) + Hash für schnelle Vergleiche.
+            ->ensureColumn(new rex_sql_column('value', 'mediumtext'))
+            ->ensureColumn(new rex_sql_column('value_hash', 'char(64)', true))
+
+            // Status zum Snapshot-Zeitpunkt (Whitelist Sprog\Enum\Status).
+            ->ensureColumn(new rex_sql_column('status', 'varchar(32)'))
+
+            // MT-Herkunft dieser Version, falls maschinell erzeugt.
+            ->ensureColumn(new rex_sql_column('mt_provider', 'varchar(32)', true))
+            ->ensureColumn(new rex_sql_column('mt_confidence', 'decimal(3,2)', true))
+
+            // Wie diese Version entstand: 'manual' | 'mt' | 'restore'
+            // (erweiterbar: import/sync/copy). Für die Anzeige im Verlauf.
+            ->ensureColumn(new rex_sql_column('origin', 'varchar(32)'))
+
+            // rex_user.id des Verursachers; NULL bei System-Aktionen.
+            ->ensureColumn(new rex_sql_column('user_id', 'int(11) unsigned', true))
+
+            ->ensureColumn(new rex_sql_column('created_at', 'datetime'))
+
+            ->ensureIndex(new rex_sql_index('history_translation', ['translation_id', 'created_at']))
+            ->ensureIndex(new rex_sql_index('history_created_at', ['created_at']))
             ->ensure();
     }
 }

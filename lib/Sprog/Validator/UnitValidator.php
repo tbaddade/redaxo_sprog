@@ -68,7 +68,7 @@ final class UnitValidator
         if ([] === $errors && ($newKey !== $current->unitKey || $newContext !== $current->context)) {
             $existing = $this->units->findByKey($current->namespace, $newKey, $newContext);
             if (null !== $existing && $existing->id !== $current->id) {
-                $errors[] = rex_i18n::msg('sprog_editor_unit_edit_duplicate', $newKey, $current->namespace);
+                $errors[] = rex_i18n::msg('sprog_inbox_unit_edit_duplicate', $newKey, $current->namespace);
             }
         }
 

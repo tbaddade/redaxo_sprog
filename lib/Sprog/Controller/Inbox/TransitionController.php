@@ -12,7 +12,9 @@ use Sprog\Exception\OptimisticLockException;
 use Sprog\Http\JsonResponse;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Service\TranslationService;
+use Sprog\Service\WorkflowService;
 use Sprog\Support\Labels;
+use Sprog\View\InboxRowActions;
 use Throwable;
 
 use function in_array;
@@ -54,14 +56,26 @@ final class TransitionController
         if (null === $translation || $translation->unitId !== $unitId) {
             JsonResponse::notFound(rex_i18n::rawMsg('sprog_inbox_save_unit_missing'));
         }
-        if (!$user->getComplexPerm('clang')->hasPerm($translation->clangId)) {
-            JsonResponse::forbidden(rex_i18n::rawMsg('sprog_inbox_save_no_perm'));
+        // Rollen-Autorisierung über den WorkflowService — dieselbe Logik wie
+        // die UI-Buttons (Übersetzer reicht ein, Reviewer gibt frei/zurück,
+        // Selbst-Freigabe je nach Config). Deckt die clang-Permission mit ab.
+        $workflow = WorkflowService::create();
+        $targetStatus = Status::from($targetStatusIn);
+        if (!$workflow->mayTransitionTo(
+            $translation->status,
+            $targetStatus,
+            $user,
+            $translation->clangId,
+            $user->getId(),
+            $translation->translatorId,
+        )) {
+            JsonResponse::forbidden(rex_i18n::rawMsg('sprog_inbox_action_forbidden'));
         }
 
         try {
             $saved = $this->translations->transition(
                 $translationId,
-                Status::from($targetStatusIn),
+                $targetStatus,
                 $user->getId(),
                 expectedRevision: $expectedRev,
             );
@@ -73,19 +87,16 @@ final class TransitionController
             JsonResponse::internalError($e->getMessage());
         }
 
-        // Erlaubte Folge-Übergänge für den neuen Status mitliefern, damit das
-        // JS die Buttons im Akkordeon disabled/enabled umschalten kann statt
-        // sie zu entfernen.
-        $nextAvailable = array_map(
-            static fn (Status $s) => $s->value,
-            $saved->status->userActions(),
-        );
+        // Fertig gerenderte Aktionszeile für den neuen Status mitliefern — das
+        // JS tauscht sie 1:1 ein (identisch zum Reload, keine Button-Logik im
+        // Client). Die Zeile ist editierbar (der Übergang wurde autorisiert).
+        $rowActionsHtml = InboxRowActions::render($workflow, $user, $saved->clangId, $user->getId(), $saved->status, $saved, true);
 
         JsonResponse::ok([
             'revision' => $saved->revision,
             'status' => $saved->status->value,
             'statusLabel' => Labels::status($saved->status),
-            'availableTransitions' => $nextAvailable,
+            'rowActionsHtml' => $rowActionsHtml,
         ]);
     }
 }

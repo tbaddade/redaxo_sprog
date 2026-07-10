@@ -26,6 +26,11 @@ final class InboxRouter
             'update_unit' => UpdateUnitController::create()->handle($user),
             'create_unit' => CreateUnitController::create()->handle($user),
             'transition' => TransitionController::create()->handle($user),
+            'mt' => MtController::create()->handle($user),
+            'history' => HistoryController::create()->list($user),
+            'restore' => HistoryController::create()->restore($user),
+            'batch_prepare' => BatchTranslateController::create()->prepare($user),
+            'batch_translate' => BatchTranslateController::create()->translate($user),
             default => null,
         };
     }

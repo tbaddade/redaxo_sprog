@@ -37,12 +37,12 @@ use const PHP_INT_MIN;
  *         nicht definiert — wird beim ersten Edit gesetzt)
  *
  *       - sprog_translation: eine Row pro v1-Row
- *         value=$replace, status=translated (bzw. missing bei leerem replace),
- *         valueHash=sha256($value) bei Status=translated, revision=0
+ *         value=$replace, status=needs_review (bzw. missing bei leerem replace),
+ *         valueHash=sha256($value) bei Status=needs_review, revision=0
  *
- * Bestandsdaten gehen als 'translated' rein, nicht 'approved' — das ist
- * deutlich konservativer. Approved soll ausdrückliche Review-Entscheidung
- * bleiben; Migration setzt sie nicht von selbst.
+ * Bestandsdaten gehen als 'needs_review' rein (eingereicht, wartet auf Review),
+ * nicht 'approved' — das ist deutlich konservativer. Approved soll ausdrückliche
+ * Review-Entscheidung bleiben; Migration setzt sie nicht von selbst.
  *
  * Idempotenz: vor jedem Gruppen-Insert prüfen wir, ob eine Unit mit
  * (namespace='wildcard', unit_key=$wildcardName) bereits existiert.
@@ -176,7 +176,7 @@ final class WildcardMigrator implements MigratorInterface
 
                 foreach ($groupRows as $row) {
                     $value = (string) ($row['replace'] ?? '');
-                    $status = '' === $value ? Status::Missing : Status::Translated;
+                    $status = '' === $value ? Status::Missing : Status::NeedsReview;
 
                     $this->translations->save(new Translation(
                         id: null,

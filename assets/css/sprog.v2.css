@@ -7,68 +7,13 @@
  * automatisch via prefers-color-scheme.
  */
 
+/* Wrapper trägt `sprog-ui sprog-migration`: Palette, Status-Hues, Radius-/
+   Spacing-Skala, Shadow, Box-Sizing und der Bootstrap-Reset kommen aus dem
+   geteilten .sprog-ui (light + dark). Intro/Heading/Lead/Empty nutzen die
+   geteilten .sprog-intro/-heading/-lead/.sprog-empty. Hier nur noch die
+   migrationseigene Maximalbreite. */
 .sprog-migration {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
-    --sprog-color-success: #16a34a;
-    --sprog-color-warning: #d97706;
-    --sprog-color-danger:  #dc2626;
-
-    --sprog-radius:   0.8rem;
-    --sprog-radius-pill: 999px;
-    --sprog-spacing:  1.6rem;
-    --sprog-shadow:   0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
-
-    display: grid;
-    gap: calc(var(--sprog-spacing) * 1.5);
     max-width: 1200px;
-    color: var(--sprog-color-fg);
-}
-
-.sprog-migration *,
-.sprog-migration *::before,
-.sprog-migration *::after {
-    box-sizing: border-box;
-}
-
-.sprog-migration--intro {
-    display: grid;
-    gap: 0.8rem;
-}
-
-.sprog-migration--heading {
-    margin: 0;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-.sprog-migration--lead {
-    margin: 0;
-    max-width: 65ch;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
-}
-
-.sprog-migration--lead code {
-    font-size: 0.9em;
-    padding: 0.1em 0.35em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-fg);
-}
-
-.sprog-migration--empty {
-    margin: 0;
-    padding: var(--sprog-spacing);
-    border: 1px dashed var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    color: var(--sprog-color-muted);
-    text-align: center;
 }
 
 .sprog-migration--list {
@@ -80,14 +25,12 @@
     list-style: none;
 }
 
+/* Box-Optik via geteiltes .sprog-panel; hier nur Karten-Layout + Status-
+   Transition. Die State-Rahmen (is-running/-completed/has-error) stehen
+   weiter unten und schlagen per (0,2,0) das Panel-Border (0,1,0). */
 .sprog-migration--item {
     display: grid;
     gap: 1.36rem;
-    padding: 2rem;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -114,7 +57,7 @@
 
 .sprog-migration--item-title {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--sprog-text-lg);
     font-weight: 600;
     letter-spacing: 0.01em;
     text-transform: capitalize;
@@ -125,7 +68,7 @@
     align-items: center;
     gap: 0.4rem;
     padding: 0.32rem 0.96rem;
-    font-size: 1.248rem;
+    font-size: var(--sprog-text-2xs);
     font-weight: 500;
     border-radius: var(--sprog-radius-pill);
     background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
@@ -181,14 +124,20 @@
     border-radius: var(--sprog-radius-pill);
 }
 
-.sprog-migration--item.is-completed .sprog-migration--bar::-webkit-progress-value,
+/* Getrennte Regeln statt Selektorliste: Chrome kennt ::-moz-progress-bar nicht
+   und verwirft eine GANZE Liste, die ein unbekanntes Pseudo enthält — dann
+   bliebe der Completed-Balken accent-blau. Einzeln bleibt jede Regel gültig. */
+.sprog-migration--item.is-completed .sprog-migration--bar::-webkit-progress-value {
+    background: var(--sprog-color-success);
+}
+
 .sprog-migration--item.is-completed .sprog-migration--bar::-moz-progress-bar {
     background: var(--sprog-color-success);
 }
 
 .sprog-migration--counter {
     font-variant-numeric: tabular-nums;
-    font-size: 1.36rem;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-color-muted);
 }
 
@@ -198,7 +147,7 @@
     background: color-mix(in srgb, var(--sprog-color-danger) 8%, transparent);
     border-left: 3px solid var(--sprog-color-danger);
     border-radius: 0.4rem;
-    font-size: 1.408rem;
+    font-size: var(--sprog-text-sm);
     color: var(--sprog-color-danger);
     overflow-wrap: anywhere;
 }
@@ -209,57 +158,10 @@
     justify-content: flex-end;
 }
 
-.sprog-migration--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.72rem 1.6rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-migration--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
-}
-
-.sprog-migration--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-migration--button:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-}
-
-.sprog-migration--button--primary {
-    background: var(--sprog-color-accent);
-    color: #ffffff;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-migration--button--primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-}
-
-.sprog-migration--button--ghost {
-    background: transparent;
-    border-style: dashed;
-    color: var(--sprog-color-muted);
-}
-
-.sprog-migration--button--ghost:hover:not(:disabled) {
-    color: var(--sprog-color-danger);
-    border-color: var(--sprog-color-danger);
-    background: color-mix(in srgb, var(--sprog-color-danger) 6%, transparent);
-}
+/* (Buttons nutzen jetzt das geteilte .sprog-btn / .sprog-btn--primary — die
+   migration-eigenen --button*-Regeln wurden entfernt. .sprog-btn zieht seine
+   Tokens aus dem .sprog-migration-Scope, inkl. der oben ergänzten
+   --sprog-hover / --sprog-color-accent-strong.) */
 
 .sprog-migration--reset {
     display: flex;
@@ -273,28 +175,9 @@
 
 .sprog-migration--hint {
     color: var(--sprog-color-muted);
-    font-size: 1.36rem;
+    font-size: var(--sprog-text-xs);
     line-height: 1.4;
     max-width: 50ch;
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-migration {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
-        --sprog-color-success: #34d399;
-        --sprog-color-warning: #fbbf24;
-        --sprog-color-danger:  #f87171;
-        --sprog-shadow:        0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-
-    .sprog-migration--button--primary {
-        color: #0b0f19;
-    }
 }
 
 /*
@@ -302,89 +185,24 @@
  * Coverage-Übersicht pro Sprache × Namespace.
  */
 
-.sprog-dashboard {
-    /* Identische Palette zur Inbox (ruhige Cyan-Neutrals, beruhigte Status). */
-    --sprog-color-bg:            #ffffff;
-    --sprog-color-surface:       #f3f5f8;
-    --sprog-color-fg:            #1b2733;
-    --sprog-color-muted:         #5b6675;
-    --sprog-color-border:        #dde2e8;
-    --sprog-color-accent:        #4b9ad9;
-    --sprog-color-accent-strong: #3f86c0;
-
-    --sprog-status-missing:      #9aa6b4;
-    --sprog-status-draft:        #cf9436;
-    --sprog-status-translated:   #5a8fcf;
-    --sprog-status-needs_review: #b87333;
-    --sprog-status-revise:       #9069c9;
-    --sprog-status-approved:     #2f9e76;
-    --sprog-status-stale:        #d35d5d;
-
-    --sprog-radius-sm:   0.6rem;
-    --sprog-radius-md:   1.0rem;
-    --sprog-radius-lg:   1.4rem;
-    --sprog-radius:      var(--sprog-radius-md);
-    --sprog-radius-pill: 999px;
-    --sprog-spacing:     1.6rem;
-    --sprog-shadow:      0 1px 2px rgba(20 30 45 / 5%), 0 1px 3px rgba(20 30 45 / 6%);
-
-    display: grid;
+/* Dashboard nutzt den geteilten UI-Layer (.sprog-ui auf dem Wrapper) für
+   Tokens, Box-Sizing und Reset. Intro/Heading/Lead sind jetzt geteilte
+   Komponenten. Hier nur noch Dashboard-Spezifisches. Der etwas kompaktere
+   Section-Abstand (16px statt der 24px des Layers) bleibt dashboard-eigen —
+   die Doppel-Klassen-Spezifität gewinnt gegen .sprog-ui. */
+.sprog-dashboard.sprog-ui {
     gap: var(--sprog-spacing);
-    color: var(--sprog-color-fg);
 }
 
-.sprog-dashboard *,
-.sprog-dashboard *::before,
-.sprog-dashboard *::after {
-    box-sizing: border-box;
-}
-
-.sprog-dashboard--intro {
-    display: grid;
-    gap: 0.8rem;
-    padding: 1.6rem;
-    /* Rahmen transparent, aber 1px breit: hält den Text exakt bündig zur
-       Legende (1.6rem padding + 1px), ohne sichtbaren Kasten um den Intro. */
-    border: 1px solid transparent;
-    border-radius: var(--sprog-radius-md);
-}
-
-.sprog-dashboard--heading {
-    margin: 0;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-.sprog-dashboard--lead {
-    margin: 0;
-    max-width: 70ch;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
-}
-
-.sprog-dashboard--lead code {
-    font-size: 0.9em;
-    padding: 0.1em 0.35em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-fg);
-}
-
+/* Box-Optik via .sprog-panel.sprog-panel--muted; hier nur das Inhalts-Layout. */
 .sprog-dashboard--empty {
     display: grid;
     gap: 1.2rem;
-    padding: calc(var(--sprog-spacing) * 1.5);
-    border: 1px dashed var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    background: var(--sprog-color-surface);
-    color: var(--sprog-color-muted);
-    text-align: center;
 }
 
 .sprog-dashboard--empty h2 {
     margin: 0;
-    font-size: 1.76rem;
+    font-size: var(--sprog-text-xl);
     color: var(--sprog-color-fg);
 }
 
@@ -394,63 +212,124 @@
     margin-inline: auto;
 }
 
+/* Optik kommt aus .sprog-btn.sprog-btn--primary (token-getrieben, dark-fähig);
+   hier nur die Platzierung im Leerzustand-Panel: zentriert, kompakt (nicht über
+   die Grid-Spalte gestreckt). */
 .sprog-dashboard--cta {
-    align-self: center;
+    justify-self: center;
     margin-top: 0.8rem;
-    padding: 0.8rem 1.92rem;
-    border-radius: 0.64rem;
-    background: var(--sprog-color-accent);
-    color: #fff;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.15s;
 }
 
-.sprog-dashboard--cta:hover,
-.sprog-dashboard--cta:focus-visible {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    color: #fff;
-}
-
-/* Status-Legende — erklärt die Balken-Farben (einmal oben). */
+/* Status-Legende — dieselben Status-Pillen wie in der Inbox-Legende, damit
+   beide Seiten als ein Produkt lesen (gleiche Optik, gleiche Schreibweise). */
 .sprog-dashboard--legend {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem 1.8rem;
+    gap: 0.6rem;
     padding: 1.2rem 1.6rem;
     background: var(--sprog-color-bg);
     border: 1px solid var(--sprog-color-border);
     border-radius: var(--sprog-radius-md);
 }
 
-.sprog-dashboard--legend-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.7rem;
-    font-size: 1.25rem;
-    color: var(--sprog-color-fg);
-    text-transform: lowercase;
-    letter-spacing: 0.02em;
+/*
+ * Triage-Überblick (Liga-Tabelle): kompakte, klickbare Zeile pro Sprache,
+ * sortiert nach offenem Aufwand. Beantwortet die erste Frage — „wo zuerst?" —
+ * bevor die Detailkarten kommen. Jede Zeile verlinkt in die gefilterte Inbox.
+ */
+/* Overview-Section = geteiltes .sprog-panel; Kopf/Titel/Hint = die geteilten
+   .sprog-panel--head / --heading / --hint. */
+
+.sprog-dashboard--rank {
+    display: grid;
+    gap: 0.2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.sprog-dashboard--legend-swatch {
-    width: 1.1rem;
-    height: 1.1rem;
-    flex: none;
-    border-radius: 0.3rem;
-    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 60%, #fff);
+.sprog-dashboard--rank-row {
+    display: grid;
+    grid-template-columns: 2.8rem minmax(8rem, 16rem) 1fr 4.6rem 7rem;
+    align-items: center;
+    gap: 1.4rem;
+    padding: 0.7rem 0.8rem;
+    border-radius: var(--sprog-radius-sm);
+    text-decoration: none;
+    color: var(--sprog-color-fg);
+    transition: background-color 0.12s;
+}
+
+.sprog-dashboard--rank-row:hover,
+.sprog-dashboard--rank-row:focus-visible {
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-fg);
+    outline: none;
+}
+
+.sprog-dashboard--rank-row:focus-visible {
+    box-shadow: inset 0 0 0 2px var(--sprog-color-accent);
+}
+
+.sprog-dashboard--rank-code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--sprog-text-2xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-dashboard--rank-name {
+    font-size: var(--sprog-text-sm);
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sprog-dashboard--rank-pct {
+    text-align: right;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: var(--sprog-text-md);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--sprog-color-accent);
+}
+
+.sprog-dashboard--rank-pct--low  { color: var(--sprog-status-stale); }
+.sprog-dashboard--rank-pct--mid  { color: var(--sprog-status-draft); }
+.sprog-dashboard--rank-pct--high { color: var(--sprog-color-accent); }
+.sprog-dashboard--rank-pct--done { color: var(--sprog-status-approved); }
+
+.sprog-dashboard--rank-open {
+    text-align: right;
+    font-size: var(--sprog-text-2xs);
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 40em) {
+    .sprog-dashboard--rank-row {
+        grid-template-columns: 2.4rem 1fr auto;
+        gap: 0.5rem 1rem;
+    }
+    .sprog-dashboard--rank-row .sprog-dashboard--bar { grid-column: 1 / -1; }
+    .sprog-dashboard--rank-open { display: none; }
+}
+
+/* Detailkarten als responsives Grid: ab ~2× Kartenbreite zweispaltig — das
+   halbiert den Scroll und rückt die große Metrik näher an den Sprachnamen. */
+.sprog-dashboard--clangs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 52rem), 1fr));
+    gap: var(--sprog-spacing);
 }
 
 /* Sprach-Karte */
-.sprog-dashboard--clang {
-    padding: 2rem 2.2rem;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius-lg);
-    box-shadow: var(--sprog-shadow);
-}
-
-.sprog-dashboard--clang--done {
+/* Clang-Section = geteiltes .sprog-panel; hier nur der „fertig"-Border-Tint.
+   .sprog-panel.X (0,2,0) schlägt das .sprog-panel-Border (0,1,0). */
+.sprog-panel.sprog-dashboard--clang--done {
     border-color: color-mix(in srgb, var(--sprog-status-approved) 45%, var(--sprog-color-border));
 }
 
@@ -464,7 +343,7 @@
 
 .sprog-dashboard--clang-code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 1.2rem;
+    font-size: var(--sprog-text-2xs);
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -475,7 +354,7 @@
 }
 
 .sprog-dashboard--clang-name {
-    font-size: 1.9rem;
+    font-size: var(--sprog-text-xl);
     font-weight: 700;
 }
 
@@ -488,7 +367,7 @@
 
 .sprog-dashboard--clang-percent {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 3rem;
+    font-size: var(--sprog-text-3xl);
     font-weight: 700;
     line-height: 1;
     color: var(--sprog-color-accent);
@@ -499,8 +378,16 @@
     color: var(--sprog-status-approved);
 }
 
+/* Dringlichkeit über die Farbe des Prozentwerts: rot = große Lücke, amber =
+   in Arbeit, ruhig = fast fertig, grün = fertig. So zieht eine 12 %-Sprache
+   den Blick, statt so entspannt zu wirken wie eine 95 %-Sprache. */
+.sprog-dashboard--clang-percent--low  { color: var(--sprog-status-stale); }
+.sprog-dashboard--clang-percent--mid  { color: var(--sprog-status-draft); }
+.sprog-dashboard--clang-percent--high { color: var(--sprog-color-accent); }
+.sprog-dashboard--clang-percent--done { color: var(--sprog-status-approved); }
+
 .sprog-dashboard--clang-pct-label {
-    font-size: 1.2rem;
+    font-size: var(--sprog-text-2xs);
     line-height: 1.3;
     color: var(--sprog-color-muted);
 }
@@ -530,7 +417,10 @@
 
 .sprog-dashboard--seg {
     height: 100%;
-    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 60%, #fff);
+    /* Volle (bereits beruhigte) Status-Farbe statt 60%-auf-Weiß: erst dadurch
+       sind benachbarte Segmente (übersetzt/fehlt/entwurf) klar unterscheidbar.
+       Der leere Track bleibt hell — der gefüllte Anteil bekommt das Gewicht. */
+    background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 88%, #fff);
 }
 
 .sprog-dashboard--seg:not(:last-child) {
@@ -550,7 +440,7 @@
     align-items: center;
     gap: 0.6rem;
     padding: 0.2rem 1rem;
-    font-size: 1.2rem;
+    font-size: var(--sprog-text-2xs);
     border-radius: var(--sprog-radius-pill);
     color: var(--c, var(--sprog-color-muted));
     background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 13%, transparent);
@@ -563,7 +453,6 @@
 
 .sprog-dashboard--stat-label {
     color: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 78%, var(--sprog-color-fg));
-    text-transform: lowercase;
     letter-spacing: 0.02em;
 }
 
@@ -591,7 +480,7 @@
 }
 
 .sprog-dashboard--ns-name {
-    font-size: 1.35rem;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-color-fg);
 }
 
@@ -606,14 +495,14 @@
     min-width: 4.4rem;
     text-align: right;
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 1.35rem;
+    font-size: var(--sprog-text-xs);
     font-weight: 600;
     color: var(--sprog-color-fg);
     font-variant-numeric: tabular-nums;
 }
 
 .sprog-dashboard--ns-count {
-    font-size: 1.2rem;
+    font-size: var(--sprog-text-2xs);
     color: var(--sprog-color-muted);
     font-variant-numeric: tabular-nums;
 }
@@ -628,32 +517,12 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    .sprog-dashboard {
-        --sprog-color-bg:            #0d1117;
-        --sprog-color-surface:       #161b22;
-        --sprog-color-fg:            #e6edf3;
-        --sprog-color-muted:         #8d96a0;
-        --sprog-color-border:        #30363d;
-        --sprog-color-accent:        #5aa9e6;
-        --sprog-color-accent-strong: #4b9ad9;
-
-        --sprog-status-missing:      #6b7280;
-        --sprog-status-draft:        #d6a44a;
-        --sprog-status-translated:   #6fa8e0;
-        --sprog-status-needs_review: #cd8b46;
-        --sprog-status-revise:       #b08ce0;
-        --sprog-status-approved:     #3fae84;
-        --sprog-status-stale:        #e07a7a;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-    /* Segmente/Swatches im Dark mit dunklem Grund mischen statt Weiß. */
-    .sprog-dashboard--seg,
-    .sprog-dashboard--legend-swatch {
-        background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 58%, #0d1117);
-    }
-    .sprog-dashboard--cta {
-        color: #0b0f19;
+    /* Palette/Status/Shadow kommen aus .sprog-ui (dark) — der Wrapper trägt
+       `sprog-ui sprog-dashboard`. Hier nur dashboard-spezifische Dark-Tweaks. */
+    /* Segmente im Dark mit dunklem Grund mischen statt Weiß — etwas kräftiger
+       (parallel zur 88%-Aufhellung im Light), damit Nachbarsegmente trennen. */
+    .sprog-dashboard--seg {
+        background: color-mix(in srgb, var(--c, var(--sprog-color-muted)) 80%, #0d1117);
     }
 }
 
@@ -672,13 +541,12 @@
     align-items: center;
     gap: 0.48rem;
     padding: 0.24rem 0.96rem;
-    font-size: 1.248rem;
+    font-size: var(--sprog-text-2xs);
     font-weight: 500;
     line-height: 1.4;
     border-radius: 999px;
     background: color-mix(in srgb, var(--sprog-status-color) 14%, transparent);
     color: var(--sprog-status-color);
-    text-transform: lowercase;
     letter-spacing: 0.02em;
     white-space: nowrap;
 }
@@ -697,67 +565,19 @@
  */
 
 .sprog-inbox {
-    /* ── Eine ruhige, kühle Palette, verankert in REDAXO-Cyan ─────────────────
-       Ersetzt die drei früher überlagerten Systeme (--sprog-color-*, --gh-* und
-       die hartkodierten Slate-Fallbacks). Alle drei Namensschemata werden hier
-       auf dieselben Werte gelegt, damit die `var(name, fallback)`-Aufrufe im
-       übrigen Inbox-CSS automatisch einrasten — eine Quelle der Wahrheit. */
-    --sprog-color-bg:            #ffffff;   /* Paper – Card / Liste              */
-    --sprog-color-surface:       #f3f5f8;   /* Mist  – List-Header, readonly     */
-    --sprog-color-fg:            #1b2733;   /* Ink   – Primärtext                */
-    --sprog-color-muted:         #5b6675;   /* Slate – Sekundärtext              */
-    --sprog-color-border:        #dde2e8;   /* Line  – Haarlinie                 */
-    --sprog-color-accent:        #4b9ad9;   /* Cyan  – Marke: Button/Link/Fokus/Open */
-    --sprog-color-accent-strong: #3f86c0;   /* Cyan gedrückt                     */
-
-    /* Alias-Tokens: zuvor undefiniert → liefen auf verstreute Hex-Fallbacks
-       (drei Grautöne, zwei Textfarben, Indigo-Fokus). Jetzt explizit auf die
-       Ramp gelegt — genau ein Grau, ein Ink, ein Fokus (= Cyan). */
+    /* Wrapper trägt jetzt `sprog-ui sprog-inbox`: Palette (--sprog-color-*),
+       Status-Hues, Radius-/Spacing-Skala, Shadow, Focus-Ring, Hover und der
+       Bootstrap-Reset kommen aus dem geteilten .sprog-ui (light + dark).
+       Hier nur noch, was .sprog-ui NICHT kennt: die Inbox-Alias-Tokens, die
+       Cell-Fläche und space-6. */
     --sprog-text:          var(--sprog-color-fg);
     --sprog-muted:         var(--sprog-color-muted);
     --sprog-border:        var(--sprog-color-border);
     --sprog-surface-muted: var(--sprog-color-surface);
     --sprog-focus:         var(--sprog-color-accent);
-    --sprog-focus-ring:    rgba(75 154 217 / 30%);   /* einheitlicher Fokus-Glow */
 
-    /* Flächen-/Hover-Token für die ruhigen „Cells" (Toolbar, Liste, Modal).
-       border/text/muted/radius brauchen keine eigenen Aliase — die Usages
-       zeigen direkt auf --sprog-color-* bzw. --sprog-radius-md. */
-    --sprog-cell-bg: #ffffff;
-    --sprog-hover:   #eef2f6;
-
-    /* ── Status: 7 Workflow-Hues, auf EIN Sättigungs-/Helligkeitsband
-       normalisiert (Variante B). Gleiche Hue-Identität wie zuvor, damit die
-       Legende dasselbe lehrt — nur ruhiger, als Farbfamilie statt Neon. */
-    --sprog-status-missing:      #9aa6b4;
-    --sprog-status-draft:        #cf9436;
-    --sprog-status-translated:   #5a8fcf;
-    --sprog-status-needs_review: #b87333;
-    --sprog-status-revise:       #9069c9;
-    --sprog-status-approved:     #2f9e76;
-    --sprog-status-stale:        #d35d5d;
-
-    /* ── Radius-Skala: vorher 6 ad-hoc Werte → 3 Tokens ──────────────────────── */
-    --sprog-radius-sm:   0.6rem;   /* Inputs, Chips, kleine Buttons */
-    --sprog-radius-md:   1.0rem;   /* Cards, Liste, Popups          */
-    --sprog-radius-lg:   1.4rem;   /* Modal                         */
-    --sprog-radius:      var(--sprog-radius-md);
-    --sprog-radius-pill: 999px;
-
-    /* ── Spacing-Skala (4px-Basis, ×1.6-rem-Konvention) ──────────────────────── */
-    --sprog-space-1: 0.4rem;
-    --sprog-space-2: 0.8rem;
-    --sprog-space-3: 1.2rem;
-    --sprog-space-4: 1.6rem;
-    --sprog-space-5: 2.4rem;
+    --sprog-cell-bg: #ffffff;   /* Cell-Fläche: hell = Paper, dunkel s. @media */
     --sprog-space-6: 3.2rem;
-    --sprog-spacing: var(--sprog-space-4);
-
-    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
-
-    display: grid;
-    gap: calc(var(--sprog-spacing) * 1.5);
-    color: var(--sprog-color-fg);
 }
 
 .sprog-inbox *,
@@ -766,258 +586,23 @@
     box-sizing: border-box;
 }
 
-.sprog-inbox--intro {
-    display: grid;
-    gap: 0.64rem;
-    padding: 1.6rem;
-    /* Rahmen transparent, aber 1px breit: hält den Text exakt bündig zur
-       Legende (1.6rem padding + 1px), ohne sichtbaren Kasten um den Intro. */
-    border: 1px solid transparent;
-    border-radius: var(--sprog-radius-md);
-}
+/* Intro/Heading/Lead nutzen jetzt den geteilten .sprog-intro/-heading/-lead. */
 
-.sprog-inbox--heading {
-    margin: 0;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
+/* (Entfernt: das tote alte Filter-Toolbar-Layout — .sprog-inbox--filter/--check/
+   --search/--actions/--field. Die Toolbar läuft jetzt über .sprog-toolbar /
+   .sprog-toolbar--row / .sprog-search / .sprog-btn / .sprog-inbox--toolbar-cell.) */
 
-.sprog-inbox--lead {
-    margin: 0;
-    max-width: 65ch;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
-}
+/* Buttons (Filtern/Reset/„Neue Einheit"/Modal) und Summary nutzen jetzt den
+   geteilten Layer (.sprog-btn, .sprog-btn--primary, .sprog-btn--reset,
+   .sprog-summary). Frühere inbox-eigene Button- und Summary-Regeln entfernt. */
 
-.sprog-inbox--filter {
-    display: grid;
-    gap: var(--sprog-spacing);
-    padding: var(--sprog-spacing);
-    background: var(--sprog-color-surface);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
+/* Empty-State nutzt jetzt den geteilten .sprog-empty (dockt unter dem
+   List-Header an, wie die Liste). */
 
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    align-items: end;
-}
-
-.sprog-inbox--field {
-    display: grid;
-    gap: 0.48rem;
-    min-width: 0;
-}
-
-.sprog-inbox--label {
-    font-size: 1.248rem;
-    font-weight: 600;
-    color: var(--sprog-color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sprog-inbox--field select,
-.sprog-inbox--field input[type="search"],
-.sprog-inbox--field input[type="text"] {
-    padding: 0.8rem 1.12rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    min-width: 0;
-}
-
-.sprog-inbox--field select:focus-visible,
-.sprog-inbox--field input:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-}
-
-.sprog-inbox--statuses {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 0.64rem;
-    margin: 0;
-    padding: 0;
-    border: 0;
-}
-
-.sprog-inbox--statuses .sprog-inbox--label {
-    grid-column: 1 / -1;
-}
-
-.sprog-inbox--check {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.72rem;
-    font-size: 1.44rem;
-    user-select: none;
-    cursor: pointer;
-}
-
-.sprog-inbox--check input[type="checkbox"] {
-    accent-color: var(--sprog-color-accent);
-}
-
-.sprog-inbox--search {
-    grid-column: 1 / -1;
-}
-
-.sprog-inbox--actions {
-    grid-column: 1 / -1;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    align-items: center;
-}
-
-.sprog-inbox--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.72rem 1.6rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-inbox--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
-}
-
-.sprog-inbox--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-/*
- * Primary-Button (aktuell nur "+ Neue Einheit") in REDAXO-Header-Cyan,
- * damit er sich an die globale REDAXO-Markenfarbe anlehnt statt am
- * generischen sprog-Accent (das tiefe Blau bleibt für Status & Focus).
- */
-.sprog-inbox--button-primary {
-    background: #4b9ad9;
-    color: #ffffff;
-    border-color: #4b9ad9;
-}
-
-.sprog-inbox--button-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, #4b9ad9 85%, black);
-    border-color: color-mix(in srgb, #4b9ad9 85%, black);
-    color: #ffffff;
-}
-
-.sprog-inbox--button-ghost {
-    background: transparent;
-    color: var(--sprog-color-muted);
-}
-
-.sprog-inbox--summary {
-    margin: 0;
-    color: var(--sprog-color-muted);
-    font-size: 1.44rem;
-}
-
-.sprog-inbox--summary strong {
-    color: var(--sprog-color-fg);
-    font-variant-numeric: tabular-nums;
-}
-
-.sprog-inbox--empty {
-    margin: 0;
-    padding: var(--sprog-spacing);
-    border: 1px dashed var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    color: var(--sprog-color-muted);
-    text-align: center;
-}
-
-.sprog-inbox--list {
-    display: grid;
-    gap: 1.04rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.sprog-inbox--card {
-    display: grid;
-    gap: 0.88rem;
-    padding: 1.36rem 1.6rem;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
-    transition: border-color 0.15s;
-}
-
-.sprog-inbox--card:hover {
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 50%, var(--sprog-color-border));
-}
-
-.sprog-inbox--card-head {
-    display: flex;
-    align-items: center;
-    gap: 0.96rem;
-    flex-wrap: wrap;
-}
-
-.sprog-inbox--namespace {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 1.2rem;
-    padding: 0.24rem 0.8rem;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-muted);
-    text-transform: lowercase;
-}
-
-.sprog-inbox--key {
-    margin: 0;
-    font-size: 1.52rem;
-    font-weight: 600;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    color: var(--sprog-color-fg);
-    overflow-wrap: anywhere;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.sprog-inbox--value {
-    margin: 0;
-    color: var(--sprog-color-fg);
-    line-height: 1.5;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    overflow-wrap: anywhere;
-}
-
-.sprog-inbox--value-empty {
-    color: var(--sprog-color-muted);
-    font-style: italic;
-}
-
-.sprog-inbox--meta {
-    display: flex;
-    gap: 1.36rem;
-    flex-wrap: wrap;
-    font-size: 1.248rem;
-    color: var(--sprog-color-muted);
-}
-
-.sprog-inbox--meta-item {
-    font-variant-numeric: tabular-nums;
-}
+/* (Entfernt: das tote Pre-Akkordeon-Card-Layout — list/-card als Grid mit
+   Box-Shadow plus die toten Kinder card-head, namespace, value, value-empty,
+   meta, meta-item. Liste = geteiltes .sprog-list (Items getrennt per
+   .sprog-list > li), Akkordeon = .sprog-accordion, Zeile = .sprog-row.) */
 
 .sprog-inbox--pagination {
     display: flex;
@@ -1036,7 +621,7 @@
     background: var(--sprog-color-bg);
     color: var(--sprog-color-fg);
     text-decoration: none;
-    font-size: 1.44rem;
+    font-size: var(--sprog-text-sm);
     transition: background-color 0.15s, border-color 0.15s;
 }
 
@@ -1058,701 +643,45 @@
 .sprog-inbox--page-info {
     font-variant-numeric: tabular-nums;
     color: var(--sprog-color-muted);
-    font-size: 1.408rem;
+    font-size: var(--sprog-text-sm);
 }
 
 @media (prefers-color-scheme: dark) {
     .sprog-inbox {
-        /* GitHub-Dark-Flächen — deckungsgleich mit den späteren Hintergrund-
-           Overrides (vorher widersprüchlich: Tokens #1f2937, Overrides #0d1117). */
-        --sprog-color-bg:            #0d1117;
-        --sprog-color-surface:       #161b22;
-        --sprog-color-fg:            #e6edf3;
-        --sprog-color-muted:         #8d96a0;
-        --sprog-color-border:        #30363d;
-        --sprog-color-accent:        #5aa9e6;   /* Cyan, dunkel-tauglich */
-        --sprog-color-accent-strong: #4b9ad9;
-
-        --sprog-text:          var(--sprog-color-fg);
-        --sprog-muted:         var(--sprog-color-muted);
-        --sprog-border:        var(--sprog-color-border);
-        --sprog-surface-muted: var(--sprog-color-surface);
-        --sprog-focus:         var(--sprog-color-accent);
-        --sprog-focus-ring:    rgba(90 169 230 / 32%);
-
+        /* Dark-Palette/Status/Shadow/Focus-Ring/Hover kommen aus .sprog-ui
+           (dark). Hier nur die Inbox-Cell-Fläche (GitHub-Dark-Surface). */
         --sprog-cell-bg: #161b22;
-        --sprog-hover:   #21262d;
-
-        /* Status – gleiche normalisierte Familie, dunkel angehoben (inkl. revise,
-           das in der alten Dark-Map fehlte). */
-        --sprog-status-missing:      #6b7280;
-        --sprog-status-draft:        #d6a44a;
-        --sprog-status-translated:   #6fa8e0;
-        --sprog-status-needs_review: #cd8b46;
-        --sprog-status-revise:       #b08ce0;
-        --sprog-status-approved:     #3fae84;
-        --sprog-status-stale:        #e07a7a;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-
-    .sprog-inbox--button-primary {
-        color: #0b0f19;
     }
 }
 
-.sprog-inbox--key-link {
-    color: inherit;
-    text-decoration: none;
-    border-bottom: 1px dashed transparent;
-    transition: border-color 0.15s, color 0.15s;
-}
-
-.sprog-inbox--key-link:hover,
-.sprog-inbox--key-link:focus-visible {
-    color: var(--sprog-color-accent);
-    border-bottom-color: var(--sprog-color-accent);
-    outline: none;
-}
-
-/*
- * sprog-editor
- * Side-by-side-Editor aller Sprachen einer Unit.
- */
-
-.sprog-editor {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
-
-    --sprog-status-missing:      #94a3b8;
-    --sprog-status-draft:        #f59e0b;
-    --sprog-status-translated:   #3b82f6;
-    --sprog-status-needs_review: #d97706;
-    --sprog-status-revise:       #a855f7;
-    --sprog-status-approved:     #10b981;
-    --sprog-status-stale:        #ef4444;
-
-    --sprog-radius:      0.8rem;
-    --sprog-radius-pill: 999px;
-    --sprog-spacing:     1.6rem;
-    --sprog-shadow:      0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
-
-    display: grid;
-    gap: calc(var(--sprog-spacing) * 1.25);
-    max-width: 1600px;
-    color: var(--sprog-color-fg);
-}
-
-.sprog-editor *,
-.sprog-editor *::before,
-.sprog-editor *::after {
-    box-sizing: border-box;
-}
-
-.sprog-editor--intro {
-    display: grid;
-    gap: 0.64rem;
-}
-
-.sprog-editor--back {
-    color: var(--sprog-color-muted);
-    text-decoration: none;
-    font-size: 1.408rem;
-    justify-self: start;
-    transition: color 0.15s;
-}
-
-.sprog-editor--back:hover,
-.sprog-editor--back:focus-visible {
-    color: var(--sprog-color-accent);
-    outline: none;
-}
-
-.sprog-editor--heading {
-    margin: 0;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1.2;
-    overflow-wrap: anywhere;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-}
-
-.sprog-editor--meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-    align-items: center;
-    color: var(--sprog-color-muted);
-    font-size: 1.36rem;
-}
-
-.sprog-editor--ns {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    padding: 0.24rem 0.96rem;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-fg);
-}
-
-.sprog-editor--source {
-    font-style: italic;
-}
-
-.sprog-editor--tags {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-}
-
-.sprog-editor--tag {
-    padding: 0.16rem 0.72rem;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-accent) 12%, transparent);
-    color: var(--sprog-color-accent);
-    font-size: 1.248rem;
-}
-
-.sprog-editor--form {
-    display: contents;
-}
-
-.sprog-editor--grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-    gap: var(--sprog-spacing);
-}
-
-.sprog-editor--lang {
-    display: grid;
-    gap: 1.04rem;
-    padding: 1.6rem 1.76rem;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
-    transition: border-color 0.15s;
-}
-
-.sprog-editor--lang:focus-within {
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--lang.is-stale {
-    border-color: color-mix(in srgb, var(--sprog-status-stale) 60%, var(--sprog-color-border));
-    background: color-mix(in srgb, var(--sprog-status-stale) 4%, var(--sprog-color-bg));
-}
-
-.sprog-editor--lang.is-locked {
-    opacity: 0.7;
-}
-
-.sprog-editor--lang-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-}
-
-.sprog-editor--lang-title {
-    margin: 0;
-    font-size: 1.6rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: baseline;
-    gap: 0.8rem;
-}
-
-.sprog-editor--clang-code {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.7em;
-    padding: 0.15em 0.5em;
-    border-radius: var(--sprog-radius-pill);
-    background: color-mix(in srgb, var(--sprog-color-muted) 15%, transparent);
-    color: var(--sprog-color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
-
-.sprog-editor--clang-name {
-    color: var(--sprog-color-fg);
-}
-
-.sprog-editor--stale-hint {
-    margin: 0;
-    padding: 0.64rem 0.96rem;
-    background: color-mix(in srgb, var(--sprog-status-stale) 10%, transparent);
-    border-left: 3px solid var(--sprog-status-stale);
-    border-radius: 0.48rem;
-    font-size: 1.328rem;
-    color: var(--sprog-status-stale);
-}
-
-.sprog-editor--field {
-    display: grid;
-    gap: 0.48rem;
-}
-
-.sprog-editor--label {
-    font-size: 1.248rem;
-    font-weight: 600;
-    color: var(--sprog-color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sprog-editor--textarea {
-    width: 100%;
-    padding: 0.96rem 1.12rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.64rem;
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    line-height: 1.5;
-    resize: vertical;
-    min-height: 9.6rem;
-    overflow-wrap: anywhere;
-}
-
-.sprog-editor--textarea:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--textarea[readonly] {
-    background: var(--sprog-color-surface);
-    color: var(--sprog-color-muted);
-    cursor: not-allowed;
-}
-
-.sprog-editor--mt {
-    margin: 0;
-    font-size: 1.312rem;
-    color: var(--sprog-color-muted);
-    font-variant-numeric: tabular-nums;
-}
-
-.sprog-editor--mt strong {
-    color: var(--sprog-color-fg);
-}
-
-.sprog-editor--actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.64rem;
-}
-
-.sprog-editor--action {
-    font: inherit;
-    font-size: 1.28rem;
-    padding: 0.48rem 1.12rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    cursor: pointer;
-    text-decoration: none;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-editor--action:hover:not(:disabled) {
-    border-color: var(--sprog-color-accent);
-    color: var(--sprog-color-accent);
-}
-
-.sprog-editor--action:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-editor--action-approved:hover {
-    border-color: var(--sprog-status-approved);
-    color: var(--sprog-status-approved);
-}
-
-.sprog-editor--action-needs_review:hover {
-    border-color: var(--sprog-status-needs_review);
-    color: var(--sprog-status-needs_review);
-}
-
-.sprog-editor--action-translated:hover {
-    border-color: var(--sprog-status-translated);
-    color: var(--sprog-status-translated);
-}
-
-.sprog-editor--save-bar {
-    position: sticky;
-    bottom: 0;
-    z-index: 5;
-    display: flex;
-    justify-content: flex-end;
-    padding: 1.2rem var(--sprog-spacing);
-    background: color-mix(in srgb, var(--sprog-color-bg) 92%, transparent);
-    backdrop-filter: blur(8px);
-    border-top: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
-}
-
-.sprog-editor--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.88rem 1.92rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-editor--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
-}
-
-.sprog-editor--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-editor--button-primary {
-    background: var(--sprog-color-accent);
-    color: #ffffff;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--button-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    color: #ffffff;
-}
-
-/*
- * Versteckte Status-Transition-Forms — sind im DOM präsent, damit die
- * Action-Buttons sie per `form="…"`-Attribut referenzieren können, dürfen
- * aber selbst nichts darstellen.
- */
-.sprog-editor--hidden-form {
-    display: none;
-}
-
-/*
- * Unit-Edit: zusammenklappbarer Block im Editor-Header, der Schlüssel und
- * Notizen der Übersetzungseinheit selbst editierbar macht. Nur sichtbar,
- * wenn der User die sprog[unit_edit]-Permission hat (Admin geht immer durch).
- */
-.sprog-editor--unit-edit {
-    margin-bottom: 0.8rem;
-    background: var(--sprog-color-surface);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    overflow: hidden;
-}
-
-.sprog-editor--unit-edit[open] {
-    box-shadow: var(--sprog-shadow);
-}
-
-.sprog-editor--unit-edit-summary {
-    padding: 0.9rem 1.2rem;
-    cursor: pointer;
-    font-weight: 600;
-    font-size: 1.36rem;
-    color: var(--sprog-color-fg);
-    user-select: none;
-    list-style: none;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.sprog-editor--unit-edit-summary::-webkit-details-marker {
-    display: none;
-}
-
-.sprog-editor--unit-edit-summary::before {
-    content: "▸";
-    color: var(--sprog-color-muted);
-    transition: transform 0.15s ease;
-    display: inline-block;
-}
-
-.sprog-editor--unit-edit[open] .sprog-editor--unit-edit-summary::before {
-    transform: rotate(90deg);
-}
-
-.sprog-editor--unit-edit-summary:hover {
-    background: color-mix(in srgb, var(--sprog-color-fg) 4%, transparent);
-}
-
-.sprog-editor--unit-edit-summary:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: -2px;
-}
-
-.sprog-editor--unit-form {
-    display: grid;
-    gap: 0.9rem;
-    padding: 0 1.2rem 1.2rem 1.2rem;
-}
-
-.sprog-editor--unit-edit-lead {
-    margin: 0;
-    color: var(--sprog-color-muted);
-    font-size: 1.3rem;
-    line-height: 1.5;
-}
-
-.sprog-editor--unit-input {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.56rem;
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    line-height: 1.4;
-}
-
-.sprog-editor--unit-input:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--unit-notes {
-    width: 100%;
-    padding: 0.7rem 1rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.56rem;
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    line-height: 1.5;
-    resize: vertical;
-    min-height: 4.5rem;
-}
-
-.sprog-editor--unit-notes:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--unit-hint {
-    font-size: 1.2rem;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
-}
-
-.sprog-editor--unit-hint code {
-    font-size: 0.9em;
-    padding: 0.05em 0.4em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
-    color: var(--sprog-color-fg);
-}
-
-.sprog-editor--unit-actions {
-    display: flex;
-    gap: 0.8rem;
-}
-
-/*
- * MT-Trigger-Bar: ein "MT-Vorschlag"-Button + Status-Span pro Sprachblock.
- */
-
-.sprog-editor--mt-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    flex-wrap: wrap;
-}
-
-.sprog-editor--mt-trigger {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font: inherit;
-    font-size: 1.36rem;
-    font-weight: 500;
-    padding: 0.5rem 1rem;
-    border-radius: 0.56rem;
-    border: 1px dashed color-mix(in srgb, var(--sprog-color-accent) 60%, var(--sprog-color-border));
-    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
-    color: var(--sprog-color-accent);
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-editor--mt-trigger::before {
-    content: "✨";
-    font-size: 1.1em;
-    line-height: 1;
-}
-
-.sprog-editor--mt-trigger:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 10%, transparent);
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-editor--mt-trigger:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-editor--mt-trigger:disabled {
-    opacity: 0.55;
-    cursor: progress;
-}
-
-.sprog-editor--mt-status {
-    font-size: 1.3rem;
-    color: var(--sprog-color-muted);
-    font-variant-numeric: tabular-nums;
-    overflow-wrap: anywhere;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.sprog-editor--mt-status[hidden] {
-    display: none;
-}
-
-.sprog-editor--mt-status.is-ok {
-    color: var(--sprog-status-approved);
-}
-
-.sprog-editor--mt-status.is-error {
-    color: var(--sprog-status-stale);
-}
-
-.sprog-editor--mt-discard {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font: inherit;
-    font-size: 1.2rem;
-    font-weight: 500;
-    padding: 0.4rem 0.8rem;
-    border-radius: 0.5rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-muted);
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-editor--mt-discard:hover:not(:disabled) {
-    border-color: var(--sprog-status-stale);
-    color: var(--sprog-status-stale);
-    background: color-mix(in srgb, var(--sprog-status-stale) 6%, transparent);
-}
-
-.sprog-editor--mt-discard:focus-visible {
-    outline: 2px solid var(--sprog-status-stale);
-    outline-offset: 2px;
-}
-
-.sprog-editor--mt-discard[hidden] {
-    display: none;
-}
-
-/*
- * Wenn aktuell ein MT-Marker an der Translation hängt, bekommt die ganze
- * mt-bar einen dezenten Akzent-Background — Signal für „hier kam der Text
- * aus MT".
- */
-.sprog-editor--mt-bar[data-mt-active="true"] {
-    padding: 0.6rem 0.8rem;
-    margin-inline: -0.8rem;
-    border-radius: 0.5rem;
-    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-editor {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
-
-        --sprog-status-missing:      #6b7280;
-        --sprog-status-draft:        #fbbf24;
-        --sprog-status-translated:   #60a5fa;
-        --sprog-status-needs_review: #f59e0b;
-        --sprog-status-approved:     #34d399;
-        --sprog-status-stale:        #f87171;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-
-    .sprog-editor--button-primary {
-        color: #0b0f19;
-    }
-}
-
-/* Inbox-Header bekommt eine Plus-Button-Reihe. */
-.sprog-inbox--intro-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.6rem;
-    flex-wrap: wrap;
-}
+/* (Entfernt: .sprog-inbox--key-link — alter verlinkter Key, nicht mehr im Markup.) */
 
 /*
  * sprog-create
- * Schmale Anlege-Form für neue Übersetzungseinheiten.
- * Eigene Block-Klasse, damit der Editor-Code unverändert bleibt.
+ * Schmale Anlege-Form für neue Übersetzungseinheiten (No-JS-Fallback zum
+ * Inbox-Create-Modal).
  */
 
+/* Wrapper trägt `sprog-ui sprog-create`: Palette, Radius/Spacing, Shadow,
+   Box-Sizing + Bootstrap-Reset kommen aus dem geteilten .sprog-ui (light+dark).
+   Hier nur die seiteneigene Maximalbreite + der etwas kompaktere Section-Gap
+   (×1.25 statt Layer-Default ×1.5; Doppel-Klasse schlägt .sprog-ui). */
 .sprog-create {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
-    --sprog-color-danger:  #dc2626;
-
-    --sprog-radius:  0.8rem;
-    --sprog-spacing: 1.6rem;
-    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
-
-    display: grid;
-    gap: calc(var(--sprog-spacing) * 1.25);
     max-width: 680px;
-    color: var(--sprog-color-fg);
 }
 
-.sprog-create *,
-.sprog-create *::before,
-.sprog-create *::after {
-    box-sizing: border-box;
+.sprog-create.sprog-ui {
+    gap: calc(var(--sprog-spacing) * 1.25);
 }
 
-.sprog-create--intro {
-    display: grid;
-    gap: 0.64rem;
-}
-
+/* Intro/Heading/Lead → .sprog-intro/-heading/-lead; Felder → .sprog-field/
+   --label + .sprog-control; Hinweise → .sprog-hint; die Form-Box → .sprog-panel.
+   create-eigen bleibt nur: der Zurück-Link, das Grid-Layout der Form-Box und
+   der Pflichtfeld-Invalid-Rahmen. */
 .sprog-create--back {
     color: var(--sprog-color-muted);
     text-decoration: none;
-    font-size: 1.408rem;
+    font-size: var(--sprog-text-sm);
     justify-self: start;
     transition: color 0.15s;
 }
@@ -1763,93 +692,15 @@
     outline: none;
 }
 
-.sprog-create--heading {
-    margin: 0;
-    font-size: 2.24rem;
-    font-weight: 600;
-    line-height: 1.25;
-}
-
-.sprog-create--lead {
-    margin: 0;
-    max-width: 60ch;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
-}
-
-.sprog-create--lead code {
-    font-size: 0.9em;
-    padding: 0.1em 0.35em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-fg);
-}
-
+/* Box-Optik (Rahmen/Radius/Shadow/Padding) via .sprog-panel; hier nur Layout. */
 .sprog-create--form {
     display: grid;
     gap: var(--sprog-spacing);
-    padding: 2rem;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
 }
 
-.sprog-create--field {
-    display: grid;
-    gap: 0.48rem;
-}
-
-.sprog-create--label {
-    font-size: 1.312rem;
-    font-weight: 600;
-    color: var(--sprog-color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.sprog-create--hint {
-    font-size: 1.312rem;
-    color: var(--sprog-color-muted);
-    line-height: 1.4;
-}
-
-.sprog-create--hint code {
-    font-size: 0.9em;
-    padding: 0.05em 0.3em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
-    color: var(--sprog-color-fg);
-}
-
-.sprog-create--select,
-.sprog-create--input,
-.sprog-create--textarea {
-    width: 100%;
-    padding: 0.88rem 1.12rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.64rem;
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    line-height: 1.4;
-}
-
-.sprog-create--textarea {
-    resize: vertical;
-    min-height: 6.4rem;
-    line-height: 1.5;
-}
-
-.sprog-create--select:focus-visible,
-.sprog-create--input:focus-visible,
-.sprog-create--textarea:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-create--input:invalid:not(:placeholder-shown) {
+/* Pflichtfeld erst nach Eingabe rot markieren — scoped auf create, damit nicht
+   alle .sprog-control betroffen sind. */
+.sprog-create .sprog-control:invalid:not(:placeholder-shown) {
     border-color: var(--sprog-color-danger);
 }
 
@@ -1862,272 +713,207 @@
     border-top: 1px solid var(--sprog-color-border);
 }
 
-.sprog-create--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.88rem 1.76rem;
-    border-radius: 0.64rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-create--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
-}
-
-.sprog-create--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-create--button-primary {
-    background: var(--sprog-color-accent);
-    color: #ffffff;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-create--button-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    color: #ffffff;
-}
-
-.sprog-create--button-ghost {
-    background: transparent;
-    color: var(--sprog-color-muted);
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-create {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
-        --sprog-color-danger:  #f87171;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-
-    .sprog-create--button-primary {
-        color: #0b0f19;
-    }
-}
+/* (Buttons nutzen jetzt das geteilte .sprog-btn / .sprog-btn--primary; ghost =
+   .sprog-btn-Default. Eigene --button*-Regeln + Dark-Block entfallen — Palette
+   und Dark kommen aus .sprog-ui.) */
 
 /*
- * sprog-settings-mt
- * Konfigurations-Formular für MT-Provider-API-Keys.
- * rem-Werte: ×1.6 wegen REDAXO-Core (html { font-size: 10px }).
+ * sprog-settings
+ * Konfigurations-Seite: eigenständige Sektionen (Sprachen, Wildcards,
+ * Synchronisierung, Workflow, Machine Translation), je ein eigenes Formular.
+ * Box-Optik/Palette/Spacing kommen aus .sprog-ui + .sprog-panel; hier nur das
+ * Settings-spezifische Layout. rem-Werte: ×1.6 (REDAXO-Core html{font-size:10px}).
  */
+.sprog-settings {
+    max-width: 1040px;
+}
 
-.sprog-settings-mt {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
-
-    --sprog-status-missing:    #94a3b8;
-    --sprog-status-approved:   #10b981;
-
-    --sprog-radius:  0.8rem;
-    --sprog-spacing: 1.6rem;
-    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
-
-    display: grid;
+.sprog-settings.sprog-ui {
     gap: calc(var(--sprog-spacing) * 1.25);
-    max-width: 720px;
-    color: var(--sprog-color-fg);
 }
 
-.sprog-settings-mt *,
-.sprog-settings-mt *::before,
-.sprog-settings-mt *::after {
-    box-sizing: border-box;
-}
-
-.sprog-settings-mt--intro {
+/* Panel-Raster: die kleinen Panels (Wildcards, Workflow) teilen sich zwei
+   Spalten, die breiten (Sprachen, Synchronisierung, Machine Translation)
+   spannen beide. Schmal/mobil: eine Spalte. align-items:start, damit
+   ungleich hohe Nachbar-Panels oben bündig bleiben statt sich zu strecken. */
+.sprog-settings--panels {
     display: grid;
-    gap: 0.6rem;
+    grid-template-columns: 1fr;
+    gap: calc(var(--sprog-spacing) * 1.25);
+    align-items: stretch;
 }
 
-.sprog-settings-mt--heading {
-    margin: 0;
-    font-size: 2.4rem;
-    font-weight: 600;
-    line-height: 1.25;
+/* Panel als Flex-Spalte, damit zwei nebenstehende Panels (stretch → gleiche
+   Höhe) ihre Speichern-Zeile per margin-top:auto bündig am unteren Rand
+   ausrichten, statt direkt unter dem kürzeren Inhalt zu hängen. */
+.sprog-settings--panel {
+    display: flex;
+    flex-direction: column;
 }
 
-.sprog-settings-mt--lead {
-    margin: 0;
-    max-width: 65ch;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
+@media (min-width: 62em) {
+    .sprog-settings--panels {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sprog-settings--panel--wide {
+        grid-column: 1 / -1;
+    }
 }
 
-.sprog-settings-mt--form {
-    display: grid;
-    gap: var(--sprog-spacing);
-}
-
-.sprog-settings-mt--provider {
-    display: grid;
-    gap: 1.2rem;
-    padding: 1.6rem 1.8rem;
-    margin: 0;
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
-}
-
-.sprog-settings-mt--provider-head {
+/* Sektions-Kopf: Titel links, optionale Status-Pille (MT) rechts. */
+.sprog-settings--head {
     display: flex;
     align-items: baseline;
-    gap: 0.8rem;
-    padding: 0;
-    margin: 0;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.2rem;
+    margin-bottom: 1.2rem;
 }
 
-.sprog-settings-mt--provider-label {
-    font-size: 1.6rem;
-    font-weight: 600;
+.sprog-settings--head .sprog-panel--heading {
+    margin-right: auto;
 }
 
-.sprog-settings-mt--field {
+/* Sektions-Hinweis zwischen Kopf und Formular. */
+.sprog-settings--panel > .sprog-panel--hint {
+    margin: 0 0 1.6rem;
+}
+
+.sprog-settings--form {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    gap: 1.6rem;
+}
+
+.sprog-settings--body {
     display: grid;
-    gap: 0.4rem;
+    gap: 1.6rem;
+    min-width: 0;
 }
 
-.sprog-settings-mt--label {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--sprog-color-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
+/* Zwischenüberschrift innerhalb einer Sektion (z. B. „Struktur", „Meta Info",
+   „Sprachbasis"). Ab der zweiten eine dünne Trennlinie darüber. */
+.sprog-settings--subhead {
+    display: grid;
+    gap: 0.3rem;
 }
 
-.sprog-settings-mt--hint {
-    font-size: 1.3rem;
-    color: var(--sprog-color-muted);
-    line-height: 1.5;
+.sprog-settings--body > .sprog-settings--subhead:not(:first-child) {
+    margin-top: 0.4rem;
+    padding-top: 1.6rem;
+    border-top: 1px solid var(--sprog-color-border);
 }
 
-.sprog-settings-mt--hint code {
-    font-size: 0.9em;
-    padding: 0.05em 0.4em;
-    border-radius: 0.4rem;
-    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+.sprog-settings--subhead-title {
+    font-size: var(--sprog-text-xs);
+    font-weight: 700;
     color: var(--sprog-color-fg);
 }
 
-.sprog-settings-mt--input {
-    width: 100%;
-    padding: 0.9rem 1.2rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.64rem;
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    line-height: 1.4;
+/* Responsives Feld-Raster (Sprachbasis-Selects, Meta-Info-Spalten, Wildcard-
+   Tags). Fällt bei schmalem Viewport auf eine Spalte. */
+.sprog-settings--grid {
+    display: grid;
+    gap: 1.2rem 1.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
 }
 
-.sprog-settings-mt--input:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
-    border-color: var(--sprog-color-accent);
+/* Checkbox-/Radio-Liste (Synchronisierung, Workflow). */
+.sprog-settings--checks {
+    display: grid;
+    gap: 0.8rem;
 }
 
-.sprog-settings-mt--input::placeholder {
-    color: color-mix(in srgb, var(--sprog-color-muted) 80%, transparent);
-    font-family: inherit;
-}
-
-.sprog-settings-mt--check {
+.sprog-settings--check {
     display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    font-size: 1.4rem;
+    align-items: flex-start;
+    gap: 0.8rem;
+    font-size: var(--sprog-text-xs);
+    line-height: 1.4;
     color: var(--sprog-color-fg);
     cursor: pointer;
     user-select: none;
 }
 
-.sprog-settings-mt--check input[type="checkbox"] {
+.sprog-settings--check input[type="checkbox"],
+.sprog-settings--check input[type="radio"] {
+    flex: none;
+    margin-top: 0.2rem;
     accent-color: var(--sprog-color-accent);
 }
 
-.sprog-settings-mt--actions {
-    display: flex;
-    flex-wrap: wrap;
+/* Meta-Info-Untergruppe innerhalb „Zwischen den Sprachen" (Mini-Titel + Grid,
+   ohne Trennlinie — gehört zur selben Achse wie Status/Template darüber). */
+.sprog-settings--metagroup {
+    display: grid;
     gap: 0.8rem;
 }
 
-.sprog-settings-mt--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.88rem 1.76rem;
-    border-radius: 0.64rem;
+/* Zwei Meta-Bereiche (Artikel/Kategorien) nebeneinander: field als Spalte,
+   damit die Checkliste die per Grid angeglichene Höhe füllt → beide Boxen
+   gleich hoch. Label sitzt bündig über den Checkbox-Einträgen (gleicher
+   linker Einzug wie das Box-Padding). */
+.sprog-settings--metagroup .sprog-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.sprog-settings--metagroup .sprog-field--label {
+    padding-inline-start: 1.2rem;
+}
+
+/* Checkbox-Auswahlliste (Meta-Info): ersetzt das frühere <select multiple>.
+   Scrollt erst bei Überlauf; die dezente Box grenzt die variable Feld-Auswahl
+   von den festen Optionen (Status/Template) darüber ab. flex:1 füllt die
+   gleiche Bereichshöhe, align-content:start hält die Checkboxen oben.
+   4-Spalten-Raster: Checkbox · Feldname · Trenner · Klartext-Label. */
+.sprog-settings--checklist {
+    display: grid;
+    grid-template-columns: auto auto auto 1fr;
+    gap: 0.7rem 0.6rem;
+    align-content: start;
+    flex: 1;
+    max-height: 24rem;
+    overflow-y: auto;
+    padding: 1.2rem;
     border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius-sm);
     background: var(--sprog-color-bg);
+}
+
+/* Jede Zeile übernimmt die Spalten der Liste (subgrid) → alle Feldnamen gleich
+   breit, alle Klartext-Labels linksbündig untereinander. Das <label> behält
+   seine Box (spannt alle Spalten), die ganze Zeile bleibt klickbar. */
+.sprog-settings--meta-check {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: subgrid;
+    align-items: start;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-color-fg);
-    text-decoration: none;
     cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+    user-select: none;
 }
 
-.sprog-settings-mt--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
+.sprog-settings--meta-check input[type="checkbox"] {
+    margin-top: 0.2rem;
+    accent-color: var(--sprog-color-accent);
 }
 
-.sprog-settings-mt--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
+.sprog-settings--meta-name,
+.sprog-settings--meta-sep {
+    color: var(--sprog-color-muted);
 }
 
-.sprog-settings-mt--button-primary {
-    background: var(--sprog-color-accent);
-    color: #ffffff;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-settings-mt--button-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    color: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-settings-mt {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
-
-        --sprog-status-missing:  #6b7280;
-        --sprog-status-approved: #34d399;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
-    }
-
-    .sprog-settings-mt--button-primary {
-        color: #0b0f19;
-    }
+/* Aktionsreihe (Speichern-Button) rechtsbündig. */
+.sprog-settings--actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.8rem;
+    margin-top: auto;
 }
 
 /*
@@ -2136,145 +922,833 @@
  * rem-Werte: ×1.6 wegen REDAXO-Core (html { font-size: 10px }).
  */
 
-.sprog-glossary {
-    --sprog-color-bg:      #ffffff;
-    --sprog-color-surface: #f9fafb;
-    --sprog-color-fg:      #111827;
-    --sprog-color-muted:   #6b7280;
-    --sprog-color-border:  #e5e7eb;
-    --sprog-color-accent:  #2563eb;
-    --sprog-color-danger:  #dc2626;
+/*
+ * ============================================================================
+ * Geteilter UI-Layer — eine Quelle der Wahrheit für die sprog-v2-Seiten.
+ * ============================================================================
+ * Tokens via .sprog-ui auf dem Seiten-Wrapper; die Komponenten sind seiten-
+ * agnostisch und ziehen ihre Werte aus diesen Tokens. Die Maße sind 1:1 aus den
+ * gemessenen Inbox-Computed-Styles übernommen (Buttons/Zellen 36px, Liste als
+ * zusammenhängender Container), damit Glossar und Inbox pixelgleich wirken.
+ * Inbox/Dashboard tragen vorerst noch eigene Klassen und docken später an.
+ */
+.sprog-ui {
+    --sprog-color-bg:            #ffffff;
+    --sprog-color-surface:       #f3f5f8;
+    --sprog-color-fg:            #1b2733;
+    --sprog-color-muted:         #5b6675;
+    --sprog-color-border:        #dde2e8;
+    --sprog-color-accent:        #4b9ad9;
+    --sprog-color-accent-strong: #3f86c0;
+    --sprog-color-danger:        #d35d5d;
+    /* Semantisches Erfolgsgrün = derselbe Approved-Hue wie die Status-Pillen,
+       damit „completed" (Migration) und „freigegeben" (Inbox/Dashboard) dasselbe
+       Grün sprechen. var() löst zur Nutzungszeit auf → zieht im Dark automatisch
+       mit, ohne eigene Dark-Zeile. */
+    --sprog-color-success:       var(--sprog-status-approved);
+    --sprog-hover:               #eef2f6;
 
-    --sprog-radius:  0.8rem;
-    --sprog-spacing: 1.6rem;
-    --sprog-shadow:  0 1px 2px rgba(0 0 0 / 4%), 0 1px 3px rgba(0 0 0 / 6%);
+    --sprog-radius-sm:   0.6rem;
+    --sprog-radius-md:   1.0rem;
+    --sprog-radius-lg:   1.4rem;
+    --sprog-radius:      var(--sprog-radius-md);
+    --sprog-radius-pill: 999px;
+
+    /* Typo-Skala — eine Quelle der Wahrheit für alle Schriftgrößen im Addon.
+       rem-Basis = 10px (REDAXO-Core html{font-size:10px}), also Wert × 10 = px.
+       Alle Komponenten ziehen ihre Größe aus diesen Stufen, statt eigener
+       Einzelwerte; zum Nachjustieren genügt es, hier eine Stufe zu ändern. */
+    --sprog-text-2xs: 1.2rem;  /* 12px — Badges, Mini-Labels, dichte Meta-Zeilen */
+    --sprog-text-xs:  1.3rem;  /* 13px — Sekundärtext, Hinweise, Body dichter Listen */
+    --sprog-text-sm:  1.4rem;  /* 14px — Standard-Body, Formularfelder */
+    --sprog-text-md:  1.5rem;  /* 15px — hervorgehobener Body */
+    --sprog-text-lg:  1.6rem;  /* 16px — Sektions-Überschriften */
+    --sprog-text-xl:  1.8rem;  /* 18px — Panel-/Modal-Titel */
+    --sprog-text-2xl: 2.4rem;  /* 24px — Seitentitel */
+    --sprog-text-3xl: 3rem;    /* 30px — große Kennzahl (Dashboard) */
+
+    /* Status-Hues (Workflow) — gemeinsam für Dashboard-/Inbox-Pills & Coverage. */
+    --sprog-status-missing:      #9aa6b4;
+    --sprog-status-draft:        #cf9436;
+    --sprog-status-translated:   #5a8fcf;
+    --sprog-status-needs_review: #b87333;
+    --sprog-status-revise:       #9069c9;
+    --sprog-status-approved:     #2f9e76;
+    --sprog-status-stale:        #d35d5d;
+
+    /* Neutral */
+    --sprog-status-missing:      #94a3b8; /* Slate */
+
+    /* In Bearbeitung */
+    --sprog-status-draft:        #e9a23b; /* Amber */
+
+    /* Abgeschlossen, wartet aber noch auf Freigabe */
+    --sprog-status-translated:   #4f8ef7; /* Blue */
+
+    /* Prüfung erforderlich */
+    --sprog-status-needs_review: #ef6c3e; /* Orange */
+
+    /* Zur Überarbeitung zurückgegeben */
+    --sprog-status-revise:       #8b5cf6; /* Violet */
+
+    /* Final */
+    --sprog-status-approved:     #22a06b; /* Green */
+
+    /* Veraltet */
+    --sprog-status-stale:        #cc3b3b; /* Red */
+
+
+    --sprog-space-1: 0.4rem;
+    --sprog-space-2: 0.8rem;
+    --sprog-space-3: 1.2rem;
+    --sprog-space-4: 1.6rem;
+    --sprog-space-5: 2.4rem;
+    --sprog-spacing: var(--sprog-space-4);
+
+    --sprog-shadow:     0 1px 2px rgba(20 30 45 / 5%), 0 1px 3px rgba(20 30 45 / 6%);
+    --sprog-focus-ring: rgba(75 154 217 / 30%);
 
     display: grid;
-    gap: calc(var(--sprog-spacing) * 1.25);
-    max-width: 1200px;
+    /* Einspaltig, aber auf die Container-Breite gedeckelt: minmax(0, 1fr) hält
+       die Spalte schrumpffähig, damit breite Inhalte (lange Übersetzungen in
+       flex-Rows, nowrap-Text) die Seite nicht horizontal aufblähen. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: calc(var(--sprog-spacing) * 1.5);
     color: var(--sprog-color-fg);
 }
 
-.sprog-glossary *,
-.sprog-glossary *::before,
-.sprog-glossary *::after {
+/* Dark Mode: dieselben Token-Namen auf die GitHub-Dark-Palette gelegt, die
+   die Inbox nutzt. Alle .sprog-ui-Komponenten referenzieren diese Tokens,
+   also adaptieren Glossary/Dashboard automatisch — kein komponentenweises
+   Dark-CSS nötig. Werte deckungsgleich mit .sprog-inbox (Single Source). */
+@media (prefers-color-scheme: dark) {
+    .sprog-ui {
+        --sprog-color-bg:            #0d1117;
+        --sprog-color-surface:       #161b22;
+        --sprog-color-fg:            #e6edf3;
+        --sprog-color-muted:         #8d96a0;
+        --sprog-color-border:        #30363d;
+        --sprog-color-accent:        #5aa9e6;
+        --sprog-color-accent-strong: #4b9ad9;
+        --sprog-color-danger:        #e07a7a;
+        --sprog-hover:               #21262d;
+        --sprog-focus-ring:          rgba(90 169 230 / 32%);
+
+        --sprog-status-missing:      #6b7280;
+        --sprog-status-draft:        #d6a44a;
+        --sprog-status-translated:   #6fa8e0;
+        --sprog-status-needs_review: #cd8b46;
+        --sprog-status-revise:       #b08ce0;
+        --sprog-status-approved:     #3fae84;
+        --sprog-status-stale:        #e07a7a;
+
+        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    }
+}
+
+.sprog-ui *,
+.sprog-ui *::before,
+.sprog-ui *::after {
     box-sizing: border-box;
 }
 
-.sprog-glossary--intro {
-    display: grid;
-    gap: 0.6rem;
+/* ── Scoped Reset gegen die Bootstrap-Basis des REDAXO-Backends ──────────────
+   Damit die Komponenten unabhängig von Bootstrap aussehen, statt einzelne
+   Durchgriffe nachträglich zu flicken (z. B. das label { margin-bottom: 5px },
+   das das Suchfeld höher als die Nachbar-Buttons sitzen ließ). :where() hält
+   die Spezifität bei 0 — jede Komponenten-Klasse überschreibt mühelos.
+   Hinweis: Die rem-Basis (html { font-size: 10px }) kommt aus dem REDAXO-Core,
+   nicht aus Bootstrap, und bleibt die Grundlage der ×1.6-rem-Konvention. */
+:where(.sprog-ui) h1,
+:where(.sprog-ui) h2,
+:where(.sprog-ui) h3,
+:where(.sprog-ui) h4 {
+    margin: 0;
+    font: inherit;
 }
 
-.sprog-glossary--heading {
+:where(.sprog-ui) p {
     margin: 0;
-    font-size: 2.4rem;
+}
+
+:where(.sprog-ui) label {
+    margin: 0;
+    font-weight: inherit;
+    max-width: none;
+}
+
+:where(.sprog-ui) input,
+:where(.sprog-ui) select,
+:where(.sprog-ui) textarea,
+:where(.sprog-ui) button {
+    margin: 0;
+    font: inherit;
+    color: inherit;
+}
+
+/* ── Seitenkopf ─────────────────────────────────────────────────────────── */
+.sprog-intro {
+    display: grid;
+    gap: 0.64rem;
+    padding: 1.6rem;
+    /* 1px transparenter Rahmen: hält den Intro-Text bündig zu bordeierten
+       Elementen darunter (Legende/Liste mit 1px Rahmen + gleichem Padding). */
+    border: 1px solid transparent;
+    border-radius: var(--sprog-radius);
+}
+
+.sprog-heading {
+    margin: 0;
+    font-size: var(--sprog-text-2xl);
     font-weight: 600;
     line-height: 1.25;
 }
 
-.sprog-glossary--lead {
+.sprog-lead {
     margin: 0;
-    max-width: 70ch;
+    max-width: 65ch;
     color: var(--sprog-color-muted);
     line-height: 1.5;
 }
 
-.sprog-glossary--filter {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: var(--sprog-spacing);
-    align-items: end;
-    padding: var(--sprog-spacing);
-    background: var(--sprog-color-surface);
+.sprog-lead code {
+    font-size: 0.9em;
+    padding: 0.1em 0.35em;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 12%, transparent);
+    color: var(--sprog-color-fg);
+}
+
+/* ── Legende / Hilfe-Box ────────────────────────────────────────────────── */
+.sprog-legend {
+    margin-bottom: 1.6rem;
     border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
+    border-radius: 0.96rem;
+    background: var(--sprog-color-bg);
+    overflow: hidden;
 }
 
-.sprog-glossary--field {
-    display: grid;
-    gap: 0.4rem;
-    min-width: 0;
+.sprog-legend--summary {
+    display: flex;
+    align-items: center;
+    gap: 0.96rem;
+    padding: 0.96rem 1.28rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--sprog-text-xs);
+    font-weight: 500;
+    color: var(--sprog-color-fg);
+    user-select: none;
 }
 
-.sprog-glossary--label {
+.sprog-legend--summary::-webkit-details-marker,
+.sprog-legend--summary::marker {
+    display: none;
+}
+
+.sprog-legend--summary:hover {
+    background: var(--sprog-hover);
+}
+
+.sprog-legend--icon {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    font-size: 1.25rem;
+    justify-content: center;
+    width: 1.92rem;
+    height: 1.92rem;
+    border-radius: 50%;
+    background: var(--sprog-color-accent);
+    color: #ffffff;
+    font-family: serif;
+    font-size: var(--sprog-text-xs);
+    font-style: italic;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.sprog-legend--body {
+    display: grid;
+    /* Fluid, aber maximal 3 Spalten: die Track-Mindestbreite ist das Maximum
+       aus 18rem (lesbare Breite) und dem fairen 1/3-Anteil der Fläche. Dadurch
+       passen nie mehr als 3 Spalten; auf schmaleren Flächen reflowt es von
+       selbst auf 2 bzw. 1 — ohne harten Media-Query-Sprung. (column-gap 2.4rem
+       → 2 Lücken bei 3 Spalten.) */
+    grid-template-columns: repeat(auto-fit, minmax(max(18rem, (100% - 4.8rem) / 3), 1fr));
+    gap: 1.6rem 2.4rem;
+    padding: 1.28rem 1.6rem 1.6rem;
+    border-top: 1px solid var(--sprog-color-border);
+}
+
+.sprog-legend--section--full {
+    grid-column: 1 / -1;
+}
+
+.sprog-legend--heading {
+    margin: 0 0 0.8rem;
+    font-size: var(--sprog-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.064rem;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-legend--text {
+    margin: 0;
+    color: var(--sprog-color-fg);
+    font-size: var(--sprog-text-xs);
+    line-height: 1.5;
+    max-width: 80ch;
+}
+
+.sprog-legend--list {
+    margin: 0;
+    padding-left: 1.8rem;
+    display: grid;
+    gap: 0.4rem;
+    font-size: var(--sprog-text-xs);
+    line-height: 1.45;
+}
+
+/* Zweispaltige Legende (Inbox): links Texte (Workflow oben + Sprach-Pillen),
+   rechts die Nachschlage-Listen (Status + Aktionen). Überschreibt das fluide
+   auto-fit des geteilten .sprog-legend--body. */
+.sprog-legend--body--split {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+.sprog-legend--col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.6rem;
+    min-width: 0;
+}
+/* In der halbbreiten Spalte einspaltig — überschreibt das mehrspaltige
+   auto-fill der Status-/Aktions-Liste. */
+.sprog-legend--body--split .sprog-inbox--legend-statuses {
+    grid-template-columns: 1fr;
+}
+@media (max-width: 48em) {
+    .sprog-legend--body--split {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sprog-legend--note {
+    margin: 0;
+    padding: 1rem 1.2rem;
+    border-left: 3px solid var(--sprog-color-accent);
+    border-radius: 0 var(--sprog-radius-sm) var(--sprog-radius-sm) 0;
+    background: color-mix(in srgb, var(--sprog-color-accent) 8%, transparent);
+    color: var(--sprog-color-fg);
+    font-size: var(--sprog-text-xs);
+    line-height: 1.5;
+}
+
+.sprog-chevron {
+    margin-left: auto;
+    display: inline-flex;
+    color: var(--sprog-color-muted);
+    transition: transform 0.15s;
+}
+
+.sprog-legend[open] .sprog-legend--summary .sprog-chevron {
+    transform: rotate(180deg);
+}
+
+/* ── Toolbar: Such-Zeile (margin-bottom statt gap) + angedockter Header ──── */
+.sprog-toolbar {
+    display: flex;
+    flex-direction: column;
+}
+
+.sprog-toolbar--row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.96rem;
+    margin-bottom: 1.6rem;
+}
+
+.sprog-toolbar--search {
+    flex: 1 1 24rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.96rem;
+}
+
+.sprog-toolbar--search .sprog-search {
+    flex: 1 1 16rem;
+}
+
+.sprog-search {
+    flex: 1 1 24rem;
+    height: 3.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    /* Kein Streu-Margin: .sprog-search ist ein <label>; in Kontexten ohne
+       .sprog-ui-Reset (z. B. Inbox-Wrapper) würde Bootstrap `label{margin-
+       bottom:5px}` durchschlagen und das Feld ggü. den Buttons versetzen. */
+    margin: 0;
+    padding: 0 0.96rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.96rem;
+    box-sizing: border-box;
+}
+
+.sprog-search:focus-within {
+    border-color: var(--sprog-color-accent);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
+}
+
+.sprog-search--icon {
+    color: var(--sprog-color-muted);
+    display: inline-flex;
+    line-height: 0;
+}
+
+.sprog-search--input {
+    flex: 1;
+    border: 0;
+    background: transparent;
+    color: var(--sprog-color-fg);
+    font: inherit;
+    font-size: var(--sprog-text-xs);
+    padding: 0.32rem 0;
+}
+
+.sprog-search--input:focus-visible {
+    outline: none;
+}
+
+/* ── Filter-Zelle: Höhe 36px (vertikales Padding 0, wie Inbox) ──────────── */
+.sprog-cell {
+    min-height: 3.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.64rem;
+    padding: 0 1.12rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.96rem;
+    cursor: pointer;
+    color: var(--sprog-color-fg);
+    line-height: 1;
+}
+
+.sprog-cell:hover {
+    background: var(--sprog-hover);
+}
+
+.sprog-cell:focus-within {
+    border-color: var(--sprog-color-accent);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
+}
+
+.sprog-cell--label {
+    font-size: var(--sprog-text-xs);
     font-weight: 600;
     color: var(--sprog-color-muted);
     text-transform: uppercase;
     letter-spacing: 0.04em;
 }
 
-.sprog-glossary--clang-tag {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 0.85em;
-    padding: 0.1em 0.5em;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--sprog-color-muted) 14%, transparent);
+.sprog-cell--select {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
+    background: transparent;
     color: var(--sprog-color-fg);
-    text-transform: lowercase;
-    letter-spacing: 0;
+    font: inherit;
+    font-size: var(--sprog-text-xs);
+    padding: 0.24rem 1.6rem 0.24rem 0.32rem;
+    cursor: pointer;
+    background-image: linear-gradient(45deg, transparent 50%, var(--sprog-color-muted) 50%),
+                      linear-gradient(135deg, var(--sprog-color-muted) 50%, transparent 50%);
+    background-position: calc(100% - 0.96rem) 50%, calc(100% - 0.48rem) 50%;
+    background-size: 0.48rem 0.48rem, 0.48rem 0.48rem;
+    background-repeat: no-repeat;
 }
 
-.sprog-glossary--filter select,
-.sprog-glossary--input,
-.sprog-glossary--textarea {
-    padding: 0.8rem 1rem;
-    border-radius: 0.56rem;
+.sprog-cell--select:focus-visible {
+    outline: none;
+}
+
+/* ── Buttons: Höhe 36px ─────────────────────────────────────────────────── */
+.sprog-btn {
+    min-height: 3.6rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.64rem 1.6rem;
     border: 1px solid var(--sprog-color-border);
+    border-radius: 0.96rem;
     background: var(--sprog-color-bg);
     color: var(--sprog-color-fg);
     font: inherit;
-    line-height: 1.4;
+    font-size: var(--sprog-text-xs);
+    font-weight: 600;
+    line-height: 1;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.sprog-btn:hover:not(:disabled) {
+    background: var(--sprog-hover);
+}
+
+.sprog-btn:focus-visible {
+    outline: 2px solid var(--sprog-color-accent);
+    outline-offset: 2px;
+}
+
+.sprog-btn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+/* Primary spiegelt den „Neue Einheit"-Button der Inbox (radius 6.4, fs 15, fw 500). */
+.sprog-btn--primary {
+    padding: 0.72rem 1.6rem;
+    border-radius: 0.64rem;
+    background: var(--sprog-color-accent);
+    border-color: var(--sprog-color-accent);
+    color: #ffffff;
+    font-size: var(--sprog-text-md);
+    font-weight: 500;
+}
+
+.sprog-btn--primary:hover:not(:disabled) {
+    background: var(--sprog-color-accent-strong);
+    border-color: var(--sprog-color-accent-strong);
+    color: #ffffff;
+}
+
+.sprog-btn--reset {
+    min-height: 3.6rem;
+    padding: 0.48rem 0.96rem;
+    border-color: transparent;
+    background: transparent;
+    border-radius: 0.64rem;
+    color: var(--sprog-color-muted);
+    font-weight: 400;
+}
+
+.sprog-btn--reset:hover:not(:disabled) {
+    background: var(--sprog-hover);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-btn--icon {
+    min-height: 0;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    border-color: transparent;
+    background: transparent;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-btn--icon:hover:not(:disabled) {
+    background: var(--sprog-hover);
+}
+
+/* Kompakte Größe (z. B. Workflow-Buttons in der Inbox-Zeile). */
+.sprog-btn--sm {
+    min-height: 2.8rem;
+    padding: 0.48rem 0.96rem;
+    border-radius: 0.64rem;
+    font-size: var(--sprog-text-xs);
+}
+
+/* ── Listen-Header: dockt oben an die Liste an (Radius oben, kein Bottom-Rand) ── */
+.sprog-list-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.96rem;
+    padding: 0.96rem 1.28rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius) var(--sprog-radius) 0 0;
+}
+
+.sprog-summary {
+    margin: 0;
+    color: var(--sprog-color-muted);
+    font-size: var(--sprog-text-sm);
+}
+
+.sprog-summary strong {
+    color: var(--sprog-color-fg);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-list-header--filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.64rem;
+}
+
+/* ── Formularfeld ───────────────────────────────────────────────────────── */
+.sprog-field {
+    display: grid;
+    gap: 0.4rem;
     min-width: 0;
 }
 
-.sprog-glossary--textarea {
-    resize: vertical;
-    line-height: 1.5;
+.sprog-field--label {
+    font-size: var(--sprog-text-2xs);
+    font-weight: 600;
+    color: var(--sprog-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
-.sprog-glossary--filter select:focus-visible,
-.sprog-glossary--input:focus-visible,
-.sprog-glossary--textarea:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 1px;
+/* (.sprog-field--input/--textarea entfernt — die Felder nutzen jetzt das
+   geteilte .sprog-control/.sprog-control--textarea. .sprog-field bleibt der
+   generische Label+Control-Wrapper, --label das Label.) */
+
+/* ── Geteiltes Form-Control (input / select / textarea) ──────────────────────
+   Eine Optik für alle editierbaren Felder. Token-getrieben → light + dark
+   automatisch. Varianten: --textarea (mehrzeilig), --mono (z. B. Key-Felder). */
+.sprog-control {
+    width: 100%;
+    min-width: 0;
+    padding: 0.8rem 1.12rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius-sm);
+    background: var(--sprog-color-bg);
+    color: var(--sprog-color-fg);
+    font: inherit;
+    font-size: var(--sprog-text-sm);
+    line-height: 1.4;
+}
+
+.sprog-control:focus-visible {
+    outline: none;
     border-color: var(--sprog-color-accent);
+    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
 }
 
-.sprog-glossary--filter-actions {
-    display: flex;
-    gap: 0.8rem;
-    align-items: center;
+.sprog-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
-.sprog-glossary--add {
-    display: grid;
-    gap: 1rem;
-    padding: 1.4rem 1.6rem;
+.sprog-control[readonly] {
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-muted);
+    cursor: not-allowed;
+}
+
+.sprog-control--textarea {
+    min-height: 5.6rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.sprog-control--mono {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* ── Panel: eigenständige Inhalts-Sektion (Dashboard-Sections, Migration-
+   Karten, …) ────────────────────────────────────────────────────────────────
+   Box mit Rahmen + Radius + Shadow; token-getrieben (light + dark). Varianten:
+   --muted (Leerzustand: gestrichelt, surface, kein Shadow, zentriert),
+   --heading / --hint (Sektions-Titel + Untertitel). */
+.sprog-panel {
+    padding: 2rem;
     background: var(--sprog-color-bg);
     border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
+    border-radius: var(--sprog-radius-lg, 1.4rem);
     box-shadow: var(--sprog-shadow);
 }
 
-.sprog-glossary--section-heading {
+.sprog-panel--muted {
+    border-style: dashed;
+    background: var(--sprog-color-surface);
+    box-shadow: none;
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+.sprog-panel--head {
+    margin-bottom: 1.2rem;
+}
+
+.sprog-panel--heading {
     margin: 0;
-    font-size: 1.6rem;
+    font-size: var(--sprog-text-lg);
+    font-weight: 700;
+}
+
+.sprog-panel--hint {
+    margin: 0.3rem 0 0;
+    font-size: var(--sprog-text-xs);
+    color: var(--sprog-color-muted);
+}
+
+/* ── Leerzustand: dockt wie die Liste unten an den Header an ─────────────── */
+.sprog-empty {
+    margin: 0;
+    padding: var(--sprog-spacing);
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-top: none;
+    border-radius: 0 0 var(--sprog-radius) var(--sprog-radius);
+    color: var(--sprog-color-muted);
+    text-align: center;
+}
+
+/* ── Note: hervorgehobener Hinweis-Block (Banner) ────────────────────────────
+   Box mit Icon + Text. Varianten: --info (amber, getönt), --warning (rot).
+   Token-getrieben (light + dark). Teile: --icon (führend), --label (fett). */
+.sprog-note {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.8rem;
+    margin: 0;
+    padding: 0.96rem 1.28rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius-sm);
+    background: var(--sprog-color-surface);
+    color: var(--sprog-color-fg);
+    font-size: var(--sprog-text-xs);
+    line-height: 1.5;
+}
+
+.sprog-note--info {
+    background: color-mix(in srgb, var(--sprog-status-draft) 12%, var(--sprog-color-bg));
+    border-color: color-mix(in srgb, var(--sprog-status-draft) 40%, var(--sprog-color-border));
+}
+
+.sprog-note--warning {
+    background: color-mix(in srgb, var(--sprog-status-stale) 8%, var(--sprog-color-bg));
+    border-color: color-mix(in srgb, var(--sprog-status-stale) 40%, var(--sprog-color-border));
+}
+
+.sprog-note--icon {
+    flex: none;
+    margin-top: 0.1rem;
+    display: inline-flex;
+}
+
+.sprog-note--icon svg {
+    display: block;
+}
+
+.sprog-note--label {
     font-weight: 600;
+}
+
+.sprog-note--warning .sprog-note--icon,
+.sprog-note--warning strong {
+    color: var(--sprog-status-stale);
+}
+
+/* ── Hint: kleine Helfer-/Statuszeile (inline, kein Kasten) ──────────────────
+   Basis muted; Varianten --warning (rot), --ok (grün), --italic. */
+.sprog-hint {
+    margin: 0;
+    font-size: var(--sprog-text-xs);
+    line-height: 1.4;
+    color: var(--sprog-color-muted);
+}
+
+.sprog-hint--warning { color: var(--sprog-status-stale); }
+.sprog-hint--ok      { color: var(--sprog-status-approved); }
+.sprog-hint--italic  { font-style: italic; }
+
+.sprog-hint code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--sprog-color-surface);
+    padding: 0 0.32rem;
+    border-radius: 0.32rem;
+}
+
+/* ── Button-Gruppe: horizontale Aktionsreihe ────────────────────────────────── */
+.sprog-btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.48rem;
+}
+
+/*
+ * ============================================================================
+ * Glossar — nutzt den geteilten UI-Layer; hier nur das Glossar-Spezifische.
+ * ============================================================================
+ */
+
+/* Anlegen: <details>, Trigger in der Zeile, Formular klappt als Dropdown auf. */
+.sprog-glossary--add {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sprog-glossary--add-trigger {
+    list-style: none;
+    user-select: none;
+}
+
+.sprog-glossary--add-trigger::-webkit-details-marker,
+.sprog-glossary--add-trigger::marker {
+    display: none;
+}
+
+.sprog-glossary--add-plus {
+    display: inline-flex;
+    font-size: var(--sprog-text-lg);
+    line-height: 1;
+    transition: transform 0.15s;
+}
+
+.sprog-glossary--add[open] .sprog-glossary--add-trigger {
+    background: var(--sprog-color-surface);
+    border-color: var(--sprog-color-border);
+    color: var(--sprog-color-fg);
+}
+
+.sprog-glossary--add[open] .sprog-glossary--add-plus {
+    transform: rotate(45deg);
+}
+
+.sprog-glossary--add-popup {
+    position: absolute;
+    top: calc(100% + 0.4rem);
+    right: 0;
+    z-index: 50;
+    width: min(42rem, 92vw);
+    padding: 1.6rem;
+    background: var(--sprog-color-bg);
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius);
+    box-shadow: 0 0.96rem 1.92rem rgba(15 23 42 / 12%);
 }
 
 .sprog-glossary--add-form {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1rem;
+    gap: 1.2rem;
     align-items: start;
 }
 
-.sprog-glossary--field-notes {
+/* Native <select> exakt so hoch wie die Text-Inputs (gleiche Box-Metrik:
+   line-height 1.4 · font 1.44rem + padding 0.8rem oben/unten + 1px Rahmen).
+   Ohne das rendern Browser Selects einige Pixel niedriger als Inputs. */
+.sprog-glossary--add-form select.sprog-control {
+    box-sizing: border-box;
+    height: calc(1.44rem * 1.4 + 1.6rem + 2px);
+}
+
+.sprog-glossary--add-form .sprog-field--wide {
     grid-column: 1 / -1;
 }
 
@@ -2284,159 +1758,286 @@
     gap: 0.8rem;
 }
 
-.sprog-glossary--count {
-    margin: 0;
-    color: var(--sprog-color-muted);
-    font-size: 1.36rem;
+/* „Nicht übersetzen"-Checkbox als Zeile (Haken + Label nebeneinander). */
+.sprog-glossary--verbatim {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.6rem;
+}
+/* Ziel-Block: volle Breite, zweispaltig (Sprache + Begriff), ausblendbar. */
+.sprog-glossary--target-block {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.2rem;
+    align-items: start;
+}
+.sprog-glossary--target-block[hidden] {
+    display: none;
+}
+/* Zeilen-Aktionen: Bearbeiten + Löschen nebeneinander. */
+.sprog-glossary--row-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-.sprog-glossary--count strong {
+.sprog-glossary--pair-arrow {
+    color: var(--sprog-color-muted);
+    font-size: var(--sprog-text-xs);
+}
+
+/* ── Liste: ein zusammenhängender Container, bündige Zeilen (wie Inbox) ──── */
+/* Sprach-Code-Chip — geteilt von Glossary & Inbox (Mono-Pill auf Surface). */
+.sprog-clang-code {
+    display: inline-block;
+    min-width: 3.2rem;
+    padding: 0.16rem 0.64rem;
+    border-radius: 0.64rem;
+    background: var(--sprog-color-surface);
     color: var(--sprog-color-fg);
-    font-variant-numeric: tabular-nums;
-}
-
-.sprog-glossary--empty {
-    margin: 0;
-    padding: var(--sprog-spacing);
-    border: 1px dashed var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    color: var(--sprog-color-muted);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: var(--sprog-text-xs);
+    font-weight: 600;
+    text-transform: uppercase;
     text-align: center;
 }
 
-.sprog-glossary--list {
-    display: grid;
-    gap: 0.8rem;
+/* ── Geteilte Listen-/Row-Komponente ────────────────────────────────────────
+   Eine zusammenhängende Liste (.sprog-list dockt unter dem .sprog-list-header)
+   aus Zeilen (.sprog-row) mit fester Slot-Anatomie:
+       [--lead] [--icon] [--title] [--body (wächst)] … [--trailing (rechts)]
+   Varianten:
+   • --accordion: die Row IST ein <summary> (Chevron rotiert via [open]).
+   • --aligned:   --title bekommt feste Breite (--sprog-row-title-w), damit der
+                  --body über alle Zeilen an derselben x-Position beginnt. */
+.sprog-list {
+    display: block;
     margin: 0;
     padding: 0;
     list-style: none;
-}
-
-.sprog-glossary--card {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 0.5rem 1.2rem;
-    align-items: center;
-    padding: 1rem 1.2rem;
     background: var(--sprog-color-bg);
     border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius);
-    box-shadow: var(--sprog-shadow);
+    border-top: none;   /* dockt unter dem .sprog-list-header an */
+    border-radius: 0 0 var(--sprog-radius) var(--sprog-radius);
+    overflow: hidden;
 }
 
-.sprog-glossary--pair {
+/* Items werden per Haarlinie getrennt — egal ob das <li> selbst eine .sprog-row
+   ist (flache Liste) oder ein <details>-Akkordeon enthält. Eine Quelle für den
+   Separator; kein eigener Item-Wrapper-Klassenname nötig. (Kein `display` hier,
+   sonst überschriebe es per höherer Spezifität das .sprog-row-Flex der flachen
+   Glossary-Zeilen.) */
+.sprog-list > li {
+    border-bottom: 1px solid var(--sprog-color-border);
+}
+
+.sprog-list > li:last-child {
+    border-bottom: none;
+}
+
+.sprog-row {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.7rem;
+    align-items: center;
+    gap: 1.2rem;
+    padding: 1.2rem 1.92rem;
+    transition: background-color 0.15s;
+}
+
+.sprog-row:not(.sprog-row--accordion):hover {
+    background: var(--sprog-hover);
+}
+
+.sprog-row--lead,
+.sprog-row--icon,
+.sprog-row--trailing {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sprog-row--trailing {
+    margin-left: auto;   /* schiebt die Trailing-Gruppe nach rechts */
+    gap: 0.8rem;
+}
+
+.sprog-row--title {
+    flex: 0 1 auto;
     min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.sprog-glossary--source-term,
-.sprog-glossary--target-term {
+.sprog-row--body {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Spalten-Variante: feste Titelbreite → Body fluchtet über alle Zeilen. */
+.sprog-row--aligned {
+    --sprog-row-title-w: 18rem;
+}
+
+.sprog-row--aligned .sprog-row--title {
+    flex: 0 0 var(--sprog-row-title-w);
+}
+
+/* Akkordeon-Variante: die Row IST das <summary> eines .sprog-accordion. Fläche/
+   Hover/Chevron-Rotation kommen vom umgebenden .sprog-accordion (unten). */
+.sprog-row--accordion {
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+}
+
+.sprog-row--accordion::-webkit-details-marker {
+    display: none;
+}
+
+/* ── Geteiltes Akkordeon ──────────────────────────────────────────────────────
+   <details class="sprog-accordion …"> mit <summary class="sprog-row
+   sprog-row--accordion …"> und Inhalt in .sprog-accordion--body. Flächen und
+   Zustände sind token-getrieben (light + dark), daher seiten-agnostisch. */
+.sprog-accordion {
+    background: var(--sprog-color-bg);
+    overflow: hidden;
+}
+
+.sprog-accordion:hover {
+    background: var(--sprog-hover);
+}
+
+.sprog-accordion:focus-within {
+    background: color-mix(in srgb, var(--sprog-color-accent) 16%, transparent);
+}
+
+/* Offen = abgesetzte Karte: Cyan-Kante links (nicht von overflow:hidden
+   geclippt), klare Ober/Unterlinie, leicht getönter Header. Gewinnt über
+   Hover/Focus (steht später, gleiche Spezifität). */
+.sprog-accordion[open],
+.sprog-accordion[open]:hover {
+    background: var(--sprog-color-bg);
+    box-shadow: inset 3px 0 0 0 var(--sprog-color-accent);
+    border-top: 1px solid var(--sprog-color-border);
+    border-bottom: 1px solid var(--sprog-color-border);
+}
+
+.sprog-accordion[open] > .sprog-row--accordion {
+    background: color-mix(in srgb, var(--sprog-color-accent) 9%, transparent);
+}
+
+/* Lead-Chevron rotiert beim Öffnen. */
+.sprog-accordion > .sprog-row--accordion .sprog-row--lead {
+    transition: transform 0.15s ease;
+}
+
+.sprog-accordion[open] > .sprog-row--accordion .sprog-row--lead {
+    transform: rotate(90deg);
+}
+
+/* Aufklapp-Inhalt: durch eine Haarlinie vom Header abgesetzt. */
+.sprog-accordion--body {
+    border-top: 1px solid var(--sprog-color-border);
+}
+
+/* Glossary-Zeile = geteilte .sprog-row.sprog-row--aligned; hier nur die
+   glossar-spezifische Typografie der Slot-Inhalte. Feste Titelbreite, damit
+   die Zielwörter über alle Zeilen fluchten (Body beginnt an gleicher x-Pos). */
+
+/* Wrap für die optionale Notiz-Zeile unter dem Begriffspaar. */
+.sprog-glossary .sprog-row {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+}
+
+/* Feste Breite der Sprach-Badge, damit die Quell-Begriffe (.sprog-row--title)
+   über alle Zeilen linksbündig untereinander starten — unabhängig von der
+   Code-Länge bzw. dem „Alle"-Ziel. Überschreibt das flex:none von .sprog-row--icon. */
+.sprog-glossary--langs {
+    flex: 0 0 12rem;
+    justify-content: flex-start;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sprog-glossary--langs-sep {
+    color: var(--sprog-color-muted);
+    font-size: var(--sprog-text-2xs);
+}
+
+/* Quellwort: Typo wie der Inbox-Schlüssel (monospace, 1.4rem, 600). */
+.sprog-glossary--source-term {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 1.5rem;
-    color: var(--sprog-color-fg);
-    overflow-wrap: anywhere;
-}
-
-.sprog-glossary--target-term {
-    color: var(--sprog-color-accent);
+    font-size: var(--sprog-text-sm);
     font-weight: 600;
+    color: var(--sprog-color-fg);
 }
 
 .sprog-glossary--arrow {
+    flex: none;
     color: var(--sprog-color-muted);
-    font-size: 1.3rem;
+    font-size: var(--sprog-text-xs);
 }
 
+/* Zielwort: Typo wie die Inbox-Übersetzung. */
+.sprog-glossary--target-term {
+    min-width: 0;
+    font-size: var(--sprog-text-sm);
+    color: var(--sprog-color-fg);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Text-Basis (muted) aus dem geteilten .sprog-hint; hier nur die Positionierung
+   in der Glossar-Zeile (volle Breite, unter dem Titel eingerückt) + Schriftgröße. */
 .sprog-glossary--notes {
-    grid-column: 1 / -1;
-    margin: 0;
-    color: var(--sprog-color-muted);
-    font-size: 1.3rem;
+    flex-basis: 100%;
+    padding-left: calc(var(--sprog-row-title-w) + 1.2rem);
+    font-size: var(--sprog-text-xs);
     line-height: 1.5;
 }
 
-.sprog-glossary--delete-form {
-    margin: 0;
-}
-
-.sprog-glossary--button {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    font: inherit;
-    font-weight: 500;
-    padding: 0.7rem 1.4rem;
-    border-radius: 0.56rem;
-    border: 1px solid var(--sprog-color-border);
-    background: var(--sprog-color-bg);
-    color: var(--sprog-color-fg);
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s, color 0.15s;
-}
-
-.sprog-glossary--button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-fg) 6%, transparent);
-}
-
-.sprog-glossary--button:focus-visible {
-    outline: 2px solid var(--sprog-color-accent);
-    outline-offset: 2px;
-}
-
-.sprog-glossary--button-primary {
-    background: var(--sprog-color-accent);
-    color: #ffffff;
-    border-color: var(--sprog-color-accent);
-}
-
-.sprog-glossary--button-primary:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    border-color: color-mix(in srgb, var(--sprog-color-accent) 85%, black);
-    color: #ffffff;
-}
-
-.sprog-glossary--button-ghost {
-    background: transparent;
-    color: var(--sprog-color-muted);
-    font-size: 1.2rem;
-    padding: 0.5rem 1rem;
-}
-
-.sprog-glossary--button-ghost:hover {
+.sprog-glossary--delete-button:hover:not(:disabled) {
     color: var(--sprog-color-danger);
-    border-color: var(--sprog-color-danger);
-    background: color-mix(in srgb, var(--sprog-color-danger) 6%, transparent);
+    background: color-mix(in srgb, var(--sprog-color-danger) 8%, transparent);
 }
 
 @media (max-width: 600px) {
+    .sprog-glossary--add-popup {
+        position: static;
+        width: 100%;
+        margin-top: 0.8rem;
+        box-shadow: none;
+    }
+
     .sprog-glossary--add-form {
         grid-template-columns: 1fr;
     }
 
-    .sprog-glossary--card {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-glossary {
-        --sprog-color-bg:      #1f2937;
-        --sprog-color-surface: #111827;
-        --sprog-color-fg:      #f3f4f6;
-        --sprog-color-muted:   #9ca3af;
-        --sprog-color-border:  #374151;
-        --sprog-color-accent:  #60a5fa;
-        --sprog-color-danger:  #f87171;
-
-        --sprog-shadow: 0 1px 2px rgba(0 0 0 / 30%), 0 1px 3px rgba(0 0 0 / 30%);
+    /* Begriffspaar stapelt: Titel + Body je volle Breite (feste Titelbreite
+       aufgehoben), Sprach-Pillen links / Löschen rechts in Zeile 1. */
+    .sprog-glossary .sprog-row--aligned .sprog-row--title {
+        flex: 1 1 100%;
+        white-space: normal;
     }
 
-    .sprog-glossary--button-primary {
-        color: #0b0f19;
+    .sprog-glossary .sprog-row--body {
+        flex: 1 1 100%;
+    }
+
+    .sprog-glossary--target-term {
+        white-space: normal;
+    }
+
+    .sprog-glossary--notes {
+        padding-left: 0;
     }
 }
 
@@ -2450,93 +2051,35 @@
  * visuell abgesenkt und mit readonly-Hint markiert.
  */
 
-.sprog-inbox--unit {
-    background: #ffffff;
-    overflow: hidden;
-}
+/* Fläche/Hover/Open-Karte des <details> kommen aus dem geteilten
+   .sprog-accordion; der Item-Separator aus .sprog-list > li. .sprog-inbox--unit
+   trägt nur noch inboxspezifische Kind-Effekte (Key-Buttons-Reveal, s. u.). */
 
-/*
- * Cards rücken jetzt eng zusammen: der gemeinsame border-radius/border kommt
- * vom .sprog-inbox--list-Container, die Trennung zwischen Units übernimmt ein
- * dünner border-bottom. Kein Box-Shadow — bewusst flacher, GitHub-näher.
- */
-.sprog-inbox--card {
-    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
-}
-
-.sprog-inbox--card:last-child {
-    border-bottom: none;
-}
-
-/*
- * Aktiver Zustand: helles Blau aus dem REDAXO-Header-Cyan (#4b9ad9, 12%).
- * Hover bleibt neutral grau — so kann man den geöffneten Eintrag auch
- * beim Hovern noch klar vom geschlossenen unterscheiden.
- */
-.sprog-inbox--unit[open] {
-    background: rgba(75 154 217 / 16%);
-}
-
-.sprog-inbox--unit-summary {
-    display: grid;
-    grid-template-columns: auto 1fr auto auto auto;
-    align-items: center;
-    gap: 1.92rem;
-    padding: 1.6rem 1.92rem;
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
-}
-
-.sprog-inbox--unit-summary::-webkit-details-marker {
-    display: none;
-}
-
+/* Layout via geteiltes .sprog-row (Flex), Cursor/Marker via .sprog-row--accordion.
+   Hier nur der Tastatur-Fokusring der Summary. */
 .sprog-inbox--unit-summary:focus-visible {
     outline: 0.32rem solid var(--sprog-focus, #6366f1);
     outline-offset: -0.32rem;
 }
 
-.sprog-inbox--unit-summary .sprog-inbox--namespace {
-    font-size: 1.12rem;
-    text-transform: uppercase;
-    letter-spacing: 0.064rem;
-    color: var(--sprog-muted, #64748b);
-}
-
-.sprog-inbox--unit-summary .sprog-inbox--key {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: var(--sprog-text, #0f172a);
-    word-break: break-all;
-}
-
 .sprog-inbox--coverage {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-muted, #64748b);
     padding: 0.32rem 0.96rem;
     border-radius: 0.96rem;
     background: var(--sprog-surface-muted, #f1f5f9);
 }
 
-.sprog-inbox--chevron {
-    font-size: 1.6rem;
-    color: var(--sprog-muted, #64748b);
-    transition: transform 0.15s ease;
-}
+/* (Entfernt: .sprog-inbox--chevron — Filter/Status nutzen jetzt das geteilte
+   .sprog-chevron, das Unit-Akkordeon den --lead-Slot.) */
 
-.sprog-inbox--unit[open] .sprog-inbox--chevron {
-    transform: rotate(180deg);
-}
-
+/* Trennlinie zum Header kommt aus .sprog-accordion--body. */
 .sprog-inbox--rows {
     padding: 1.6rem 1.92rem 1.92rem;
     display: flex;
     flex-direction: column;
     gap: 1.6rem;
-    border-top: 1px solid var(--sprog-border, #e5e7eb);
 }
 
 .sprog-inbox--row {
@@ -2555,7 +2098,7 @@
     opacity: 0.7;
 }
 
-.sprog-inbox--row.is-stale .sprog-inbox--textarea {
+.sprog-inbox--row.is-stale .sprog-control {
     border-color: var(--sprog-status-stale, #ef4444);
 }
 
@@ -2566,72 +2109,26 @@
     flex-wrap: wrap;
 }
 
-.sprog-inbox--clang-code {
-    display: inline-block;
-    min-width: 3.2rem;
-    padding: 0.16rem 0.64rem;
-    border-radius: 0.64rem;
-    background: var(--sprog-surface-muted, #f1f5f9);
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.12rem;
-    text-transform: uppercase;
-    color: var(--sprog-text, #0f172a);
-    text-align: center;
-}
+/* Sprach-Code-Chip nutzt jetzt das geteilte .sprog-clang-code (token-getrieben,
+   dark-mode-fähig). Die frühere Inbox-Kopie lief auf Slate-Fallbacks. */
 
 .sprog-inbox--clang-name {
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-text, #0f172a);
 }
 
+/* Hints/Feedback nutzen jetzt das geteilte .sprog-hint (Basis muted; --italic /
+   --warning für readonly/stale). Hier nur das Inbox-Spezifische: */
 .sprog-inbox--readonly-hint {
-    margin-left: auto;
-    font-size: 1.12rem;
-    color: var(--sprog-muted, #64748b);
-    font-style: italic;
+    margin-left: auto;   /* schiebt den Hint im Zeilenkopf nach rechts */
 }
 
-.sprog-inbox--stale-hint {
-    margin: 0;
-    font-size: 1.12rem;
-    color: var(--sprog-status-stale, #ef4444);
-}
+/* Das Wert-Feld nutzt jetzt das geteilte .sprog-control.sprog-control--textarea
+   (Basis/Focus/Readonly/Disabled dort). */
 
-.sprog-inbox--textarea {
-    width: 100%;
-    min-height: 5.6rem;
-    padding: 0.96rem 1.28rem;
-    border: 1px solid var(--sprog-border, #e5e7eb);
-    border-radius: 0.96rem;
-    background: var(--sprog-surface, #ffffff);
-    color: var(--sprog-text, #0f172a);
-    font-family: inherit;
-    font-size: 1.44rem;
-    line-height: 1.5;
-    resize: vertical;
-}
-
-.sprog-inbox--textarea:focus-visible {
-    outline: none;
-    border-color: var(--sprog-focus);
-    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
-}
-
-.sprog-inbox--textarea[readonly] {
-    background: var(--sprog-surface-muted, #f1f5f9);
-    color: var(--sprog-muted, #64748b);
-    cursor: not-allowed;
-}
-
-.sprog-inbox--textarea:disabled {
-    opacity: 0.6;
-}
-
+/* Save-Feedback = .sprog-hint + reservierte Höhe; data-kind setzt das JS. */
 .sprog-inbox--row-feedback {
-    margin: 0;
     min-height: 1.6rem;
-    font-size: 1.12rem;
-    color: var(--sprog-muted, #64748b);
 }
 
 .sprog-inbox--row-feedback[data-kind="ok"]      { color: var(--sprog-status-approved, #10b981); }
@@ -2657,7 +2154,7 @@
     border-radius: 0.96rem;
     background: var(--sprog-text, #0f172a);
     color: #ffffff;
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     box-shadow: 0 0.32rem 1.28rem rgba(15 23 42 / 25%);
     max-width: 60ch;
 }
@@ -2666,42 +2163,13 @@
 .sprog-inbox--toast[data-kind="warn"]  { background: var(--sprog-status-needs_review, #d97706); }
 .sprog-inbox--toast[data-kind="error"] { background: var(--sprog-status-stale, #ef4444); }
 
-@media (prefers-color-scheme: dark) {
-    .sprog-inbox--unit {
-        background: #111827;
-        border-color: #1f2937;
-    }
+/* (Entfernt: Slate-Dark-Überbleibsel für --unit/--coverage/--textarea (#111827/
+   #1f2937/#0b1220). Fläche kommt jetzt aus .sprog-accordion / .sprog-control /
+   --sprog-surface-muted — alle token-getrieben, im Dark also GitHub-Dark.) */
 
-    .sprog-inbox--coverage,
-    .sprog-inbox--clang-code,
-    .sprog-inbox--textarea[readonly] {
-        background: #1f2937;
-        color: #cbd5e1;
-    }
-
-    .sprog-inbox--textarea {
-        background: #0b1220;
-        color: #f1f5f9;
-        border-color: #1f2937;
-    }
-}
-
-@media (max-width: 48em) {
-    .sprog-inbox--unit-summary {
-        grid-template-columns: 1fr auto;
-        grid-template-areas:
-            "namespace status"
-            "key       coverage"
-            "chevron   chevron";
-        gap: 0.64rem 0.96rem;
-    }
-
-    .sprog-inbox--unit-summary .sprog-inbox--namespace { grid-area: namespace; }
-    .sprog-inbox--unit-summary .sprog-inbox--key       { grid-area: key; }
-    .sprog-inbox--coverage                             { grid-area: coverage; justify-self: end; }
-    .sprog-inbox--unit-summary .sprog-status           { grid-area: status; justify-self: end; }
-    .sprog-inbox--chevron                              { grid-area: chevron; justify-self: end; }
-}
+/* (Entfernt: totes altes Mobile-Summary-Grid — referenzierte --namespace/
+   --coverage/.sprog-status/--chevron, alle nicht mehr im Markup. Das aktuelle
+   Mobile-Layout steht im Live-@media weiter unten.) */
 
 /*
  * ============================================================================
@@ -2716,149 +2184,36 @@
  * Dark-Mode unten weiter funktioniert.
  */
 
-.sprog-inbox--toolbar {
-    /* Kein eigener Hintergrund — die Toolbar ist nur Container; Such-Row ist
-       transparent, der List-Header bringt seine eigene Fläche mit. (Sonst
-       läge im Dark-Mode ein heller Block hinter der Such-Row.) */
-    display: flex;
-    flex-direction: column;
-    background: transparent;
-}
+/* Toolbar-Container nutzt jetzt den geteilten .sprog-toolbar. */
 
 /*
  * Reihe 1: Suchfeld + Filtern/Reset + Neue Einheit.
  * Suchfeld wächst, rechte Buttons behalten ihre Breite.
  */
-.sprog-inbox--search-row {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.96rem;
-    margin-bottom: 1.6rem;
-}
-
-.sprog-inbox--search-row .sprog-inbox--toolbar-search {
-    flex: 1 1 auto;
-}
-
-.sprog-inbox--search-row .sprog-inbox--button {
+/* Such-Zeile nutzt jetzt den geteilten .sprog-toolbar--row; das Suchfeld
+   (.sprog-search) wächst über dessen flex-Basis. Nur die Rechtsbündigkeit des
+   „Neue Einheit"-Buttons bleibt inbox-spezifisch (per data-role). */
+.sprog-toolbar--row [data-role="unit-create-trigger"] {
     margin-left: auto;
 }
 
-/*
- * Listen-Header: Anzahl links, Dropdown-Filter rechts. Sitzt direkt oberhalb
- * der Liste und teilt sich mit ihr den gemeinsamen border-Container — daher
- * border-radius nur oben, kein border-bottom (das übernimmt die Liste).
- */
-.sprog-inbox--list-header {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.96rem;
-    padding: 0.96rem 1.28rem;
-    background: var(--sprog-cell-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-top-left-radius: var(--sprog-radius-md);
-    border-top-right-radius: var(--sprog-radius-md);
-    border-bottom: none;
-}
+/* Listen-Header + Filter-Container nutzen jetzt den geteilten
+   .sprog-list-header / .sprog-list-header--filters (effektiv wertgleich:
+   Rahmen 1px rundum inkl. Trennlinie unten, Radius nur oben). */
 
-.sprog-inbox--list-header-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.64rem;
-}
-
-.sprog-inbox--toolbar-cell {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    padding: 0.48rem 0.96rem;
-    background: #ffffff;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.96rem;
-    cursor: pointer;
-    color: var(--sprog-color-fg);
-    line-height: 1;
-}
-
-.sprog-inbox--toolbar-cell:hover {
-    background: var(--sprog-hover);
-}
-
-.sprog-inbox--toolbar-cell-label {
-    font-size: 1.12rem;
-    color: var(--sprog-color-muted);
-    font-weight: 600;
-}
-
-.sprog-inbox--toolbar-select {
-    appearance: none;
-    -webkit-appearance: none;
-    border: 0;
-    background: transparent;
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-size: 1.28rem;
-    padding: 0.24rem 1.6rem 0.24rem 0.32rem;
-    cursor: pointer;
-    background-image: linear-gradient(45deg, transparent 50%, var(--sprog-color-muted) 50%),
-                      linear-gradient(135deg, var(--sprog-color-muted) 50%, transparent 50%);
-    background-position: calc(100% - 0.96rem) 50%, calc(100% - 0.48rem) 50%;
-    background-size: 0.48rem 0.48rem, 0.48rem 0.48rem;
-    background-repeat: no-repeat;
-}
-
-.sprog-inbox--toolbar-select:focus-visible {
-    outline: 0.32rem solid var(--sprog-focus, #6366f1);
-    outline-offset: 0.16rem;
-}
-
-/*
- * Status-Dropdown via <details>. Das Popup positioniert sich absolut unter
- * dem Trigger, der Trigger zeigt eine kleine Zusammenfassung ("alle" oder
- * "N ausgewählt"). Native HTML-Verhalten — kein JS für Aufklappen.
- */
-.sprog-inbox--toolbar-dropdown {
-    position: relative;
-}
-
-.sprog-inbox--toolbar-trigger {
-    list-style: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    cursor: pointer;
-    font-size: 1.28rem;
-    user-select: none;
-}
-
-.sprog-inbox--toolbar-trigger::-webkit-details-marker {
-    display: none;
-}
-
-.sprog-inbox--toolbar-trigger-value {
-    color: var(--sprog-color-fg);
-}
-
-.sprog-inbox--toolbar-trigger-chevron {
-    color: var(--sprog-color-muted);
-    font-size: 1.12rem;
-}
-
-.sprog-inbox--toolbar-popup {
+/* Status-Popup: absolutes Dropdown unter der Pille. bg via --sprog-cell-bg
+   (weiß / dark #161b22) → dark-adaptiv ohne eigenen Override. */
+.sprog-inbox--filter-popup {
     position: absolute;
     top: calc(100% + 0.32rem);
-    /* öffnet nach links: rechte Kante des Popups bündig mit rechter Cell-Kante.
-       Status-Pill sitzt ganz rechts in der Filter-Row, daher öffnet das Popup
-       sonst sehr nahe am Viewport-Rand. */
+    /* öffnet nach links: rechte Kante bündig mit der Pille (sitzt rechts in der
+       Filter-Row, sonst nahe am Viewport-Rand). */
     right: 0;
     left: auto;
     z-index: 50;
     min-width: 22rem;
     padding: 0.64rem;
-    background: #ffffff;
+    background: var(--sprog-cell-bg);
     border: 1px solid var(--sprog-color-border);
     border-radius: 0.96rem;
     box-shadow: 0 0.96rem 1.92rem rgba(15 23 42 / 12%);
@@ -2867,140 +2222,48 @@
     gap: 0.16rem;
 }
 
-.sprog-inbox--toolbar-check {
+.sprog-inbox--filter-opt {
     display: flex;
     align-items: center;
     gap: 0.96rem;
     padding: 0.48rem 0.64rem;
     border-radius: 0.64rem;
     cursor: pointer;
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     color: var(--sprog-color-fg);
     line-height: 1.2;
 }
 
-.sprog-inbox--toolbar-check:hover {
+.sprog-inbox--filter-opt:hover {
     background: var(--sprog-hover);
 }
 
-/* Checkbox-Box optisch zur Label-Mitte rücken: feste Größe + margin: 0
-   gegen Browser-Defaults, flex-shrink: 0 damit sie nicht gequetscht wird. */
-.sprog-inbox--toolbar-check input[type="checkbox"] {
-    accent-color: var(--sprog-color-accent, #2563eb);
-    width: 1.44rem;
-    height: 1.44rem;
+/* Natives Input ausblenden — der Haken (✓) kommt aus ::before und reserviert
+   einen festen Slot, damit Single- und Multi-Select-Zeilen ausgerichtet sind. */
+.sprog-inbox--filter-opt input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
     margin: 0;
+    pointer-events: none;
+}
+.sprog-inbox--filter-opt::before {
+    content: "✓";
     flex-shrink: 0;
+    width: 1.4rem;
+    color: var(--sprog-color-accent);
+    font-weight: 700;
+    opacity: 0;
+}
+.sprog-inbox--filter-opt:has(input:checked)::before {
+    opacity: 1;
 }
 
-/*
- * Apply-Button als Popup-Footer. Trennlinie oberhalb (negative margin gleich
- * dem popup-padding lässt die Linie bis zum Popup-Rand laufen), padding-top
- * für Innenabstand der Linie.
- */
-.sprog-inbox--toolbar-popup-apply {
-    margin: 0.48rem -0.64rem -0.64rem;
-    padding: 0.96rem 1.28rem;
-    border: 0;
-    border-top: 1px solid var(--sprog-color-border);
-    border-bottom-left-radius: 0.96rem;
-    border-bottom-right-radius: 0.96rem;
-    background: var(--sprog-cell-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-size: 1.2rem;
-    font-weight: 600;
-    cursor: pointer;
-    text-align: right;
-}
-
-.sprog-inbox--toolbar-popup-apply:hover {
-    background: var(--sprog-hover);
-}
-
-/*
- * Reihe 2: Suchfeld nimmt den meisten Platz, Apply/Reset rechts.
- */
-.sprog-inbox--toolbar-search {
-    flex: 1 1 24rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    padding: 0.48rem 0.96rem;
-    background: #ffffff;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.96rem;
-}
-
-.sprog-inbox--toolbar-search:focus-within {
-    border-color: var(--sprog-focus);
-    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
-}
-
-.sprog-inbox--toolbar-search-icon {
-    color: var(--sprog-color-muted);
-    display: inline-flex;
-    line-height: 0;
-}
-
-.sprog-inbox--toolbar-search-input {
-    flex: 1;
-    border: 0;
-    background: transparent;
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-size: 1.28rem;
-    padding: 0.32rem 0;
-}
-
-.sprog-inbox--toolbar-search-input:focus-visible {
-    outline: none;
-}
-
-.sprog-inbox--toolbar-apply {
-    padding: 0.64rem 1.6rem;
-    border: 1px solid var(--sprog-color-border);
-    border-radius: 0.96rem;
-    background: var(--sprog-cell-bg);
-    color: var(--sprog-color-fg);
-    font: inherit;
-    font-size: 1.28rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.sprog-inbox--toolbar-apply:hover {
-    background: var(--sprog-hover);
-}
-
-.sprog-inbox--toolbar-reset {
-    padding: 0.48rem 0.96rem;
-    color: var(--sprog-color-muted);
-    font-size: 1.28rem;
-    text-decoration: none;
-    border-radius: 0.64rem;
-}
-
-.sprog-inbox--toolbar-reset:hover {
-    color: var(--sprog-color-fg);
-    background: var(--sprog-hover);
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-inbox--toolbar-search,
-    .sprog-inbox--toolbar-popup {
-        background: var(--sprog-cell-bg);
-    }
-}
-
-@media (max-width: 48em) {
-    .sprog-inbox--search-row {
-        gap: 0.64rem;
-    }
-
-    .sprog-inbox--toolbar-search {
-        flex-basis: 100%;
-    }
+/* Apply = geteiltes .sprog-btn.sprog-btn--primary, volle Popup-Breite. */
+.sprog-inbox--filter-apply {
+    width: 100%;
+    margin-top: 0.48rem;
 }
 
 /*
@@ -3011,53 +2274,15 @@
  * der Header gibt border-top + radius-top, die Liste gibt border-bottom +
  * radius-bottom, dazwischen kein Gap. Cards eng zusammen ohne Box-Shadow.
  */
-.sprog-inbox--list {
-    display: block;          /* overrides earlier `grid` */
-    gap: 0;                  /* overrides earlier 1.04rem */
-    background: #ffffff;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-top: none;
-    border-bottom-left-radius: 0.96rem;
-    border-bottom-right-radius: 0.96rem;
-    overflow: hidden;
-}
+/* Liste = geteiltes .sprog-list (Container-Rahmen + Radius unten, dockt unter
+   dem List-Header). Item-Separator = .sprog-list > li. */
 
-.sprog-inbox--list .sprog-inbox--card {
-    display: block;          /* overrides earlier `grid` */
-    gap: 0;
-    padding: 0;
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0;
-    box-shadow: none;
-    transition: none;
-}
-
-.sprog-inbox--list .sprog-inbox--card:last-child {
-    border-bottom: none;
-}
-
-/*
- * Hover (closed): neutrales Hellgrau — wie Github-Listen-Items.
- * Focus-within (closed): helles Blau aus REDAXO-Cyan — signalisiert Tastatur-
- * Fokus und stimmt mit dem Open-State überein.
- * Open + Hover: behält das Cyan-Blau (Open hat hier Priorität).
- */
-.sprog-inbox--list .sprog-inbox--unit:hover {
-    background: var(--sprog-hover, #eef2f6);
-}
-
-.sprog-inbox--list .sprog-inbox--unit:focus-within,
-.sprog-inbox--list .sprog-inbox--unit[open]:hover {
-    background: rgba(75 154 217 / 16%);
-}
+/* (Hover/Focus-within/Open-Fläche der Unit kommen aus dem geteilten
+   .sprog-accordion.) */
 
 /*
  * Article transparent: Inhalte sitzen als weiße Karten/Panels auf der hell-
- * blaugrauen REDAXO-Backend-Fläche — einheitlich mit dem Dashboard. Liste,
- * Legende und Modal tragen ihre eigene weiße Fläche; der List-Header ist weiß
- * (s.u.), damit das Listen-Panel auf dem grauen Grund klar abgesetzt bleibt.
+ * blaugrauen REDAXO-Backend-Fläche — einheitlich mit dem Dashboard.
  */
 .sprog-inbox {
     background: transparent;
@@ -3065,72 +2290,12 @@
 
 /*
  * REDAXO-Tab-Nav direkt oberhalb der sprog-Pages: margin-bottom raus, dafür
- * padding-bottom als Innenabstand. So „klebt" der Tab-Streifen optisch nicht
- * an der Seitenkante darunter, aber der Abstand zur sprog-Inbox bleibt
- * konsistent — und ist nicht mehr Layout-margin sondern Container-padding.
- * Scoped über die Body-ID-Präfix-Klasse, damit andere Addons unberührt bleiben.
+ * padding-bottom als Innenabstand. Scoped über die Body-ID-Präfix-Klasse,
+ * damit andere Addons unberührt bleiben.
  */
 body[id^="rex-page-sprog"] .nav.rex-page-nav {
     margin-bottom: 0;
     padding-bottom: 1.6rem;
-}
-
-/*
- * List-Header + List schließen jetzt direkt aneinander. Border-Top des List-
- * Containers entfällt (der Header gibt ihn vor), die Liste klebt ohne Lücke
- * unten an. Border-Width auf 1px (statt 0.16rem ≈ 1.6px) für scharfen Strich
- * auch bei kleinem Zoom.
- */
-.sprog-inbox--list,
-.sprog-inbox--list-header {
-    border-width: 1px;
-}
-
-.sprog-inbox--list-header {
-    /* sichtbare Trennlinie zwischen Header und Liste */
-    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
-}
-
-.sprog-inbox--list .sprog-inbox--card {
-    border-bottom-width: 1px;
-}
-
-/*
- * Summary-Layout: zweispaltig.
- *   Spalte 1 (links, wächst): Key + Wert-Preview untereinander
- *   Spalte 2 (rechts, intrinsisch): Namespace + Coverage + Status + Chevron
- * Damit liegen die Keys aller Cards linksbündig untereinander.
- */
-.sprog-inbox--unit-summary {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 1.28rem;
-}
-
-.sprog-inbox--summary-main {
-    display: flex;
-    flex-direction: column;
-    gap: 0.32rem;
-    min-width: 0;       /* nötig damit text-overflow im Child greift */
-}
-
-.sprog-inbox--summary-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.96rem;
-}
-
-.sprog-inbox--value-preview {
-    color: var(--sprog-color-muted, #5b6675);
-    font-size: 1.28rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
-}
-
-.sprog-inbox--value-preview.is-empty {
-    font-style: italic;
 }
 
 /*
@@ -3149,7 +2314,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     /* kompakter als das normale Status-Tag — Sprachcode in 2-3 Zeichen */
     padding: 0.16rem 0.56rem;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.04rem;
+    font-size: var(--sprog-text-2xs);
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.04em;
@@ -3209,10 +2374,15 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     transition: opacity 0.15s, background-color 0.15s;
 }
 
-.sprog-inbox--unit-summary:hover .sprog-inbox--key-edit,
-.sprog-inbox--unit-summary:hover .sprog-inbox--key-copy,
-.sprog-inbox--unit:focus-within .sprog-inbox--key-edit,
-.sprog-inbox--unit:focus-within .sprog-inbox--key-copy {
+/* Reveal: Hover/Fokus irgendwo im Item ODER offener Eintrag → volle Deckkraft.
+   Die Buttons liegen im Overlay AUSSERHALB des <summary>, daher über
+   .sprog-inbox--unit-item angesteuert (nicht als Summary/Unit-Nachkomme). */
+.sprog-inbox--unit-item:hover .sprog-inbox--key-edit,
+.sprog-inbox--unit-item:hover .sprog-inbox--key-copy,
+.sprog-inbox--unit-item:focus-within .sprog-inbox--key-edit,
+.sprog-inbox--unit-item:focus-within .sprog-inbox--key-copy,
+.sprog-inbox--unit-item:has(.sprog-inbox--unit[open]) .sprog-inbox--key-edit,
+.sprog-inbox--unit-item:has(.sprog-inbox--unit[open]) .sprog-inbox--key-copy {
     opacity: 1;
 }
 
@@ -3231,171 +2401,40 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     opacity: 1;
 }
 
-.sprog-inbox--key-input {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.6rem;
-    font-weight: 600;
-    padding: 0.16rem 0.48rem;
-    border: 1px solid var(--sprog-color-accent, #2563eb);
-    border-radius: 0.48rem;
-    background: #ffffff;
-    color: var(--sprog-color-fg, #1b2733);
-    box-shadow: 0 0 0 0.32rem var(--sprog-focus-ring);
-    /* Komfort-Mindestbreite für sehr kurze Keys (z.B. "a"). Bei normalen
-       Keys gewinnt die per JS gesetzte `style.width` (= span-Breite), sodass
-       der Stift-Button an seiner X-Position bleibt. */
-    min-width: 6rem;
-    box-sizing: border-box;
-}
-
-.sprog-inbox--key-input:focus-visible {
-    outline: none;
-}
+/* (Entfernt: .sprog-inbox--key-input — alte Inline-Key-Bearbeitung, durch das
+   Unit-Modal ersetzt, nicht mehr im Markup/JS.) */
 
 /*
  * Row-Actions: Status-Buttons unter der Textarea, nebeneinander.
- * Klein und im Stil wie der Filtern-Button — der Schwerpunkt liegt auf den
- * Übersetzungen darüber, die Buttons sind sekundär.
+ * Layout via geteiltes .sprog-btn-group; Grid-Platzierung weiter unten.
  */
-.sprog-inbox--row-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.48rem;
-    margin-top: 0.32rem;
-}
-
-.sprog-inbox--row-action {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.32rem;
-    padding: 0.48rem 0.96rem;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0.64rem;
-    background: #ffffff;
-    color: var(--sprog-color-fg, #1b2733);
-    font: inherit;
-    font-size: 1.12rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s, border-color 0.15s;
-}
-
-.sprog-inbox--row-action:hover {
-    background: var(--sprog-hover, #eef2f6);
-    border-color: color-mix(in srgb, var(--sprog-color-fg, #1b2733) 22%, var(--sprog-color-border, #dde2e8));
-}
-
-.sprog-inbox--row-action:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-/* Status-spezifische Akzentfarben am Border-Left, damit die Wirkung des
-   Buttons schon vor dem Klick erkennbar ist (→ Übersetzt wird blau, →
-   Freigeben grün etc.). */
-.sprog-inbox--row-action--translated   { border-left: 3px solid var(--sprog-status-translated, #3b82f6); }
-.sprog-inbox--row-action--needs_review { border-left: 3px solid var(--sprog-status-needs_review, #d97706); }
-.sprog-inbox--row-action--revise       { border-left: 3px solid var(--sprog-status-revise,       #a855f7); }
-.sprog-inbox--row-action--approved     { border-left: 3px solid var(--sprog-status-approved, #10b981); }
-.sprog-inbox--row-action--draft        { border-left: 3px solid var(--sprog-status-draft, #f59e0b); }
-.sprog-inbox--row-action--stale        { border-left: 3px solid var(--sprog-status-stale, #ef4444); }
-.sprog-inbox--row-action--missing      { border-left: 3px solid var(--sprog-status-missing, #94a3b8); }
-
-@media (prefers-color-scheme: dark) {
-    .sprog-inbox--key-input {
-        background: #0d1117;
-        color: #f1f5f9;
-    }
-    .sprog-inbox--row-action {
-        background: #0d1117;
-        color: #e6edf3;
-    }
-}
+/* Chrome/Größe/Hover/Focus/Disabled kommen aus .sprog-btn.sprog-btn--sm.
+   Hier nur die Workflow-Semantik: Status-Akzent am Border-Left, damit die
+   Wirkung des Buttons schon vor dem Klick erkennbar ist (→ Übersetzt blau,
+   → Freigeben grün etc.). */
+.sprog-inbox--row-action--submit  { border-left: 3px solid var(--sprog-status-needs_review, #d97706); }
+.sprog-inbox--row-action--approve { border-left: 3px solid var(--sprog-status-approved, #10b981); }
+.sprog-inbox--row-action--return  { border-left: 3px solid var(--sprog-status-revise, #a855f7); }
 
 /*
  * Legende & Workflow — Klapp-Block zwischen Intro und Toolbar. Default zu;
  * für Onboarding und gelegentliches Nachschlagen. Bewusst leise im Design,
  * damit es die Liste nicht überstrahlt.
  */
-.sprog-inbox--legend {
-    margin-bottom: 1.6rem;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0.96rem;
-    background: #ffffff;
-    overflow: hidden;
-}
+/* Legenden-Hülle (Container/Summary/Icon/Chevron) nutzt jetzt den geteilten
+   .sprog-legend* — nur Body-Layout + Status-Liste bleiben inbox-spezifisch. */
 
-.sprog-inbox--legend-summary {
-    display: flex;
-    align-items: center;
-    gap: 0.96rem;
-    padding: 0.96rem 1.28rem;
-    cursor: pointer;
-    list-style: none;
-    font-size: 1.28rem;
-    font-weight: 500;
-    color: var(--sprog-color-fg, #1b2733);
-    user-select: none;
-}
-
-.sprog-inbox--legend-summary::-webkit-details-marker,
-.sprog-inbox--legend-summary::marker {
-    display: none;
-}
-
-.sprog-inbox--legend-summary:hover {
-    background: var(--sprog-hover, #eef2f6);
-}
-
-.sprog-inbox--legend-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.92rem;
-    height: 1.92rem;
-    border-radius: 50%;
-    background: var(--sprog-color-accent, #2563eb);
-    color: #ffffff;
-    font-family: serif;
-    font-size: 1.28rem;
-    font-style: italic;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.sprog-inbox--legend-summary .sprog-inbox--chevron {
-    margin-left: auto;
-}
-
-.sprog-inbox--legend[open] .sprog-inbox--legend-summary .sprog-inbox--chevron {
-    transform: rotate(180deg);
-}
-
-.sprog-inbox--legend-body {
-    display: grid;
-    grid-template-columns: minmax(24rem, 1fr) minmax(24rem, 1fr);
-    gap: 1.6rem 2.4rem;
-    padding: 1.28rem 1.6rem 1.6rem;
-    border-top: 1px solid var(--sprog-color-border, #dde2e8);
-}
-
-.sprog-inbox--legend-section:first-child {
-    grid-row: span 2;
-}
-
-.sprog-inbox--legend-heading {
-    margin: 0 0 0.96rem;
-    font-size: 1.12rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.064rem;
-    color: var(--sprog-color-muted, #5b6675);
-}
-
+/* Body/Section nutzen jetzt das geteilte .sprog-legend--body/--section (gleiches
+   Padding/Border/Reflow wie im Glossary). Die Status-Section trägt im Markup
+   --section--full (volle Breite, Workflow + Pillen liegen als zwei Spalten
+   darunter). Nur die dl-interne Status-Auflistung bleibt inbox-spezifisch. */
 .sprog-inbox--legend-statuses {
     margin: 0;
     display: grid;
-    gap: 0.64rem;
+    /* In der vollbreiten Status-Section zwei-/mehrspaltig (auto-fill), auf
+       schmaler Fläche einspaltig — ohne harten Media-Query-Sprung. */
+    grid-template-columns: repeat(auto-fill, minmax(32rem, 1fr));
+    gap: 0.64rem 2.4rem;
 }
 
 .sprog-inbox--legend-status {
@@ -3412,86 +2451,20 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--legend-status dd {
     margin: 0;
     color: var(--sprog-color-fg, #1b2733);
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     line-height: 1.4;
 }
 
-.sprog-inbox--legend-text {
-    margin: 0;
-    color: var(--sprog-color-fg, #1b2733);
-    font-size: 1.28rem;
-    line-height: 1.5;
-}
+/* (Media-/Dark-Overrides der alten Inbox-Legende entfernt: Reflow und
+   Dark-Border kommen jetzt aus dem geteilten .sprog-legend--body.) */
 
-@media (max-width: 56em) {
-    .sprog-inbox--legend-body {
-        grid-template-columns: 1fr;
-    }
-    .sprog-inbox--legend-section:first-child {
-        grid-row: auto;
-    }
-}
+/* Unit-Notes-Block = geteiltes .sprog-note.sprog-note--info (+ --label). Der
+   früher harte Gelbton ist jetzt draft-getönt (token-getrieben, dark-fähig);
+   margin-bottom kommt aus dem Rows-Gap. */
 
-@media (prefers-color-scheme: dark) {
-    .sprog-inbox--legend {
-        background: #0d1117;
-        border-color: #30363d;
-    }
-    .sprog-inbox--legend-body {
-        border-top-color: #30363d;
-    }
-}
-
-/*
- * Notes-Block oben im aufgeklappten Akkordeon — Hinweis auf die hinterlegte
- * unit-notes. Gut sichtbar (gelblicher Hintergrund), aber nicht laut.
- */
-.sprog-inbox--notes {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.64rem;
-    margin: 0 0 0.96rem;
-    padding: 0.96rem 1.28rem;
-    background: #fff8e1;
-    border: 1px solid #f0d97a;
-    border-radius: 0.64rem;
-    color: #4d3a00;
-    font-size: 1.28rem;
-}
-
-.sprog-inbox--notes-label {
-    font-weight: 600;
-    color: #6a5300;
-}
-
-@media (prefers-color-scheme: dark) {
-    .sprog-inbox--notes {
-        background: #2a2310;
-        border-color: #6a5300;
-        color: #f5e3a8;
-    }
-
-    .sprog-inbox--notes-label {
-        color: #f5d268;
-    }
-}
-
-/*
- * Dark-Mode-Variante der gleichen Override-Regeln.
- */
-@media (prefers-color-scheme: dark) {
-    /* Article bleibt auch im Dark transparent (REDAXO-Dark-Grund scheint durch);
-       nur die Komponenten tragen ihre dunkle Fläche. */
-    .sprog-inbox--unit,
-    .sprog-inbox--list,
-    .sprog-inbox--list-header {
-        background: #0d1117;
-    }
-
-    .sprog-inbox--unit[open] {
-        background: #161b22;
-    }
-}
+/* (Entfernt: Dark-Override .sprog-inbox--unit { #0d1117 } — das geteilte
+   .sprog-accordion zieht seine Fläche aus var(--sprog-color-bg), das im Dark
+   bereits #0d1117 ist.) */
 
 /*
  * ============================================================================
@@ -3505,163 +2478,71 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     padding: 0;
 }
 
-/* List-Header weiß (wie die Liste): das Panel ist durchgehend weiß und hebt
- * sich vom grauen Backend-Grund ab — die border-bottom trennt Header und Liste. */
-.sprog-inbox--list-header {
-    background: var(--sprog-color-bg);
+/*
+ * Filter-Pillen (Sprache / Quelle / Status / Konflikte) nutzen jetzt das
+ * geteilte .sprog-cell (+ .sprog-cell--select für die nativen Selects mit
+ * CSS-Pfeil). Hier nur noch das Status-Multi-Select-Spezifische.
+ */
+.sprog-inbox--filter-value {
+    font-size: var(--sprog-text-xs);
+    color: var(--sprog-color-fg);
 }
 
 /*
- * Toolbar-Cells (Sprache / Quelle / Status) — einheitliche Höhe, padding,
- * Chevron rechts, ganzer Bereich klickbar. Der echte <select> liegt
- * absolut transparent darüber; visible Content rendert das Label.
+ * Status-Multi-Select als <details>: Trigger-Pille = geteiltes .sprog-cell
+ * (summary), <details> = Wrapper fürs absolute Popup. Marker weg, Chevron
+ * sitzt rechts (margin-left:auto vom .sprog-chevron) und rotiert bei [open].
  */
-.sprog-inbox--toolbar-cell {
+.sprog-inbox--filter-dd {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    min-height: 3.2rem;
-    padding: 0 1.12rem;
-    background: #ffffff;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0.96rem;
-    cursor: pointer;
-    color: var(--sprog-color-fg, #1b2733);
-    line-height: 1;
+    display: inline-block;
 }
 
-.sprog-inbox--toolbar-cell:hover {
-    background: var(--sprog-hover, #eef2f6);
-}
-
-.sprog-inbox--toolbar-cell-label {
-    font-size: 1.12rem;
-    color: var(--sprog-color-muted, #5b6675);
-    font-weight: 600;
-    pointer-events: none;
-}
-
-.sprog-inbox--toolbar-cell-value {
-    font-size: 1.28rem;
-    color: var(--sprog-color-fg, #1b2733);
-    pointer-events: none;
-}
-
-/*
- * Native <select> als unsichtbares Overlay über die ganze Cell — damit
- * ein Klick irgendwo auf die Pill den nativen Dropdown öffnet (Browser-
- * Default nur bei Klick direkt aufs select-Element).
- */
-.sprog-inbox--toolbar-cell-input {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    border: 0;
-    background: transparent;
-    color: transparent;     /* Inhalt unsichtbar — wir rendern den im span */
-    appearance: none;
-    -webkit-appearance: none;
-    cursor: pointer;
-    font: inherit;
-    opacity: 0;             /* doppelt sicher für nicht-Webkit */
-}
-
-.sprog-inbox--toolbar-cell-input:focus-visible + .sprog-inbox--chevron,
-.sprog-inbox--toolbar-cell:focus-within {
-    outline: 2px solid var(--sprog-focus, #6366f1);
-    outline-offset: 2px;
-}
-
-/*
- * Status-Dropdown — als <details>. Hier ist `<summary>` selbst die Pill
- * (mit denselben Cell-Stilen), `<details>` der bloße Wrapper. So bekommt
- * der Dropdown-Trigger exakt die gleiche Höhe + Padding wie die Selects.
- */
-.sprog-inbox--toolbar-cell--dropdown {
-    /* <details> IST die Pill — Click irgendwo öffnet das popup (geht via
-       <summary> mit display: contents, das die clickable-Semantik behält).
-       So gibt es keine Höhen-Differenz zwischen details und summary, und der
-       Hover-Background bedeckt die komplette Cell ohne sichtbare Lücken. */
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.64rem;
-    height: 3.2rem;
-    min-height: 3.2rem;
-    padding: 0 1.12rem;
-    background: #ffffff;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0.96rem;
-    cursor: pointer;
-    color: var(--sprog-color-fg, #1b2733);
-    line-height: 1;
-    box-sizing: border-box;
-}
-
-.sprog-inbox--toolbar-cell--dropdown:hover {
-    background: var(--sprog-hover, #eef2f6);
-}
-
-/* Focus-Style fürs <details> selbst — weil das <summary> via display: contents
-   keine eigene Layout-Box hat, würde der native focus-outline am summary
-   nicht sichtbar. Wir setzen den Outline aufs <details>. */
-.sprog-inbox--toolbar-cell--dropdown:focus-visible {
+.sprog-inbox--filter-dd:focus-visible {
     outline: 2px solid var(--sprog-color-accent, #2563eb);
     outline-offset: 2px;
+    border-radius: 0.96rem;
 }
 
-/*
- * <summary> tritt aus dem Layout zurück (display: contents) — seine spans
- * werden direkt Flex-Children des <details>. Click-Toggle bleibt nativ
- * funktional, weil der Browser das summary-Element trotzdem als Toggle-Target
- * registriert.
- */
-.sprog-inbox--toolbar-cell-summary {
-    display: contents;
-    cursor: pointer;
+.sprog-inbox--filter-dd summary {
     list-style: none;
 }
-
-.sprog-inbox--toolbar-cell-summary::-webkit-details-marker,
-.sprog-inbox--toolbar-cell-summary::marker {
+.sprog-inbox--filter-dd summary::-webkit-details-marker,
+.sprog-inbox--filter-dd summary::marker {
     display: none;
 }
 
-/* SVG-Chevron als block element ausgeben, sonst zieht baseline-Alignment
-   im inline-context unsichtbaren Spielraum mit hoch. */
-.sprog-inbox--chevron svg {
-    display: block;
-}
-
-.sprog-inbox--toolbar-cell-summary:hover {
-    background: var(--sprog-hover, #eef2f6);
-}
-
-.sprog-inbox--toolbar-cell-summary::-webkit-details-marker,
-.sprog-inbox--toolbar-cell-summary::marker {
-    display: none;
-}
-
-/*
- * Chevron — einheitliches Aussehen für Toolbar-Cells, Status-Dropdown,
- * Unit-Akkordeon. Das SVG ist 12×12 mit `currentColor`-Fill, hier
- * leicht abgedunkelt und sanft rotierbar.
- */
-.sprog-inbox--chevron {
-    display: inline-flex;
-    align-items: center;
-    color: var(--sprog-color-muted, #5b6675);
-    transition: transform 0.15s ease;
-    pointer-events: none;       /* clicks gehen durch zur Cell/Summary */
-    margin-left: auto;          /* schiebt Chevron in der Cell nach rechts */
-}
-
-.sprog-inbox--unit[open] > .sprog-inbox--unit-summary .sprog-inbox--chevron,
-.sprog-inbox--toolbar-cell--dropdown[open] .sprog-inbox--chevron {
+.sprog-inbox--filter-dd[open] .sprog-chevron {
     transform: rotate(180deg);
+}
+
+/* Aktive Option (Single- und Multi-Select) zusätzlich zum Haken hervorheben. */
+.sprog-inbox--filter-opt:has(input:checked) {
+    color: var(--sprog-color-accent);
+    font-weight: 600;
+}
+
+/* Zwei Bereiche im Sortier-Popup: Feld (oben) und Richtung (unten). */
+.sprog-inbox--filter-section + .sprog-inbox--filter-section {
+    margin-top: 0.32rem;
+    padding-top: 0.32rem;
+    border-top: 1px solid var(--sprog-color-border);
+}
+.sprog-inbox--filter-section-title {
+    margin: 0.16rem 0.64rem;
+    font-size: var(--sprog-text-2xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--sprog-color-muted);
+}
+
+/* Auf-/Absteigend-Pfeil als Richtungs-Icon — im Popup und im Summary-Wert. */
+.sprog-inbox--order-icon {
+    vertical-align: -1px;
+}
+.sprog-inbox--filter-value .sprog-inbox--order-icon {
+    margin-left: 0.32rem;
+    color: var(--sprog-color-accent);
 }
 
 /*
@@ -3697,10 +2578,339 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     gap: 0.64rem;
 }
 
+/*
+ * Body kompakt: Workflow-Buttons sitzen jetzt NEBEN dem Feld statt darunter.
+ * Dadurch ist eine Sprachzeile nur noch so hoch wie das Feld selbst — eine
+ * offene Unit mit 6 Sprachen passt deutlich besser auf einen Bildschirm.
+ * Hinweis (stale) und Feedback spannen über die volle Breite.
+ */
 .sprog-inbox--row-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+        "hint     hint"
+        "field    field"
+        "mt       actions"
+        "history  history"
+        "feedback feedback";
+    column-gap: 1.2rem;
+    row-gap: 0.6rem;
+    align-items: start;
+}
+.sprog-inbox--row-body .sprog-inbox--stale-hint   { grid-area: hint; }
+.sprog-inbox--row-body .sprog-control             { grid-area: field; }
+/* Unter dem Feld teilen sich die Feld-Werkzeuge (links: MT, Zurücksetzen,
+   Verlauf) und die Workflow-Buttons (rechtsbündig) eine Zeile. */
+.sprog-inbox--row-body .sprog-inbox--field-tools  { grid-area: mt; align-self: center; }
+.sprog-inbox--row-body .sprog-inbox--row-actions {
+    grid-area: actions;
+    justify-self: end;
+    align-self: center;
+    margin-top: 0;
+    /* Container: Status-Chip (Anker) + Button-Gruppe nebeneinander, rechtsbündig. */
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+/* Ausgeblendete Workflow-Buttons müssen wirklich verschwinden — die display-Regel
+   aus .sprog-btn würde das [hidden]-Attribut sonst überstimmen. */
+.sprog-inbox--row-action[hidden] {
+    display: none;
+}
+.sprog-inbox--row-body .sprog-inbox--row-feedback { grid-area: feedback; }
+.sprog-inbox--row-body .sprog-inbox--history-panel { grid-area: history; }
+
+@media (max-width: 48em) {
+    /* Schmal: Buttons wieder unter das Feld stapeln. */
+    .sprog-inbox--row-body {
+        grid-template-columns: 1fr;
+        grid-template-areas: "hint" "field" "mt" "actions" "history" "feedback";
+    }
+}
+
+/* Feld-Werkzeuge links unter dem Feld: MT-Leiste + Zurücksetzen + Verlauf. */
+.sprog-inbox--field-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+}
+.sprog-inbox--reset,
+.sprog-inbox--history-toggle {
+    flex: 0 0 auto;
+    color: var(--sprog-color-muted);
+}
+.sprog-inbox--reset[hidden] { display: none; }
+.sprog-inbox--reset:hover:not(:disabled) {
+    border-color: var(--sprog-status-stale);
+    color: var(--sprog-status-stale);
+    background: color-mix(in srgb, var(--sprog-status-stale) 6%, transparent);
+}
+.sprog-inbox--history-toggle[aria-expanded="true"] {
+    color: var(--sprog-color-accent);
+    border-color: var(--sprog-color-accent);
+}
+
+/* Verlauf-Panel: Versionsliste über volle Breite unter der Aktionszeile. */
+.sprog-inbox--history-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 1rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--sprog-color-accent) 3%, transparent);
+    /* Viele/lange Versionen: Panel selbst scrollt statt endlos zu wachsen. */
+    max-height: 40rem;
+    overflow-y: auto;
+}
+.sprog-inbox--history-panel[hidden] { display: none; }
+/* Timeline: jede Version ist ein Knoten an einer durchgehenden Linie
+   (border-left). Der Punkt markiert Datum/Benutzer, der volle Text + Button
+   sitzen darunter im umrandeten Kasten. */
+.sprog-inbox--history-item {
+    position: relative;
+    margin-left: 0.4rem;
+    padding: 0 0 1.4rem 1.8rem;
+}
+.sprog-inbox--history-item:last-child {
+    padding-bottom: 0;
+}
+/* Punkt am Datum/Benutzer (liegt über der Linie). */
+.sprog-inbox--history-item::before {
+    content: "";
+    position: absolute;
+    left: -0.6rem;
+    top: 0.4rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    background: var(--sprog-color-accent);
+    z-index: 1;
+}
+/* Verbindungslinie: startet in der Dot-Mitte (top 0.9rem = 0.4rem + halbe
+   Dot-Höhe) und reicht per height:100% exakt bis zum Punkt des nächsten
+   Eintrags. Beim letzten Eintrag entfällt sie (kein nächster Knoten). */
+.sprog-inbox--history-item::after {
+    content: "";
+    position: absolute;
+    left: -0.2rem;
+    top: 0.9rem;
+    width: 2px;
+    height: 100%;
+    background: var(--sprog-color-border);
+}
+.sprog-inbox--history-item:last-child::after {
+    display: none;
+}
+/* Kopfzeile an der Linie: Zeit/Autor · Herkunft. */
+.sprog-inbox--history-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin-bottom: 0.5rem;
+}
+.sprog-inbox--history-when {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: var(--sprog-text-2xs);
+    color: var(--sprog-color-muted);
+}
+.sprog-inbox--history-origin {
+    flex: 0 0 auto;
+    font-size: var(--sprog-text-2xs);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--sprog-color-accent);
+}
+/* Umrandeter Kasten: voller Text + Aktion. Surface-Fläche wie die übrigen
+   Karten/Eingaben, damit sich der Kasten vom Panel-Hintergrund abhebt. */
+.sprog-inbox--history-box {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: 0.5rem;
+    background: var(--sprog-color-surface);
+}
+/* Voller Text-Snapshot: Umbruch statt Ellipse, Zeilenumbrüche erhalten. */
+.sprog-inbox--history-value {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: var(--sprog-text-xs);
+    line-height: 1.5;
+}
+.sprog-inbox--history-blank { color: var(--sprog-color-muted); }
+.sprog-inbox--history-box-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.sprog-inbox--history-restore { flex: 0 0 auto; }
+.sprog-inbox--history-current {
+    font-size: var(--sprog-text-2xs);
+    color: var(--sprog-status-approved);
+    white-space: nowrap;
+}
+
+/* Stapelverarbeitungs-Dialog: Zähler, Fortschrittsbalken, Zusammenfassung.
+   Der Dialog-Rahmen erbt die generischen .sprog-inbox--unit-modal-Stile. */
+.sprog-inbox--batch-count {
+    margin: 0;
+    font-size: var(--sprog-text-sm);
+    color: var(--sprog-color-muted);
+}
+.sprog-inbox--batch-progress {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+}
+.sprog-inbox--batch-progress[hidden] { display: none; }
+.sprog-inbox--batch-bar {
+    height: 0.8rem;
+    border-radius: 0.4rem;
+    background: color-mix(in srgb, var(--sprog-color-muted) 20%, transparent);
+    overflow: hidden;
+}
+.sprog-inbox--batch-bar-fill {
+    height: 100%;
+    width: 0;
+    background: var(--sprog-color-accent);
+    transition: width 0.2s ease;
+}
+.sprog-inbox--batch-progress-text {
+    font-size: var(--sprog-text-2xs);
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+.sprog-inbox--batch-summary {
+    margin: 0;
+    font-size: var(--sprog-text-xs);
+}
+.sprog-inbox--batch-summary[hidden] { display: none; }
+/* .sprog-btn setzt display → das [hidden]-Attribut würde sonst überstimmt.
+   Betrifft „Inbox aktualisieren"/„Start", die vor/nach dem Lauf ein-/ausblenden. */
+.sprog-inbox--batch-modal .sprog-btn[hidden] { display: none; }
+
+/* Liste der tatsächlich übersetzten Platzhalter — dicker linker Akzent-Rahmen
+   wie beim geöffneten Akkordeon. */
+.sprog-inbox--batch-results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-height: 24rem;
+    overflow-y: auto;
+}
+.sprog-inbox--batch-results[hidden] { display: none; }
+.sprog-inbox--batch-result {
+    padding: 0.3rem 0.8rem;
+    border-left: 3px solid var(--sprog-color-border);
+    font-family: var(--sprog-font-mono, ui-monospace, monospace);
+    font-size: var(--sprog-text-xs);
+    overflow-wrap: anywhere;
+}
+.sprog-inbox--batch-result.is-ok {
+    border-left-color: var(--sprog-color-accent);
+}
+.sprog-inbox--batch-result.is-failed {
+    border-left-color: var(--sprog-status-stale);
+    color: var(--sprog-status-stale);
+}
+.sprog-inbox--batch-result-error {
+    font-family: inherit;
+    opacity: 0.8;
+}
+.sprog-inbox--history-empty,
+.sprog-inbox--history-error {
+    font-size: var(--sprog-text-xs);
+    color: var(--sprog-color-muted);
+    font-style: italic;
+}
+.sprog-inbox--history-error { color: var(--sprog-status-stale); }
+
+/*
+ * MT-Leiste im Akkordeon: "MT-Vorschlag"-Button (+ optionaler Discard) und
+ * Status-Span, als eigene Grid-Zeile (mt) unter dem Übersetzungsfeld. Die
+ * Buttons erben Größe/Radius/Focus von .sprog-btn--sm — hier nur die MT-
+ * spezifischen Akzente. Bei aktivem MT-Marker dezenter Akzent-Hintergrund.
+ */
+.sprog-inbox--mt-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+}
+
+.sprog-inbox--mt-trigger {
+    flex: 0 0 auto;
+    gap: 0.4rem;
+    border-style: dashed;
+    border-color: color-mix(in srgb, var(--sprog-color-accent) 60%, var(--sprog-color-border));
+    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
+    color: var(--sprog-color-accent);
+}
+
+.sprog-inbox--mt-trigger::before {
+    content: "✨";
+    font-size: 1.1em;
+    line-height: 1;
+}
+
+.sprog-inbox--mt-trigger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--sprog-color-accent) 10%, transparent);
+    border-color: var(--sprog-color-accent);
+    color: var(--sprog-color-accent);
+}
+
+.sprog-inbox--mt-trigger:disabled {
+    cursor: progress;
+}
+
+.sprog-inbox--mt-status {
+    font-size: var(--sprog-text-xs);
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.sprog-inbox--mt-status[hidden] {
+    display: none;
+}
+
+.sprog-inbox--mt-status.is-ok {
+    color: var(--sprog-status-approved);
+}
+
+.sprog-inbox--mt-status.is-error {
+    color: var(--sprog-status-stale);
+}
+
+.sprog-inbox--mt-bar[data-mt-active="true"] {
+    padding: 0.6rem 0.8rem;
+    margin-inline: -0.8rem;
+    border-radius: 0.5rem;
+    background: color-mix(in srgb, var(--sprog-color-accent) 4%, transparent);
+}
+
+/* Generische Screenreader-Only-Hilfsklasse (z.B. Quelle-Label, da das
+   Quelle-Icon aria-hidden ist). */
+.sprog-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 /*
@@ -3708,7 +2918,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  * Resize handle ausblenden, overflow erst sichtbar wenn max erreicht ist
  * (das setzt das JS dann inline).
  */
-.sprog-inbox--rows .sprog-inbox--textarea {
+.sprog-inbox--rows .sprog-control {
     /* Einzeilig 38px Höhe (= 3.8rem bei 10px html). Auto-Grow hebt das
        Limit beim Tippen via inline-style; min-height bleibt Untergrenze. */
     min-height: 3.8rem;
@@ -3716,7 +2926,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     padding: 0.64rem 0.96rem;
     resize: none;
     overflow: hidden;
-    font-size: 1.5rem;
+    font-size: var(--sprog-text-md);
     line-height: 1.5;
 }
 
@@ -3750,7 +2960,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  */
 .sprog-inbox--context {
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     font-weight: 500;
     color: var(--sprog-color-muted, #5b6675);
 }
@@ -3798,7 +3008,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 .sprog-inbox--unit-modal-title {
     margin: 0;
     flex: 1;
-    font-size: 1.76rem;
+    font-size: var(--sprog-text-xl);
     font-weight: 600;
     color: var(--sprog-color-fg, #1b2733);
 }
@@ -3811,7 +3021,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     background: transparent;
     color: var(--sprog-color-muted, #5b6675);
     cursor: pointer;
-    font-size: 2.4rem;
+    font-size: var(--sprog-text-2xl);
     line-height: 1;
     border-radius: 0.64rem;
 }
@@ -3836,7 +3046,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 .sprog-inbox--unit-modal-label {
-    font-size: 1.12rem;
+    font-size: var(--sprog-text-xs);
     font-weight: 600;
     color: var(--sprog-color-muted, #5b6675);
     text-transform: uppercase;
@@ -3848,48 +3058,14 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     background: var(--sprog-surface-muted, #f1f5f9);
     border-radius: 0.64rem;
     color: var(--sprog-color-fg, #1b2733);
-    font-size: 1.36rem;
+    font-size: var(--sprog-text-xs);
     font-family: inherit;
 }
 
-.sprog-inbox--unit-modal-input,
-.sprog-inbox--unit-modal-textarea {
-    padding: 0.8rem 1.12rem;
-    border: 1px solid var(--sprog-color-border, #dde2e8);
-    border-radius: 0.64rem;
-    background: #ffffff;
-    color: var(--sprog-color-fg, #1b2733);
-    font: inherit;
-    font-size: 1.44rem;
-    line-height: 1.4;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
+/* Modal-Felder nutzen jetzt das geteilte .sprog-control (Key/Kontext/Namespace
+   = --mono, Notiz = --textarea). Readonly-Anzeige + Hint bleiben modal-eigen. */
 
-.sprog-inbox--unit-modal-textarea {
-    resize: vertical;
-    min-height: 7.2rem;
-    font-family: inherit;
-}
-
-.sprog-inbox--unit-modal-input:focus-visible,
-.sprog-inbox--unit-modal-textarea:focus-visible {
-    outline: 0.32rem solid var(--sprog-focus-ring);
-    outline-offset: 0;
-    border-color: var(--sprog-color-accent, #2563eb);
-}
-
-.sprog-inbox--unit-modal-hint {
-    font-size: 1.12rem;
-    color: var(--sprog-color-muted, #5b6675);
-    line-height: 1.4;
-}
-
-.sprog-inbox--unit-modal-hint code {
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    background: var(--sprog-surface-muted, #f1f5f9);
-    padding: 0 0.32rem;
-    border-radius: 0.32rem;
-}
+/* Modal-Hint nutzt jetzt das geteilte .sprog-hint (inkl. code-Style). */
 
 .sprog-inbox--unit-modal-error {
     margin: 0;
@@ -3898,7 +3074,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     border: 1px solid var(--sprog-status-stale, #ef4444);
     border-radius: 0.64rem;
     color: var(--sprog-status-stale, #ef4444);
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
 }
 
 .sprog-inbox--unit-modal-footer {
@@ -3920,7 +3096,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     color: var(--sprog-color-muted, #5b6675);
     cursor: pointer;
     font: inherit;
-    font-size: 1.28rem;
+    font-size: var(--sprog-text-xs);
     border-radius: 0.64rem;
 }
 
@@ -3943,12 +3119,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     .sprog-inbox--unit-modal-footer {
         background: #161b22;
     }
-    .sprog-inbox--unit-modal-input,
-    .sprog-inbox--unit-modal-textarea {
-        background: #0b1220;
-        color: #f1f5f9;
-        border-color: #30363d;
-    }
+    /* (Control-Felder = .sprog-control, token-getrieben → kein Dark-Override.) */
     .sprog-inbox--unit-modal-readonly {
         background: #1f2937;
         color: #cbd5e1;
@@ -3979,31 +3150,20 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     .sprog-inbox { --sprog-attn: #e07a64; }
 }
 
-/* Neues Summary-Raster: Chevron · Quelle · Schlüssel │ Übersetzung · Aktionen · Coverage */
-.sprog-inbox--unit-summary {
-    /* Schlüssel-Spalte proportional (minmax(20rem, 0.8fr)): in jeder Zeile gleich
-       breit — weil Container und übrige Spalten identisch sind, ist der fr-Anteil
-       überall gleich → die Übersetzungen fluchten untereinander. Minimum 20rem,
-       damit auch bei schmalerem Viewport praktisch alle Keys voll passen; nur
-       echte Ausreißer (länger als die Spalte) kürzt die Ellipsis am Key. */
-    grid-template-columns: 1.6rem 2.4rem minmax(20rem, 0.8fr) minmax(0, 1.5fr) auto auto;
-    gap: 1.6rem;
-    padding: 1.2rem 1.92rem;
-    align-items: center;
+/* Summary = geteiltes .sprog-row-Flex-Skelett (Chevron · Quelle · Schlüssel ·
+   Übersetzung · Aktionen · Coverage). Feste Key-Spaltenbreite über --aligned,
+   damit die Übersetzungen über alle Zeilen an gleicher x-Position beginnen. */
+.sprog-inbox .sprog-row--aligned {
+    --sprog-row-title-w: 24rem;
 }
 
-/* Führender Aufklapp-Chevron (rotiert 90° beim Öffnen) */
+/* Führender Aufklapp-Chevron — Rotation + Transition kommen vom geteilten
+   .sprog-accordion (am --lead-Slot). Hier nur Farbe + svg-Reset. */
 .sprog-inbox--unit-chevron {
-    display: inline-flex;
-    align-items: center;
     justify-content: center;
     color: var(--sprog-color-muted, #5b6675);
-    transition: transform 0.15s ease;
 }
 .sprog-inbox--unit-chevron svg { display: block; }
-.sprog-inbox--unit[open] > .sprog-inbox--unit-summary .sprog-inbox--unit-chevron {
-    transform: rotate(90deg);
-}
 
 /* Quelle als kompaktes Icon (Tooltip trägt das volle Label) */
 .sprog-inbox--source-icon {
@@ -4015,7 +3175,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     background: var(--sprog-color-surface, #f3f5f8);
     color: var(--sprog-color-muted, #5b6675);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 1.1rem;
+    font-size: var(--sprog-text-2xs);
     font-weight: 700;
     cursor: help;
     user-select: none;
@@ -4036,7 +3196,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     margin-right: 0.48rem;
 }
 .sprog-inbox--unit-summary .sprog-inbox--context {
-    font-size: 1.4rem;
+    font-size: var(--sprog-text-sm);
     font-weight: 500;
     color: var(--sprog-color-muted, #5b6675);
 }
@@ -4048,7 +3208,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 .sprog-inbox--unit-summary .sprog-inbox--key {
     flex: 0 1 auto;
-    font-size: 1.4rem;
+    font-size: var(--sprog-text-sm);
     font-weight: 600;
     color: var(--sprog-color-fg, #1b2733);
     white-space: nowrap;
@@ -4071,7 +3231,7 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     background: var(--sprog-color-muted, #5b6675);
 }
 .sprog-inbox--translation-text {
-    font-size: 1.45rem;
+    font-size: var(--sprog-text-sm);
     color: var(--sprog-color-fg, #1b2733);
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4083,25 +3243,45 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     border: 2px solid var(--sprog-attn, #d8604a);
 }
 .sprog-inbox--translation-missing {
-    font-size: 1.35rem;
+    font-size: var(--sprog-text-xs);
     font-weight: 600;
     color: var(--sprog-attn, #d8604a);
 }
 
-/* Aktionen: eigene, vertikal zentrierte Spalte mit reservierter Breite */
+/* Unit-Item: 1-Zellen-Grid, damit das Action-Overlay deckungsgleich über der
+   Zeile liegt (die Buttons liegen HTML-valide AUSSERHALB des <summary>). */
+.sprog-inbox--unit-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+}
+.sprog-inbox--unit-item > .sprog-accordion,
+.sprog-inbox--unit-item > .sprog-inbox--unit-actions {
+    grid-area: 1 / 1;
+}
+/* Reservierter Platz rechts in der Summary-Zeile, damit die Coverage-Rail nicht
+   unter das Overlay läuft — nur wenn tatsächlich Aktionen gerendert werden. */
+.sprog-inbox--unit-item--has-actions .sprog-inbox--unit-summary {
+    padding-right: 7.9rem;
+}
+
+/* Aktionen: Overlay oben rechts an der Summary-Zeile (margin = .sprog-row-
+   Padding, damit die Icons in deren Padding-Box sitzen). */
 .sprog-inbox--unit-actions {
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
     gap: 0.16rem;
     min-width: 5.2rem;
-    padding: 0;          /* kein padding-top — Icons sitzen auf der Zeilenmitte */
+    align-self: start;
     justify-self: end;
+    margin: 1.2rem 1.92rem;
+    z-index: 1;
+    /* Nur die Buttons fangen Klicks — daneben/dazwischen klickt man durch zur
+       Summary (Aufklappen), sodass kein toter Bereich entsteht. */
+    pointer-events: none;
 }
-/* Im offenen Eintrag bleiben die Aktionen dauerhaft sichtbar */
-.sprog-inbox--unit[open] .sprog-inbox--key-copy,
-.sprog-inbox--unit[open] .sprog-inbox--key-edit {
-    opacity: 1;
+.sprog-inbox--unit-actions > button {
+    pointer-events: auto;
 }
 
 /* Coverage-Spalte: Sprach-Rail + N/M */
@@ -4112,48 +3292,11 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     justify-self: end;
 }
 
-/*
- * Offener Eintrag = abgegrenzte Karte. Cyan-Kante links (inset-shadow, wird
- * nicht von overflow:hidden der Liste geclippt), Header getönt, Body weiß,
- * klare Ober/Unterlinie. So sind zwei offene Einträge untereinander eindeutig
- * zu unterscheiden. `.sprog-inbox--list`-Prefix für Specificity-Parität mit
- * den früheren Hover/Focus-Regeln.
- */
-.sprog-inbox--list .sprog-inbox--unit[open],
-.sprog-inbox--list .sprog-inbox--unit[open]:hover {
-    background: var(--sprog-color-bg, #ffffff);
-    box-shadow: inset 3px 0 0 0 var(--sprog-color-accent, #4b9ad9);
-    border-top: 1px solid var(--sprog-color-border, #dde2e8);
-    border-bottom: 1px solid var(--sprog-color-border, #dde2e8);
-}
-.sprog-inbox--list .sprog-inbox--unit[open] > .sprog-inbox--unit-summary {
-    background: color-mix(in srgb, var(--sprog-color-accent, #4b9ad9) 9%, transparent);
-}
+/* (Offener Eintrag = abgegrenzte Karte: Cyan-Kante + Header-Tint kommen jetzt
+   aus dem geteilten .sprog-accordion[open].) */
 
-/*
- * Konflikt-Hinweis im aufgeklappten Eintrag — sauber gesetzt: Icon oben-links
- * fixiert, Text linksbündig fließend (ersetzt das frühere unrunde Banner).
- */
-.sprog-inbox--conflict-note {
-    display: flex;
-    gap: 0.8rem;
-    align-items: flex-start;
-    margin: 1.28rem 0 0.4rem;
-    padding: 1rem 1.28rem;
-    background: color-mix(in srgb, var(--sprog-status-stale, #d35d5d) 8%, var(--sprog-color-bg, #fff));
-    border: 1px solid color-mix(in srgb, var(--sprog-status-stale, #d35d5d) 40%, var(--sprog-color-border, #dde2e8));
-    border-radius: 0.8rem;
-    font-size: 1.3rem;
-    line-height: 1.5;
-    color: var(--sprog-color-fg, #1b2733);
-}
-.sprog-inbox--conflict-note-icon {
-    flex: none;
-    margin-top: 0.1rem;
-    color: var(--sprog-status-stale, #d35d5d);
-}
-.sprog-inbox--conflict-note-icon svg { display: block; }
-.sprog-inbox--conflict-note-text strong { color: var(--sprog-status-stale, #d35d5d); }
+/* Konflikt-Hinweis = geteiltes .sprog-note.sprog-note--warning (+ --icon).
+   Icon-/strong-Farbe kommt aus der --warning-Variante. */
 
 /* Konflikt-Filter-Toggle in der Toolbar */
 .sprog-inbox--conflict-toggle {
@@ -4166,10 +3309,10 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     pointer-events: none;
 }
 .sprog-inbox--conflict-toggle .sprog-inbox--conflict-toggle-icon svg { display: block; }
-.sprog-inbox--conflict-toggle .sprog-inbox--toolbar-cell-label {
+.sprog-inbox--conflict-toggle .sprog-cell--label {
     text-transform: none;
     letter-spacing: 0;
-    font-size: 1.3rem;
+    font-size: var(--sprog-text-xs);
     color: inherit;
     pointer-events: none;
 }
@@ -4179,14 +3322,15 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
     color: var(--sprog-color-accent, #4b9ad9);
 }
 
-/* Schmale Viewports: Zeile stapelt (Chevron/Quelle führen, Rest darunter) */
+/* Schmale Viewports: Zeile stapelt (Chevron/Quelle führen, Rest darunter).
+   Überschreibt das geteilte .sprog-row-Flex mit einem 3-Zeilen-Grid. */
 @media (max-width: 48em) {
     .sprog-inbox--unit-summary {
+        display: grid;   /* überschreibt .sprog-row { display: flex } */
         grid-template-columns: 1.6rem 2.4rem 1fr auto;
         grid-template-areas:
             "chev src key   cover"
-            "chev src trans trans"
-            "chev src act   act";
+            "chev src trans trans";
         row-gap: 0.8rem;
     }
     .sprog-inbox--unit-chevron { grid-area: chev; align-self: start; }
@@ -4197,53 +3341,37 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
         padding-right: 0;
     }
     .sprog-inbox--translation   { grid-area: trans; }
-    .sprog-inbox--unit-actions  { grid-area: act; justify-self: start; }
-    .sprog-inbox--coverage-cell { grid-area: cover; justify-self: end; }
+    .sprog-inbox--coverage-cell { grid-area: cover; justify-self: end; margin-left: 0; }
 }
 
 /*
- * Workflow-Buttons: auf dem jetzt weißen Karten-Body waren weiße Buttons kaum
- * erkennbar. Aktive Buttons bekommen einen leichten Status-Tint + Status-
- * Textfarbe (kommuniziert die Wirkung), das 3px Status-Border-Left bleibt als
- * Akzent erhalten. Disabled bleibt ruhig-grau.
+ * Workflow-Buttons (Basis = .sprog-btn.sprog-btn--sm): aktive Buttons bekommen
+ * einen leichten Status-Tint + Status-Textfarbe (kommuniziert die Wirkung),
+ * das 3px Status-Border-Left bleibt als Akzent. Disabled = ruhig-grau.
  */
-.sprog-inbox--row-action {
-    background: var(--sprog-color-surface, #f3f5f8);
-    color: var(--sprog-color-fg, #1b2733);
-    font-weight: 600;
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--submit {
+    background: color-mix(in srgb, var(--sprog-status-needs_review) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-needs_review) 74%, #000);
 }
-.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--translated {
-    background: color-mix(in srgb, var(--sprog-status-translated) 14%, #fff);
-    color: color-mix(in srgb, var(--sprog-status-translated) 78%, #000);
-}
-.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--revise {
-    background: color-mix(in srgb, var(--sprog-status-revise) 14%, #fff);
-    color: color-mix(in srgb, var(--sprog-status-revise) 70%, #000);
-}
-.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approved {
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approve {
     background: color-mix(in srgb, var(--sprog-status-approved) 14%, #fff);
     color: color-mix(in srgb, var(--sprog-status-approved) 74%, #000);
 }
-.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--needs_review {
-    background: color-mix(in srgb, var(--sprog-status-needs_review) 14%, #fff);
-    color: color-mix(in srgb, var(--sprog-status-needs_review) 74%, #000);
+.sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--return {
+    background: color-mix(in srgb, var(--sprog-status-revise) 14%, #fff);
+    color: color-mix(in srgb, var(--sprog-status-revise) 70%, #000);
 }
 .sprog-inbox--row-action:not(:disabled):hover {
     filter: brightness(0.96);
 }
+/* Disabled: ruhiges Grau (Opacity-Fade kommt aus .sprog-btn:disabled). */
 .sprog-inbox--row-action:disabled {
     background: var(--sprog-color-surface, #f3f5f8);
     color: var(--sprog-color-muted, #5b6675);
-    opacity: 0.6;
 }
 
-/* Filter-Cell-Labels als gesperrte Versalien — wie im Mockup (SPRACHE/QUELLE/
-   STATUS). Der Konflikt-Toggle überschreibt das bewusst (eigene Selektor-
-   Specificity) auf normale Schreibweise. */
-.sprog-inbox--toolbar-cell-label {
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-}
+/* (Filter-Label-Versalien kommen jetzt aus dem geteilten .sprog-cell--label;
+   der Konflikt-Toggle überschreibt sie weiter oben auf normale Schreibweise.) */
 
 /*
  * Editor-Zeilen behalten ihre eigene Meta-Spalte (minmax(16rem,20rem), s.o.) —
@@ -4252,33 +3380,8 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  * müssten Keys wieder abgeschnitten werden).
  */
 
-/*
- * Toolbar: einheitliche Höhe aller Steuerelemente (Suchfeld, Filtern, Reset,
- * Neue Einheit, Filter-Cells, Status-Dropdown, Konflikt-Toggle) — gibt der
- * Leiste das ausgewogene Bild aus dem Mockup.
- */
-.sprog-inbox--toolbar-search,
-.sprog-inbox--toolbar-apply,
-.sprog-inbox--search-row .sprog-inbox--button,
-.sprog-inbox--toolbar-reset,
-.sprog-inbox--toolbar-cell,
-.sprog-inbox--toolbar-cell--dropdown,
-.sprog-inbox--conflict-toggle {
-    height: var(--sprog-toolbar-h, 3.6rem);
-    min-height: var(--sprog-toolbar-h, 3.6rem);
-    /* <label>-Cells erben Bootstrap/REDAXO `margin-bottom: 5px` → würde sie
-       ggü. den Buttons/Dropdowns 2.5px nach oben versetzen. Neutralisieren. */
-    margin: 0;
-    box-sizing: border-box;
-}
-/* Steuerelemente, die nicht schon flex sind, vertikal zentrieren */
-.sprog-inbox--toolbar-apply,
-.sprog-inbox--toolbar-reset,
-.sprog-inbox--conflict-toggle {
-    display: inline-flex;
-    align-items: center;
-    line-height: 1;
-}
+/* (Filter-Höhe/Margin/Zentrierung kommen jetzt aus dem geteilten .sprog-cell
+   (min-height 3.6rem, inline-flex) + dem :where(.sprog-ui) label-Reset.) */
 
 /* Auf schmalen Viewports stapelt die Editor-Zeile wieder einspaltig. */
 @media (max-width: 48em) {
@@ -4288,25 +3391,16 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
 }
 
 /*
- * Filter-Cells: Hintergrund über Token statt hartem #fff — eine spätere
- * Feinschliff-Regel hatte #ffffff fest gesetzt und damit im Dark-Mode die
- * Cells weiß gelassen (heller Text unsichtbar). Jetzt folgen sie --sprog-cell-bg.
+ * Primär-Button-Text: der „Neue Einheit"-Button ist ein <a>; REDAXOs Link-Farbe
+ * gewänne sonst per Specificity. Mit .sprog-inbox a.sprog-btn--primary (höhere
+ * Specificity) auf Weiß fixieren.
  */
-.sprog-inbox--toolbar-cell,
-.sprog-inbox--toolbar-cell--dropdown {
-    background: var(--sprog-cell-bg, #ffffff);
-}
-
-/*
- * Primär-Button-Text: REDAXOs Link-Farbe gewinnt sonst per Specificity und
- * färbt den Text im Dark-Mode cyan-auf-cyan. Mit höherer Specificity fixieren.
- */
-.sprog-inbox .sprog-inbox--button.sprog-inbox--button-primary {
+.sprog-inbox a.sprog-btn--primary {
     color: #ffffff;
 }
 
 @media (prefers-color-scheme: dark) {
-    .sprog-inbox .sprog-inbox--button.sprog-inbox--button-primary {
+    .sprog-inbox a.sprog-btn--primary {
         color: #0b0f19;
     }
 
@@ -4315,28 +3409,17 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
      * wären auf dunklem Body zu hell. Hier mit dunklem Grund + hellerer
      * Status-Textfarbe mischen.
      */
-    .sprog-inbox--row-action {
-        background: var(--sprog-color-surface, #161b22);
-        color: var(--sprog-color-fg, #e6edf3);
-    }
-    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--translated {
-        background: color-mix(in srgb, var(--sprog-status-translated) 22%, #0d1117);
-        color: color-mix(in srgb, var(--sprog-status-translated) 70%, #fff);
-    }
-    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--revise {
-        background: color-mix(in srgb, var(--sprog-status-revise) 22%, #0d1117);
-        color: color-mix(in srgb, var(--sprog-status-revise) 72%, #fff);
-    }
-    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approved {
-        background: color-mix(in srgb, var(--sprog-status-approved) 22%, #0d1117);
-        color: color-mix(in srgb, var(--sprog-status-approved) 72%, #fff);
-    }
-    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--needs_review {
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--submit {
         background: color-mix(in srgb, var(--sprog-status-needs_review) 22%, #0d1117);
         color: color-mix(in srgb, var(--sprog-status-needs_review) 72%, #fff);
     }
-    .sprog-inbox--row-action:disabled {
-        color: var(--sprog-color-muted, #8d96a0);
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--approve {
+        background: color-mix(in srgb, var(--sprog-status-approved) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-approved) 72%, #fff);
+    }
+    .sprog-inbox--row-action:not(:disabled).sprog-inbox--row-action--return {
+        background: color-mix(in srgb, var(--sprog-status-revise) 22%, #0d1117);
+        color: color-mix(in srgb, var(--sprog-status-revise) 72%, #fff);
     }
 }
 

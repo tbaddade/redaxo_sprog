@@ -6,11 +6,17 @@ use Sprog\Controller\Inbox\InboxRouter;
 use Sprog\Enum\SourceType;
 use Sprog\Enum\Status;
 use Sprog\Model\TranslationListFilter;
+use Sprog\Mt\AiPlatformProvider;
+use Sprog\Support\BaseLang;
+use Sprog\Support\ClangBase;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
+use Sprog\Service\MtService;
 use Sprog\Service\TranslationListService;
 use Sprog\Service\WildcardConflictService;
+use Sprog\Service\WorkflowService;
 use Sprog\Support\Labels;
+use Sprog\View\InboxRowActions;
 
 $user = rex::getUser();
 if (null === $user) {
@@ -34,11 +40,16 @@ InboxRouter::dispatch($func, $user);
  | Filter-Eingaben einlesen (GET-basiert, damit URLs shareable bleiben)
  |---------------------------------------------------------------------------
  */
-$clangs = rex_clang::getAll();
+// Nur eigenständig übersetzbare Sprachen. Via Sprachbasis (clang_base)
+// abgeleitete Sprachen (z. B. nl_BE → nl_NL) spiegeln eine andere Sprache und
+// werden nicht eigenständig übersetzt — sie erscheinen daher weder als
+// Anzeige-Sprache noch in Coverage/Badges/Zeilen/Batch.
+$clangs = ClangBase::translatableClangs();
 
-// Default-Sprache: aktuelle Backend-Sprache, sonst erste erlaubte.
+// Default-Sprache: aktuelle Backend-Sprache, sonst erste erlaubte. Muss
+// eigenständig sein (in $clangs) — eine abgeleitete Backend-Sprache fällt durch.
 $defaultClang = rex_clang::getCurrentId();
-if (!$user->getComplexPerm('clang')->hasPerm($defaultClang)) {
+if (!isset($clangs[$defaultClang]) || !$user->getComplexPerm('clang')->hasPerm($defaultClang)) {
     $defaultClang = 0;
     foreach ($clangs as $id => $_clang) {
         if ($user->getComplexPerm('clang')->hasPerm($id)) {
@@ -58,8 +69,27 @@ $openUnit = (int) rex_request('open_unit', 'int', 0);
 // Konflikt-Filter: nur Einträge mit Wildcard-Mehrdeutigkeit (rotes Dreieck).
 $conflictsOnly = (bool) rex_request('conflict', 'bool', false);
 
-// Per-Sprache Berechtigungs-Check vor der DB-Query — kein Bypass durch URL-Tampering.
-if ($clangId <= 0 || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
+// Sortierung: Feld + Richtung. Ungültige (z.B. manipulierte) Werte fallen still
+// auf den Standard zurück, damit ein alter Link die Seite nicht mit einer
+// Exception abbricht.
+$sortInput = (string) rex_request('sort', 'string', TranslationListFilter::DEFAULT_SORT);
+if (!in_array($sortInput, TranslationListFilter::SORT_FIELDS, true)) {
+    $sortInput = TranslationListFilter::DEFAULT_SORT;
+}
+$orderInput = (string) rex_request('order', 'string', TranslationListFilter::DEFAULT_ORDER);
+if (!in_array($orderInput, TranslationListFilter::SORT_ORDERS, true)) {
+    $orderInput = TranslationListFilter::DEFAULT_ORDER;
+}
+
+// Anzeige-Sprache absichern: eine unbekannte, abgeleitete (nicht in $clangs)
+// oder nicht erlaubte clang_id aus der URL fällt still auf die Default-Sprache
+// zurück, statt die Seite abzubrechen (alte Links bleiben nutzbar).
+if (!isset($clangs[$clangId]) || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
+    $clangId = $defaultClang;
+}
+
+// Erst wenn gar keine eigenständige, erlaubte Sprache übrig bleibt: abbrechen.
+if ($clangId <= 0 || !isset($clangs[$clangId]) || !$user->getComplexPerm('clang')->hasPerm($clangId)) {
     echo rex_view::error(rex_i18n::msg('sprog_inbox_no_clang_perm'));
 
     return;
@@ -87,6 +117,8 @@ try {
         page: $page,
         pageSize: $pageSize,
         conflictsOnly: $conflictsOnly,
+        sort: $sortInput,
+        order: $orderInput,
     );
 } catch (InvalidArgumentException $e) {
     echo rex_view::error(rex_i18n::msg('sprog_inbox_filter_invalid', $e->getMessage()));
@@ -142,7 +174,6 @@ $statusOptions = [
     Status::Draft,
     Status::NeedsReview,
     Status::Revise,
-    Status::Translated,
     Status::Approved,
 ];
 
@@ -165,6 +196,8 @@ $baseParams = [
     'page_size' => $pageSize,
     'status' => array_map(static fn (Status $st) => $st->value, $statuses),
     'conflict' => $conflictsOnly ? '1' : '',
+    'sort' => $sortInput,
+    'order' => $orderInput,
 ];
 
 $jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
@@ -217,81 +250,152 @@ $sourceGlyph = static function (string $ns): string {
 // Session ohnehin nicht möglich (CSRF schützt das Session-Cookie-Risiko).
 $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
 
+// MT-Verfügbarkeit + Button-Beschriftungen einmal page-weit ermitteln: die
+// MT-Leiste im Akkordeon rendert nur, wenn mindestens ein echter (nicht-noop)
+// Provider konfiguriert ist. Je echtem Provider bekommt der User einen eigenen
+// Button (Provider pro Klick wählbar, kein globales Setting). Das Label kommt
+// aus dem Lang-Key sprog_inbox_mt_provider_<name>; beim KI-Provider hängen wir
+// den konkreten Provider des Standard-Profils an → z.B. „KI (Ollama)".
+$mtProviderLabels = [];
+foreach (MtService::create()->providers() as $mtName => $mtProviderObj) {
+    if ('noop' === $mtName || !$mtProviderObj->isConfigured()) {
+        continue;
+    }
+    $mtLabelKey = 'sprog_inbox_mt_provider_' . $mtName;
+    $mtLabel = rex_i18n::hasMsg($mtLabelKey) ? rex_i18n::msg($mtLabelKey) : $mtName;
+    if ($mtProviderObj instanceof AiPlatformProvider) {
+        $mtProfileProvider = $mtProviderObj->profileProviderName();
+        if (null !== $mtProfileProvider && '' !== $mtProfileProvider) {
+            $mtLabel .= ' (' . $mtProfileProvider . ')';
+        }
+    }
+    $mtProviderLabels[$mtName] = $mtLabel;
+}
+$mtEnabled = [] !== $mtProviderLabels;
+// Quelle für MT ist immer die Basissprache (konfigurierbar, Fallback Start-Clang)
+// — dort gibt es keinen MT-Button und sie ist keine Batch-Zielsprache.
+$baseClangId = BaseLang::clangId();
+
+// Workflow-Rollenlogik (Buttons + Autorisierung) — eine Instanz für die ganze
+// Seite, damit der hasOtherTranslator-Cache je Sprache greift.
+$workflow = WorkflowService::create();
+$userId = $user->getId();
+
+// Zielsprachen für die Stapelverarbeitung: alle editierbaren Sprachen außer der
+// Quell-/Start-Clang (dorthin wird nicht übersetzt). Der Batch-Auslöser erscheint
+// nur, wenn es solche Sprachen gibt UND ein echter MT-Provider konfiguriert ist.
+$batchTargets = [];
+foreach ($clangs as $bId => $bClang) {
+    if ($bId === $baseClangId || !$workflow->canEdit($user, $bId)) {
+        continue;
+    }
+    $batchTargets[$bId] = $bClang;
+}
+$batchEnabled = $mtEnabled && [] !== $batchTargets;
+
 ?>
 <article
-    class="sprog-inbox"
+    class="sprog-ui sprog-inbox"
     data-sprog-inbox
     data-endpoint="<?= rex_escape($jsonEndpoint) ?>"
     data-endpoint-update-unit="<?= rex_escape($endpointUpdateUnit) ?>"
     data-endpoint-transition="<?= rex_escape($endpointTransition) ?>"
+    data-endpoint-mt="<?= rex_escape(rex_url::currentBackendPage(['func' => 'mt'], false)) ?>"
+    data-endpoint-history="<?= rex_escape(rex_url::currentBackendPage(['func' => 'history'], false)) ?>"
+    data-endpoint-restore="<?= rex_escape(rex_url::currentBackendPage(['func' => 'restore'], false)) ?>"
+    data-endpoint-batch-prepare="<?= rex_escape(rex_url::currentBackendPage(['func' => 'batch_prepare'], false)) ?>"
+    data-endpoint-batch-translate="<?= rex_escape(rex_url::currentBackendPage(['func' => 'batch_translate'], false)) ?>"
     data-can-edit-unit="<?= $canEditUnit ? '1' : '0' ?>"
+    data-display-clang="<?= rex_escape((string) $clangId) ?>"
     data-csrf-name="<?= rex_escape(rex_csrf_token::PARAM) ?>"
     data-csrf-value="<?= rex_escape($inboxSaveCsrf->getValue()) ?>"
     data-wildcard-open="<?= rex_escape($wildcardOpenTag) ?>"
     data-wildcard-close="<?= rex_escape($wildcardCloseTag) ?>"
 >
-    <header class="sprog-inbox--intro">
-        <h1 class="sprog-inbox--heading"><?= rex_i18n::msg('sprog_inbox_heading') ?></h1>
-        <p class="sprog-inbox--lead"><?= rex_i18n::msg('sprog_inbox_lead') ?></p>
+    <header class="sprog-intro">
+        <h1 class="sprog-heading"><?= rex_i18n::msg('sprog_inbox_heading') ?></h1>
+        <p class="sprog-lead"><?= rex_i18n::msg('sprog_inbox_lead') ?></p>
     </header>
 
     <?php
-    // Legende aller sieben Status, grob in Workflow-Reihenfolge: der Haupt-
-    // pfad missing → draft → translated → approved, dazwischen die Review-
-    // Status needs_review (jetzt nur noch system-gesetzt) und revise (Rückgabe
-    // durch die Reviewerin), am Ende stale als Spezialfall bei Quell-Änderung.
+    // Legende der Status, grob in Workflow-Reihenfolge: missing → draft →
+    // needs_review (eingereicht) → approved, dazwischen revise (vom Reviewer
+    // zurückgegeben), am Ende stale als Spezialfall bei Quell-Änderung.
     $legendOrder = [
         Status::Missing,
         Status::Draft,
-        Status::Translated,
         Status::NeedsReview,
         Status::Revise,
         Status::Approved,
         Status::Stale,
     ];
     ?>
-    <details class="sprog-inbox--legend">
-        <summary class="sprog-inbox--legend-summary">
-            <span class="sprog-inbox--legend-icon" aria-hidden="true">i</span>
+    <details class="sprog-legend">
+        <summary class="sprog-legend--summary">
+            <span class="sprog-legend--icon" aria-hidden="true">i</span>
             <?= rex_i18n::msg('sprog_inbox_legend_summary') ?>
-            <span class="sprog-inbox--chevron"><?= $chevronSvg ?></span>
+            <span class="sprog-chevron"><?= $chevronSvg ?></span>
         </summary>
-        <div class="sprog-inbox--legend-body">
-            <section class="sprog-inbox--legend-section">
-                <h3 class="sprog-inbox--legend-heading">
-                    <?= rex_i18n::msg('sprog_inbox_legend_status_heading') ?>
-                </h3>
-                <dl class="sprog-inbox--legend-statuses">
-                    <?php foreach ($legendOrder as $st) : ?>
+        <div class="sprog-legend--body sprog-legend--body--split">
+            <div class="sprog-legend--col">
+                <section class="sprog-legend--section">
+                    <h3 class="sprog-legend--heading">
+                        <?= rex_i18n::msg('sprog_inbox_legend_workflow_heading') ?>
+                    </h3>
+                    <p class="sprog-legend--text">
+                        <?= rex_i18n::rawMsg('sprog_inbox_legend_workflow_text') ?>
+                    </p>
+                </section>
+
+                <section class="sprog-legend--section">
+                    <h3 class="sprog-legend--heading">
+                        <?= rex_i18n::msg('sprog_inbox_legend_pills_heading') ?>
+                    </h3>
+                    <p class="sprog-legend--text">
+                        <?= rex_i18n::rawMsg('sprog_inbox_legend_pills_text') ?>
+                    </p>
+                </section>
+            </div>
+
+            <div class="sprog-legend--col">
+                <section class="sprog-legend--section">
+                    <h3 class="sprog-legend--heading">
+                        <?= rex_i18n::msg('sprog_inbox_legend_status_heading') ?>
+                    </h3>
+                    <dl class="sprog-inbox--legend-statuses">
+                        <?php foreach ($legendOrder as $st) : ?>
+                            <div class="sprog-inbox--legend-status">
+                                <dt>
+                                    <span class="sprog-status sprog-status--<?= rex_escape($st->value) ?>">
+                                        <?= Labels::status($st) ?>
+                                    </span>
+                                </dt>
+                                <dd><?= rex_i18n::msg('sprog_inbox_legend_status_' . $st->value) ?></dd>
+                            </div>
+                        <?php endforeach ?>
+                    </dl>
+                </section>
+
+                <section class="sprog-legend--section">
+                    <h3 class="sprog-legend--heading">
+                        <?= rex_i18n::msg('sprog_inbox_legend_actions_heading') ?>
+                    </h3>
+                    <dl class="sprog-inbox--legend-statuses">
                         <div class="sprog-inbox--legend-status">
-                            <dt>
-                                <span class="sprog-status sprog-status--<?= rex_escape($st->value) ?>">
-                                    <?= Labels::status($st) ?>
-                                </span>
-                            </dt>
-                            <dd><?= rex_i18n::msg('sprog_inbox_legend_status_' . $st->value) ?></dd>
+                            <dt><span class="sprog-btn sprog-btn--sm sprog-inbox--row-action sprog-inbox--row-action--submit"><?= rex_i18n::msg('sprog_inbox_action_submit') ?></span></dt>
+                            <dd><?= rex_i18n::msg('sprog_inbox_legend_action_submit') ?></dd>
                         </div>
-                    <?php endforeach ?>
-                </dl>
-            </section>
-
-            <section class="sprog-inbox--legend-section">
-                <h3 class="sprog-inbox--legend-heading">
-                    <?= rex_i18n::msg('sprog_inbox_legend_workflow_heading') ?>
-                </h3>
-                <p class="sprog-inbox--legend-text">
-                    <?= rex_i18n::rawMsg('sprog_inbox_legend_workflow_text') ?>
-                </p>
-            </section>
-
-            <section class="sprog-inbox--legend-section">
-                <h3 class="sprog-inbox--legend-heading">
-                    <?= rex_i18n::msg('sprog_inbox_legend_pills_heading') ?>
-                </h3>
-                <p class="sprog-inbox--legend-text">
-                    <?= rex_i18n::rawMsg('sprog_inbox_legend_pills_text') ?>
-                </p>
-            </section>
+                        <div class="sprog-inbox--legend-status">
+                            <dt><span class="sprog-btn sprog-btn--sm sprog-inbox--row-action sprog-inbox--row-action--return"><?= rex_i18n::msg('sprog_inbox_action_return') ?></span></dt>
+                            <dd><?= rex_i18n::msg('sprog_inbox_legend_action_return') ?></dd>
+                        </div>
+                        <div class="sprog-inbox--legend-status">
+                            <dt><span class="sprog-btn sprog-btn--sm sprog-inbox--row-action sprog-inbox--row-action--approve"><?= rex_i18n::msg('sprog_inbox_action_approve') ?></span></dt>
+                            <dd><?= rex_i18n::msg('sprog_inbox_legend_action_approve') ?></dd>
+                        </div>
+                    </dl>
+                </section>
+            </div>
         </div>
     </details>
 
@@ -301,13 +405,13 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
         ? rex_i18n::msg('sprog_inbox_filter_all')
         : rex_i18n::msg('sprog_inbox_filter_status_count', (string) count($statuses));
     ?>
-    <form method="get" action="index.php" class="sprog-inbox--toolbar" data-sprog-inbox-filter>
+    <form method="get" action="index.php" class="sprog-toolbar" data-sprog-inbox-filter>
         <input type="hidden" name="page" value="sprog/inbox">
 
         <!-- Top-Row: Suchfeld füllt links, Filtern/Reset rechts daneben, Neue-Einheit ganz rechts. -->
-        <div class="sprog-inbox--search-row">
-            <label class="sprog-inbox--toolbar-search">
-                <span class="sprog-inbox--toolbar-search-icon" aria-hidden="true">
+        <div class="sprog-toolbar--row">
+            <label class="sprog-search">
+                <span class="sprog-search--icon" aria-hidden="true">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
                         <path d="M11.5 7a4.499 4.499 0 1 1-8.998 0A4.499 4.499 0 0 1 11.5 7Zm-.82 4.74a6 6 0 1 1 1.06-1.06l3.04 3.04a.75.75 0 1 1-1.06 1.06l-3.04-3.04Z"/>
                     </svg>
@@ -318,13 +422,13 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                     value="<?= rex_escape($searchInput) ?>"
                     placeholder="<?= rex_i18n::msg('sprog_inbox_filter_search_placeholder') ?>"
                     maxlength="<?= rex_escape((string) TranslationListFilter::MAX_SEARCH_LENGTH) ?>"
-                    class="sprog-inbox--toolbar-search-input"
+                    class="sprog-search--input"
                 >
             </label>
-            <button type="submit" class="sprog-inbox--toolbar-apply">
+            <button type="submit" class="sprog-btn">
                 <?= rex_i18n::msg('sprog_inbox_filter_submit') ?>
             </button>
-            <a class="sprog-inbox--toolbar-reset"
+            <a class="sprog-btn sprog-btn--reset"
                href="<?= rex_escape(rex_url::currentBackendPage(['clang_id' => $clangId], false)) ?>">
                 <?= rex_i18n::msg('sprog_inbox_filter_reset') ?>
             </a>
@@ -334,15 +438,22 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                 das Edit-Modal im Create-Mode.
             -->
             <a
-                class="sprog-inbox--button sprog-inbox--button-primary"
+                class="sprog-btn sprog-btn--primary"
                 data-role="unit-create-trigger"
                 href="<?= rex_escape(rex_url::backendPage('sprog/create', [], false)) ?>"
             ><?= rex_i18n::msg('sprog_inbox_button_new') ?></a>
+            <?php if ($batchEnabled) : ?>
+                <button
+                    type="button"
+                    class="sprog-btn"
+                    data-role="batch-trigger"
+                ><?= rex_i18n::msg('sprog_inbox_batch_button') ?></button>
+            <?php endif ?>
         </div>
 
         <!-- Listen-Header: Anzahl links, Sprache/Quelle/Status-Dropdowns rechts. -->
-        <div class="sprog-inbox--list-header">
-            <p class="sprog-inbox--summary">
+        <div class="sprog-list-header">
+            <p class="sprog-summary">
                 <strong><?= rex_escape((string) $total) ?></strong>
                 <?= rex_i18n::msg(1 === $total ? 'sprog_inbox_summary_entry' : 'sprog_inbox_summary_entries') ?>
                 <?php if ($total > $pageSize) : ?>
@@ -350,51 +461,81 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                 <?php endif ?>
             </p>
 
-            <div class="sprog-inbox--list-header-filters">
-                <label class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--select">
-                    <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_language') ?></span>
-                    <span class="sprog-inbox--toolbar-cell-value"><?= rex_escape($currentClangLabel) ?></span>
-                    <span class="sprog-inbox--chevron"><?= $chevronSvg ?></span>
-                    <select name="clang_id" class="sprog-inbox--toolbar-cell-input">
+            <div class="sprog-list-header--filters">
+                <?php
+                // Konflikt-Toggle: an erster Stelle, aber nur wenn tatsächlich
+                // Wildcard-Konflikte existieren (oder der Filter gerade aktiv ist,
+                // damit er sich wieder abschalten lässt). Reine Navigation.
+                if ([] !== $conflictMap || $conflictsOnly) :
+                    $conflictToggleParams = $baseParams;
+                    $conflictToggleParams['conflict'] = $conflictsOnly ? '' : '1';
+                    $conflictToggleParams['pg'] = 1;
+                ?>
+                    <a
+                        class="sprog-cell sprog-inbox--conflict-toggle<?= $conflictsOnly ? ' is-active' : '' ?>"
+                        href="<?= rex_escape(rex_url::currentBackendPage($conflictToggleParams, false)) ?>"
+                        aria-pressed="<?= $conflictsOnly ? 'true' : 'false' ?>"
+                        title="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_conflicts_title')) ?>"
+                    >
+                        <span class="sprog-inbox--conflict-toggle-icon" aria-hidden="true">
+                            <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+                        </span>
+                        <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_conflicts') ?></span>
+                    </a>
+                <?php endif ?>
+
+                <?php // Sprache (Anzeige-Sprache) — Single-Select, submittet sofort. ?>
+                <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_language')) ?>">
+                    <summary class="sprog-cell" tabindex="-1">
+                        <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_language') ?></span>
+                        <span class="sprog-inbox--filter-value"><?= isset($clangs[$clangId]) ? rex_escape($clangs[$clangId]->getCode()) : '' ?></span>
+                        <span class="sprog-chevron"><?= $chevronSvg ?></span>
+                    </summary>
+                    <div class="sprog-inbox--filter-popup" data-role="filter-popup">
                         <?php foreach ($clangs as $id => $clang) :
                             if (!$user->getComplexPerm('clang')->hasPerm($id)) {
                                 continue;
                             }
                         ?>
-                            <option
-                                value="<?= rex_escape((string) $id) ?>"
-                                <?= $id === $clangId ? 'selected' : '' ?>
-                            >
-                                <?= rex_escape($clang->getCode()) ?> · <?= rex_escape($clang->getName()) ?>
-                            </option>
+                            <label class="sprog-inbox--filter-opt">
+                                <input type="radio" name="clang_id" value="<?= rex_escape((string) $id) ?>" data-autosubmit <?= $id === $clangId ? 'checked' : '' ?>>
+                                <span><?= rex_escape($clang->getCode()) ?> · <?= rex_escape($clang->getName()) ?></span>
+                            </label>
                         <?php endforeach ?>
-                    </select>
-                </label>
+                    </div>
+                </details>
 
-                <label class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--select">
-                    <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_namespace') ?></span>
-                    <span class="sprog-inbox--toolbar-cell-value"><?= rex_escape($currentNamespaceLabel) ?></span>
-                    <span class="sprog-inbox--chevron"><?= $chevronSvg ?></span>
-                    <select name="namespace" class="sprog-inbox--toolbar-cell-input">
-                        <option value=""><?= rex_i18n::msg('sprog_inbox_filter_all') ?></option>
-                        <?php foreach (SourceType::values() as $ns) : ?>
-                            <option
-                                value="<?= rex_escape($ns) ?>"
-                                <?= $ns === $namespace ? 'selected' : '' ?>
-                            ><?= Labels::forNamespace($ns) ?></option>
-                        <?php endforeach ?>
-                    </select>
-                </label>
-
-                <details class="sprog-inbox--toolbar-cell sprog-inbox--toolbar-cell--dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_status_aria')) ?>">
-                    <summary class="sprog-inbox--toolbar-cell-summary" tabindex="-1">
-                        <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_status') ?></span>
-                        <span class="sprog-inbox--toolbar-cell-value"><?= rex_escape($statusSummaryText) ?></span>
-                        <span class="sprog-inbox--chevron"><?= $chevronSvg ?></span>
+                <?php // Bereich (Namespace) — Single-Select, submittet sofort. ?>
+                <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_namespace')) ?>">
+                    <summary class="sprog-cell" tabindex="-1">
+                        <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_namespace') ?></span>
+                        <span class="sprog-inbox--filter-value"><?= null === $namespace ? rex_i18n::msg('sprog_inbox_filter_all') : Labels::forNamespace($namespace) ?></span>
+                        <span class="sprog-chevron"><?= $chevronSvg ?></span>
                     </summary>
-                    <div class="sprog-inbox--toolbar-popup">
+                    <div class="sprog-inbox--filter-popup" data-role="filter-popup">
+                        <label class="sprog-inbox--filter-opt">
+                            <input type="radio" name="namespace" value="" data-autosubmit <?= null === $namespace ? 'checked' : '' ?>>
+                            <span><?= rex_i18n::msg('sprog_inbox_filter_all') ?></span>
+                        </label>
+                        <?php foreach (SourceType::values() as $ns) : ?>
+                            <label class="sprog-inbox--filter-opt">
+                                <input type="radio" name="namespace" value="<?= rex_escape($ns) ?>" data-autosubmit <?= $ns === $namespace ? 'checked' : '' ?>>
+                                <span><?= Labels::forNamespace($ns) ?></span>
+                            </label>
+                        <?php endforeach ?>
+                    </div>
+                </details>
+
+                <?php // Status — Multi-Select (Checkboxen + Anwenden). ?>
+                <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_status_aria')) ?>">
+                    <summary class="sprog-cell" tabindex="-1">
+                        <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_status') ?></span>
+                        <span class="sprog-inbox--filter-value"><?= rex_escape($statusSummaryText) ?></span>
+                        <span class="sprog-chevron"><?= $chevronSvg ?></span>
+                    </summary>
+                    <div class="sprog-inbox--filter-popup" data-role="filter-popup">
                         <?php foreach ($statusOptions as $status) : ?>
-                            <label class="sprog-inbox--toolbar-check">
+                            <label class="sprog-inbox--filter-opt">
                                 <input
                                     type="checkbox"
                                     name="status[]"
@@ -404,38 +545,52 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                 <span><?= Labels::status($status) ?></span>
                             </label>
                         <?php endforeach ?>
-                        <button type="submit" class="sprog-inbox--toolbar-popup-apply">
-                            <?= rex_i18n::msg('sprog_inbox_filter_submit') ?>
-                        </button>
                     </div>
                 </details>
 
                 <?php
-                // Konflikt-Filter-Toggle: Link, der den `conflict`-Parameter
-                // umschaltet und alle übrigen Filter beibehält (funktioniert
-                // auch ohne JS, da reine Navigation).
-                $conflictToggleParams = $baseParams;
-                $conflictToggleParams['conflict'] = $conflictsOnly ? '' : '1';
-                $conflictToggleParams['pg'] = 1;
+                // Sortierung: ein Dropdown mit zwei Bereichen (Feld + Richtung).
+                // Die aktuelle Richtung wird als Pfeil-Icon gezeigt; der
+                // Anwenden-Button submittet Feld + Richtung in einem Schritt.
+                $orderArrowUp = '<svg class="sprog-inbox--order-icon" width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 4l5 7H3z"/></svg>';
+                $orderArrowDown = '<svg class="sprog-inbox--order-icon" width="11" height="11" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 12 3 5h10z"/></svg>';
                 ?>
-                <a
-                    class="sprog-inbox--toolbar-cell sprog-inbox--conflict-toggle<?= $conflictsOnly ? ' is-active' : '' ?>"
-                    href="<?= rex_escape(rex_url::currentBackendPage($conflictToggleParams, false)) ?>"
-                    aria-pressed="<?= $conflictsOnly ? 'true' : 'false' ?>"
-                    title="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_conflicts_title')) ?>"
-                >
-                    <span class="sprog-inbox--conflict-toggle-icon" aria-hidden="true">
-                        <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
-                    </span>
-                    <span class="sprog-inbox--toolbar-cell-label"><?= rex_i18n::msg('sprog_inbox_filter_conflicts') ?></span>
-                </a>
+                <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_sort_label')) ?>">
+                    <summary class="sprog-cell" tabindex="-1">
+                        <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_sort_label') ?></span>
+                        <span class="sprog-inbox--filter-value"><?= rex_i18n::msg('sprog_inbox_sort_' . $sortInput) ?><?= 'desc' === $orderInput ? $orderArrowDown : $orderArrowUp ?></span>
+                        <span class="sprog-chevron"><?= $chevronSvg ?></span>
+                    </summary>
+                    <div class="sprog-inbox--filter-popup" data-role="filter-popup">
+                        <div class="sprog-inbox--filter-section">
+                            <p class="sprog-inbox--filter-section-title"><?= rex_i18n::msg('sprog_inbox_sort_label') ?></p>
+                            <?php foreach (TranslationListFilter::SORT_FIELDS as $sortField) : ?>
+                                <label class="sprog-inbox--filter-opt">
+                                    <input type="radio" name="sort" value="<?= rex_escape($sortField) ?>" data-autosubmit <?= $sortField === $sortInput ? 'checked' : '' ?>>
+                                    <span><?= rex_i18n::msg('sprog_inbox_sort_' . $sortField) ?></span>
+                                </label>
+                            <?php endforeach ?>
+                        </div>
+                        <div class="sprog-inbox--filter-section">
+                            <p class="sprog-inbox--filter-section-title"><?= rex_i18n::msg('sprog_inbox_order_label') ?></p>
+                            <label class="sprog-inbox--filter-opt">
+                                <input type="radio" name="order" value="asc" data-autosubmit <?= 'asc' === $orderInput ? 'checked' : '' ?>>
+                                <span><?= $orderArrowUp ?> <?= rex_i18n::msg('sprog_inbox_order_asc') ?></span>
+                            </label>
+                            <label class="sprog-inbox--filter-opt">
+                                <input type="radio" name="order" value="desc" data-autosubmit <?= 'desc' === $orderInput ? 'checked' : '' ?>>
+                                <span><?= $orderArrowDown ?> <?= rex_i18n::msg('sprog_inbox_order_desc') ?></span>
+                            </label>
+                        </div>
+                    </div>
+                </details>
             </div>
         </div>
 
     <?php if ([] === $items) : ?>
-        <p class="sprog-inbox--empty"><?= rex_i18n::msg('sprog_inbox_empty') ?></p>
+        <p class="sprog-empty"><?= rex_i18n::msg('sprog_inbox_empty') ?></p>
     <?php else : ?>
-        <ul class="sprog-inbox--list" role="list">
+        <ul class="sprog-list" role="list">
             <?php foreach ($items as $item) :
                 $unit = $unitMap[$item->unitId] ?? null;
                 if (null === $unit) {
@@ -451,15 +606,20 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                 foreach ($clangs as $cId => $_c) {
                     ++$coverageAll;
                     $t = $unitTranslations[$cId] ?? null;
-                    if (null !== $t && in_array($t->status, [Status::Translated, Status::Approved], true)) {
+                    if (null !== $t && Status::Approved === $t->status) {
                         ++$coverageDone;
                     }
                 }
             ?>
-                <?php $conflictHint = $conflictMap[$unit->id] ?? null ?>
-                <li class="sprog-inbox--card">
+                <?php
+                $conflictHint = $conflictMap[$unit->id] ?? null;
+                // Copy nur für Wildcards, Edit nur mit Recht — nur dann das
+                // Action-Overlay (+ reservierten Platz rechts in der Zeile) rendern.
+                $hasUnitActions = SourceType::Wildcard->value === $item->namespace || $canEditUnit;
+                ?>
+                <li class="sprog-inbox--unit-item<?= $hasUnitActions ? ' sprog-inbox--unit-item--has-actions' : '' ?>">
                     <details
-                        class="sprog-inbox--unit"
+                        class="sprog-accordion sprog-inbox--unit"
                         aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_unit_card_aria', $item->unitKey)) ?>"
                         data-unit-id="<?= rex_escape((string) $unit->id) ?>"
                         data-unit-namespace="<?= rex_escape($item->namespace) ?>"
@@ -470,10 +630,11 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                         <?php if (null !== $conflictHint) : ?>data-unit-conflict="<?= rex_escape($conflictHint) ?>"<?php endif ?>
                         <?= $isOpen ? 'open' : '' ?>
                     >
-                        <summary class="sprog-inbox--unit-summary">
-                            <span class="sprog-inbox--unit-chevron"><?= $unitChevronSvg ?></span>
-                            <span class="sprog-inbox--source-icon" title="<?= rex_escape(Labels::forNamespace($item->namespace)) ?>" aria-hidden="true"><?= $sourceGlyph($item->namespace) ?></span>
-                            <div class="sprog-inbox--key-line">
+                        <summary class="sprog-row sprog-row--accordion sprog-row--aligned sprog-inbox--unit-summary">
+                            <span class="sprog-row--lead sprog-inbox--unit-chevron"><?= $unitChevronSvg ?></span>
+                            <span class="sprog-visually-hidden"><?= Labels::forNamespace($item->namespace) ?>:</span>
+                            <span class="sprog-row--icon sprog-inbox--source-icon" title="<?= rex_escape(Labels::forNamespace($item->namespace)) ?>" aria-hidden="true"><?= $sourceGlyph($item->namespace) ?></span>
+                            <div class="sprog-row--title sprog-inbox--key-line" data-role="key-line">
                                     <?php if (null !== $conflictHint) : ?>
                                         <span class="sprog-inbox--conflict-flag" title="<?= rex_escape($conflictHint) ?>" aria-label="<?= rex_escape($conflictHint) ?>">
                                             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -483,51 +644,22 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                     <?php endif ?>
                                     <?php if ('' !== $item->context) : ?>
                                         <span class="sprog-inbox--context" data-role="context-text"><?= rex_escape($item->context) ?></span>
-                                        <span class="sprog-inbox--context-sep" aria-hidden="true">.</span>
+                                        <span class="sprog-inbox--context-sep" data-role="context-sep" aria-hidden="true">.</span>
                                     <?php endif ?>
                                     <span class="sprog-inbox--key" data-role="key-text"><?= rex_escape($item->unitKey) ?></span>
                                 </div>
 
-                                <div class="sprog-inbox--translation<?= '' === $item->displayValue ? ' sprog-inbox--translation--missing' : '' ?>">
+                                <div class="sprog-row--body sprog-inbox--translation<?= '' === $item->displayValue ? ' sprog-inbox--translation--missing' : '' ?>">
                                     <?php if ('' === $item->displayValue) : ?>
                                         <span class="sprog-inbox--translation-dot" aria-hidden="true"></span>
                                         <span class="sprog-inbox--translation-missing"><?= rex_i18n::msg('sprog_inbox_value_empty') ?></span>
                                     <?php else : ?>
-                                        <span class="sprog-inbox--translation-dot" aria-hidden="true" style="background:var(--sprog-status-<?= rex_escape($item->displayStatus->value) ?>)"></span>
+                                        <span class="sprog-inbox--translation-dot" data-role="translation-dot" aria-hidden="true" style="background:var(--sprog-status-<?= rex_escape($item->displayStatus->value) ?>)"></span>
                                         <span class="sprog-inbox--translation-text"><?= rex_escape($item->displayValue) ?></span>
                                     <?php endif ?>
                                 </div>
 
-                                <div class="sprog-inbox--unit-actions">
-                                    <?php if (SourceType::Wildcard->value === $item->namespace) : ?>
-                                        <button
-                                            type="button"
-                                            class="sprog-inbox--key-copy"
-                                            data-role="unit-copy-placeholder"
-                                            title="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
-                                            aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
-                                        >
-                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                                                <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/>
-                                                <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/>
-                                            </svg>
-                                        </button>
-                                    <?php endif ?>
-                                    <?php if ($canEditUnit) : ?>
-                                        <button
-                                            type="button"
-                                            class="sprog-inbox--key-edit"
-                                            data-role="unit-edit-trigger"
-                                            title="<?= rex_escape(rex_i18n::msg('sprog_inbox_key_edit_title')) ?>"
-                                            aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_key_edit_title')) ?>"
-                                        >
-                                            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                                                <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.757l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"/>
-                                            </svg>
-                                        </button>
-                                    <?php endif ?>
-                                </div>
-                            <div class="sprog-inbox--coverage-cell">
+                            <div class="sprog-row--trailing sprog-inbox--coverage-cell">
                                 <!--
                                     Coverage-Rail: pro Sprache eine kompakte Pille
                                     (Sprachkürzel + Status-Farbe). missing rendert
@@ -542,44 +674,54 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                                     ?>
                                         <span
                                             class="sprog-status sprog-status--<?= rex_escape($cStat->value) ?> sprog-inbox--lang-badge"
+                                            data-role="lang-badge"
+                                            data-clang-id="<?= rex_escape((string) $cId) ?>"
+                                            data-clang-name="<?= rex_escape($clang->getName()) ?>"
+                                            data-status="<?= rex_escape($cStat->value) ?>"
                                             title="<?= rex_escape($tipTxt) ?>"
                                         ><?= rex_escape($clang->getCode()) ?></span>
                                     <?php endforeach ?>
                                 </div>
-                                <span class="sprog-inbox--coverage"
+                                <span class="sprog-inbox--coverage" data-role="coverage"
                                       title="<?= rex_escape(rex_i18n::msg('sprog_inbox_coverage_title', (string) $coverageDone, (string) $coverageAll)) ?>">
                                     <?= rex_escape($coverageDone . '/' . $coverageAll) ?>
                                 </span>
                             </div>
                         </summary>
 
-                        <div class="sprog-inbox--rows" role="group" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_rows_label', $item->unitKey)) ?>">
+                        <div class="sprog-accordion--body sprog-inbox--rows" data-role="rows" role="group" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_rows_label', $item->unitKey)) ?>">
                             <?php if (null !== $conflictHint) : ?>
-                                <p class="sprog-inbox--conflict-note">
-                                    <span class="sprog-inbox--conflict-note-icon" aria-hidden="true">
+                                <p class="sprog-note sprog-note--warning">
+                                    <span class="sprog-note--icon" aria-hidden="true">
                                         <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575L6.457 1.047ZM8 5a.75.75 0 0 0-.75.75v3.5a.75.75 0 0 0 1.5 0v-3.5A.75.75 0 0 0 8 5Zm1 7a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
                                     </span>
-                                    <span class="sprog-inbox--conflict-note-text"><strong><?= rex_i18n::msg('sprog_inbox_conflict_label') ?></strong> <?= rex_escape($conflictHint) ?></span>
+                                    <span><strong><?= rex_i18n::msg('sprog_inbox_conflict_label') ?></strong> <?= rex_escape($conflictHint) ?></span>
                                 </p>
                             <?php endif ?>
                             <?php if (null !== $item->notes) : ?>
-                                <p class="sprog-inbox--notes">
-                                    <span class="sprog-inbox--notes-label"><?= rex_i18n::msg('sprog_inbox_notes_label') ?></span>
+                                <p class="sprog-note sprog-note--info" data-role="notes">
+                                    <span class="sprog-note--label"><?= rex_i18n::msg('sprog_inbox_notes_label') ?></span>
                                     <?= rex_escape($item->notes) ?>
                                 </p>
                             <?php endif ?>
 
                             <?php foreach ($clangs as $cId => $clang) :
-                                $hasPerm = $user->getComplexPerm('clang')->hasPerm($cId);
+                                $canEdit = $workflow->canEdit($user, $cId);
                                 $tr = $unitTranslations[$cId] ?? null;
                                 $value = null !== $tr ? $tr->value : '';
                                 $status = null !== $tr ? $tr->status : Status::Missing;
                                 $revision = null !== $tr ? $tr->revision : 0;
-                                $isStale = null !== $tr && null !== $unit->sourceHash
-                                    && $tr->isStaleAgainst($unit->sourceHash);
+                                // Stale-Hinweis + is-stale-Deko folgen dem
+                                // persistierten Status — single source of truth,
+                                // identisch zum Badge und zur Live-Aktualisierung
+                                // nach einem Quell-Edit (dort ebenfalls
+                                // status-basiert). Damit sind Live und Reload
+                                // deckungsgleich. Die Basissprache wird nie stale
+                                // markiert und taucht hier ohnehin nicht auf.
+                                $isStale = Status::Stale === $status;
 
                                 $rowClasses = ['sprog-inbox--row'];
-                                if (!$hasPerm) {
+                                if (!$canEdit) {
                                     $rowClasses[] = 'is-readonly';
                                 }
                                 if ($isStale) {
@@ -588,18 +730,16 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                             ?>
                                 <div
                                     class="<?= rex_escape(implode(' ', $rowClasses)) ?>"
+                                    data-role="row"
                                     data-clang-id="<?= rex_escape((string) $cId) ?>"
                                     data-revision="<?= rex_escape((string) $revision) ?>"
                                     data-status="<?= rex_escape($status->value) ?>"
                                 >
                                     <div class="sprog-inbox--row-head">
-                                        <span class="sprog-inbox--clang-code"><?= rex_escape($clang->getCode()) ?></span>
+                                        <span class="sprog-clang-code"><?= rex_escape($clang->getCode()) ?></span>
                                         <span class="sprog-inbox--clang-name"><?= rex_escape($clang->getName()) ?></span>
-                                        <span class="sprog-status sprog-status--<?= rex_escape($status->value) ?>" data-role="row-status">
-                                            <?= Labels::status($status) ?>
-                                        </span>
-                                        <?php if (!$hasPerm) : ?>
-                                            <span class="sprog-inbox--readonly-hint" title="<?= rex_escape(rex_i18n::msg('sprog_inbox_readonly_hint')) ?>">
+                                        <?php if (!$canEdit) : ?>
+                                            <span class="sprog-hint sprog-hint--italic sprog-inbox--readonly-hint" title="<?= rex_escape(rex_i18n::msg('sprog_inbox_readonly_hint')) ?>">
                                                 <?= rex_i18n::msg('sprog_inbox_readonly_short') ?>
                                             </span>
                                         <?php endif ?>
@@ -607,63 +747,137 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
 
                                     <div class="sprog-inbox--row-body">
                                         <?php if ($isStale) : ?>
-                                            <p class="sprog-inbox--stale-hint"><?= rex_i18n::msg('sprog_editor_stale_hint') ?></p>
+                                            <p class="sprog-hint sprog-hint--warning sprog-inbox--stale-hint"><?= rex_i18n::msg('sprog_inbox_stale_hint') ?></p>
                                         <?php endif ?>
 
                                         <textarea
-                                            class="sprog-inbox--textarea"
+                                            class="sprog-control sprog-control--textarea"
                                             data-role="value"
-                                            data-original="<?= rex_escape($value) ?>"
+                                            data-last-saved="<?= rex_escape($value) ?>"
                                             data-auto-grow
                                             data-max-rows="8"
                                             rows="1"
-                                            <?= $hasPerm ? '' : 'readonly aria-readonly="true"' ?>
+                                            <?= $canEdit ? '' : 'readonly aria-readonly="true"' ?>
                                         ><?= rex_escape($value) ?></textarea>
 
-                                        <?php
-                                        /*
-                                         * Workflow-Buttons fest in fester Reihenfolge rendern: Übersetzt
-                                         * → Review nötig → Überarbeiten → Freigegeben. So sieht der User
-                                         * den ganzen Workflow auf einen Blick — die jeweils nicht
-                                         * erlaubten Übergänge erscheinen als disabled. Auch bei
-                                         * Status=Missing rendern: sobald der User tippt, kippt der
-                                         * Status auf Draft und die zwei Forward-Buttons werden ohne
-                                         * Reload aktiv. Reibungsloses Arbeiten ohne DOM-Flicker.
-                                         */
-                                        if ($hasPerm && null !== $tr) :
-                                            $activeTransitions = $status->userActions();
-                                            // Ein-Reviewer-Modell: NeedsReview ist nur noch
-                                            // System-Status (MT-Auto-Flag etc.), kein Button.
-                                            $workflowButtons = [
-                                                Status::Translated,
-                                                Status::Revise,
-                                                Status::Approved,
-                                            ];
-                                        ?>
-                                            <div class="sprog-inbox--row-actions" role="group" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_row_actions_label')) ?>">
-                                                <?php foreach ($workflowButtons as $targetStatus) :
-                                                    $isActive = in_array($targetStatus, $activeTransitions, true);
+                                        <?php if ($canEdit) : ?>
+                                            <div class="sprog-inbox--field-tools" data-role="field-tools">
+                                                <?php if ($mtEnabled && $cId !== $baseClangId) :
+                                                    // Init-Werte für den MT-Marker: nur gefüllt, wenn die
+                                                    // aktuelle Übersetzung MT-induziert ist. Die hidden Felder
+                                                    // haben bewusst kein name-Attribut — der Blur-Auto-Save
+                                                    // liest sie per data-role und hängt sie an die fetch-Payload.
+                                                    $mtProviderInit = null !== $tr ? ($tr->mtProvider ?? '') : '';
+                                                    $mtConfidenceInit = null !== $tr && null !== $tr->mtConfidence
+                                                        ? (string) $tr->mtConfidence
+                                                        : '';
                                                 ?>
-                                                    <button
-                                                        type="button"
-                                                        class="sprog-inbox--row-action sprog-inbox--row-action--<?= rex_escape($targetStatus->value) ?>"
-                                                        data-role="transition"
-                                                        data-translation-id="<?= rex_escape((string) $tr->id) ?>"
-                                                        data-target-status="<?= rex_escape($targetStatus->value) ?>"
-                                                        <?= $isActive ? '' : 'disabled' ?>
-                                                    >
-                                                        → <?= Labels::status($targetStatus) ?>
-                                                    </button>
-                                                <?php endforeach ?>
+                                                    <div class="sprog-inbox--mt-bar" data-role="mt-bar" data-mt-active="<?= '' !== $mtProviderInit ? 'true' : 'false' ?>">
+                                                        <?php foreach ($mtProviderLabels as $mtProvider => $mtProviderLabel) : ?>
+                                                            <button
+                                                                type="button"
+                                                                class="sprog-btn sprog-btn--sm sprog-inbox--mt-trigger"
+                                                                data-role="mt-trigger"
+                                                                data-clang-id="<?= rex_escape((string) $cId) ?>"
+                                                                data-provider="<?= rex_escape((string) $mtProvider) ?>"
+                                                            >
+                                                                <?= rex_escape($mtProviderLabel) ?>
+                                                            </button>
+                                                        <?php endforeach ?>
+                                                        <span class="sprog-inbox--mt-status" data-role="mt-status" role="status" aria-live="polite"></span>
+                                                        <input type="hidden" data-role="mt-provider" value="<?= rex_escape($mtProviderInit) ?>">
+                                                        <input type="hidden" data-role="mt-confidence" value="<?= rex_escape($mtConfidenceInit) ?>">
+                                                    </div>
+                                                <?php endif ?>
+
+                                                <?php // „Zurücksetzen" verwirft die aktuelle, noch nicht gespeicherte
+                                                      // Änderung (Feld zurück auf den zuletzt gespeicherten Wert). Nur
+                                                      // sichtbar, wenn das Feld „dirty" ist (JS toggelt es). ?>
+                                                <button
+                                                    type="button"
+                                                    class="sprog-btn sprog-btn--sm sprog-inbox--reset"
+                                                    data-role="reset"
+                                                    hidden
+                                                >
+                                                    <?= rex_i18n::msg('sprog_inbox_reset_button') ?>
+                                                </button>
+
+                                                <?php // „Verlauf" lädt die gespeicherten Versionen lazy nach und erlaubt
+                                                      // mehrstufiges Wiederherstellen. ?>
+                                                <button
+                                                    type="button"
+                                                    class="sprog-btn sprog-btn--sm sprog-inbox--history-toggle"
+                                                    data-role="history-toggle"
+                                                    aria-expanded="false"
+                                                >
+                                                    <?= rex_i18n::msg('sprog_inbox_history_button') ?>
+                                                </button>
                                             </div>
                                         <?php endif ?>
 
-                                        <p class="sprog-inbox--row-feedback" data-role="feedback" aria-live="polite"></p>
+                                        <?php
+                                        /*
+                                         * Aktionszeile (rechts, unter dem Feld): Status-Chip als fester
+                                         * Anker + die JETZT möglichen Workflow-Buttons. Nicht mögliche
+                                         * Aktionen sind ausgeblendet (hidden), nicht ausgegraut — man
+                                         * liest 》hier stehe ich → das kann ich tun《. Der Chip ersetzt die
+                                         * frühere Status-Pille im Zeilenkopf; data-role bleibt, das JS
+                                         * aktualisiert Chip + Button-Sichtbarkeit ohne Reload.
+                                         */
+                                        ?>
+                                        <div class="sprog-inbox--row-actions">
+                                            <?= InboxRowActions::render($workflow, $user, $cId, $userId, $status, $tr, $canEdit) ?>
+                                        </div>
+
+                                        <?php if ($canEdit) : ?>
+                                            <?php // Versionsliste — leer gerendert, wird vom JS beim Aufklappen befüllt. ?>
+                                            <div class="sprog-inbox--history-panel" data-role="history-panel" hidden></div>
+                                        <?php endif ?>
+
+                                        <p class="sprog-hint sprog-inbox--row-feedback" data-role="feedback" aria-live="polite"></p>
                                     </div>
                                 </div>
                             <?php endforeach ?>
                         </div>
                     </details>
+                    <?php if ($hasUnitActions) : ?>
+                        <!--
+                            Action-Overlay: liegt bewusst AUSSERHALB des <summary>
+                            (verschachtelte interaktive Elemente im Summary wären
+                            ungültiges HTML + a11y-Problem). Per Grid-Overlay im
+                            <li> sitzt es oben rechts über der Zeile; Sichtbarkeit
+                            via Hover/Fokus/offen (CSS).
+                        -->
+                        <div class="sprog-inbox--unit-actions">
+                            <?php if (SourceType::Wildcard->value === $item->namespace) : ?>
+                                <button
+                                    type="button"
+                                    class="sprog-inbox--key-copy"
+                                    data-role="unit-copy-placeholder"
+                                    title="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
+                                    aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_copy_placeholder_title')) ?>"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                        <path d="M0 6.75C0 5.784.784 5 1.75 5h1.5a.75.75 0 0 1 0 1.5h-1.5a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-1.5a.75.75 0 0 1 1.5 0v1.5A1.75 1.75 0 0 1 9.25 16h-7.5A1.75 1.75 0 0 1 0 14.25Z"/>
+                                        <path d="M5 1.75C5 .784 5.784 0 6.75 0h7.5C15.216 0 16 .784 16 1.75v7.5A1.75 1.75 0 0 1 14.25 11h-7.5A1.75 1.75 0 0 1 5 9.25Zm1.75-.25a.25.25 0 0 0-.25.25v7.5c0 .138.112.25.25.25h7.5a.25.25 0 0 0 .25-.25v-7.5a.25.25 0 0 0-.25-.25Z"/>
+                                    </svg>
+                                </button>
+                            <?php endif ?>
+                            <?php if ($canEditUnit) : ?>
+                                <button
+                                    type="button"
+                                    class="sprog-inbox--key-edit"
+                                    data-role="unit-edit-trigger"
+                                    title="<?= rex_escape(rex_i18n::msg('sprog_inbox_key_edit_title')) ?>"
+                                    aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_key_edit_title')) ?>"
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                                        <path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.757l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"/>
+                                    </svg>
+                                </button>
+                            <?php endif ?>
+                        </div>
+                    <?php endif ?>
                 </li>
             <?php endforeach ?>
         </ul>
@@ -673,7 +887,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                 return rex_url::currentBackendPage(['pg' => $p] + $baseParams, false);
             };
         ?>
-            <nav class="sprog-inbox--pagination" aria-label="<?= rex_i18n::msg('sprog_inbox_filter_status') ?>">
+            <nav class="sprog-inbox--pagination" aria-label="<?= rex_i18n::msg('sprog_inbox_pagination_label') ?>">
                 <?php if ($page > 1) : ?>
                     <a class="sprog-inbox--page-link" href="<?= rex_escape($pageUrl($page - 1)) ?>" rel="prev">
                         <?= rex_i18n::msg('sprog_inbox_pagination_prev') ?>
@@ -752,7 +966,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                     -->
                     <span class="sprog-inbox--unit-modal-readonly" data-role="modal-namespace">—</span>
                     <select
-                        class="sprog-inbox--unit-modal-input"
+                        class="sprog-control sprog-control--mono"
                         data-role="modal-namespace-select"
                         name="namespace"
                         hidden
@@ -761,7 +975,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                             <option value="<?= rex_escape($ns) ?>"><?= Labels::forNamespace($ns) ?></option>
                         <?php endforeach ?>
                     </select>
-                    <span class="sprog-inbox--unit-modal-hint">
+                    <span class="sprog-hint">
                         <?= rex_i18n::msg('sprog_inbox_unit_modal_namespace_hint') ?>
                     </span>
                 </div>
@@ -774,7 +988,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                         type="text"
                         name="unit_key"
                         data-role="modal-unit-key"
-                        class="sprog-inbox--unit-modal-input"
+                        class="sprog-control sprog-control--mono"
                         maxlength="191"
                         required
                         autocomplete="off"
@@ -791,7 +1005,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                         type="text"
                         name="context"
                         data-role="modal-context"
-                        class="sprog-inbox--unit-modal-input"
+                        class="sprog-control sprog-control--mono"
                         list="sprog-inbox-context-list"
                         maxlength="64"
                         autocomplete="off"
@@ -808,7 +1022,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                             <option value="<?= rex_escape($ctx) ?>"></option>
                         <?php endforeach ?>
                     </datalist>
-                    <span class="sprog-inbox--unit-modal-hint">
+                    <span class="sprog-hint">
                         <?= rex_i18n::rawMsg('sprog_inbox_unit_modal_context_hint') ?>
                     </span>
                 </label>
@@ -820,7 +1034,7 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                     <textarea
                         name="notes"
                         data-role="modal-notes"
-                        class="sprog-inbox--unit-modal-textarea"
+                        class="sprog-control sprog-control--textarea"
                         rows="3"
                         maxlength="500"
                     ></textarea>
@@ -833,12 +1047,91 @@ $inboxSaveCsrf = rex_csrf_token::factory('sprog_inbox_save');
                 <button type="button" class="sprog-inbox--unit-modal-cancel" data-role="unit-modal-cancel">
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_cancel') ?>
                 </button>
-                <button type="submit" class="sprog-inbox--button sprog-inbox--button-primary" data-role="unit-modal-submit">
+                <button type="submit" class="sprog-btn sprog-btn--primary" data-role="unit-modal-submit">
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_save') ?>
                 </button>
             </footer>
         </form>
     </dialog>
+
+    <?php if ($batchEnabled) : ?>
+        <?php
+        // Stapelverarbeitung: fehlende Übersetzungen einer Sprache per MT
+        // vorübersetzen. Reused die generischen Modal-Klassen; die Chunk-Schleife
+        // + Fortschritt treibt sprog.inbox.js über die batch_*-Endpoints.
+        ?>
+        <dialog
+            class="sprog-inbox--unit-modal sprog-inbox--batch-modal"
+            data-role="batch-modal"
+            aria-labelledby="sprog-batch-modal-title"
+        >
+            <div class="sprog-inbox--unit-modal-form">
+                <header class="sprog-inbox--unit-modal-header">
+                    <h2 id="sprog-batch-modal-title" class="sprog-inbox--unit-modal-title">
+                        <?= rex_i18n::msg('sprog_inbox_batch_title') ?>
+                    </h2>
+                    <button
+                        type="button"
+                        class="sprog-inbox--unit-modal-close"
+                        data-role="batch-close"
+                        aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_unit_modal_close')) ?>"
+                    >×</button>
+                </header>
+
+                <div class="sprog-inbox--unit-modal-body">
+                    <label class="sprog-inbox--unit-modal-field">
+                        <span class="sprog-inbox--unit-modal-label">
+                            <?= rex_i18n::msg('sprog_inbox_batch_language') ?>
+                        </span>
+                        <select class="sprog-control" data-role="batch-language">
+                            <?php foreach ($batchTargets as $bId => $bClang) : ?>
+                                <option value="<?= rex_escape((string) $bId) ?>" <?= $bId === $clangId ? 'selected' : '' ?>>
+                                    <?= rex_escape($bClang->getCode()) ?> · <?= rex_escape($bClang->getName()) ?>
+                                </option>
+                            <?php endforeach ?>
+                        </select>
+                    </label>
+
+                    <label class="sprog-inbox--unit-modal-field">
+                        <span class="sprog-inbox--unit-modal-label">
+                            <?= rex_i18n::msg('sprog_inbox_batch_provider') ?>
+                        </span>
+                        <select class="sprog-control" data-role="batch-provider">
+                            <?php foreach ($mtProviderLabels as $bpName => $bpLabel) : ?>
+                                <option value="<?= rex_escape((string) $bpName) ?>"><?= rex_escape($bpLabel) ?></option>
+                            <?php endforeach ?>
+                        </select>
+                    </label>
+
+                    <p class="sprog-inbox--batch-count" data-role="batch-count" aria-live="polite"></p>
+
+                    <div class="sprog-inbox--batch-progress" data-role="batch-progress" hidden>
+                        <div class="sprog-inbox--batch-bar">
+                            <div class="sprog-inbox--batch-bar-fill" data-role="batch-bar"></div>
+                        </div>
+                        <span class="sprog-inbox--batch-progress-text" data-role="batch-progress-text"></span>
+                    </div>
+
+                    <p class="sprog-inbox--batch-summary" data-role="batch-summary" aria-live="polite" hidden></p>
+                    <?php // Liste der tatsächlich übersetzten (und fehlgeschlagenen) Platzhalter — vom JS befüllt. ?>
+                    <ul class="sprog-inbox--batch-results" data-role="batch-results" hidden></ul>
+                    <p class="sprog-inbox--unit-modal-error" data-role="batch-error" hidden></p>
+                </div>
+
+                <footer class="sprog-inbox--unit-modal-footer">
+                    <button type="button" class="sprog-inbox--unit-modal-cancel" data-role="batch-close">
+                        <?= rex_i18n::msg('sprog_inbox_unit_modal_cancel') ?>
+                    </button>
+                    <button type="button" class="sprog-btn sprog-btn--primary" data-role="batch-start">
+                        <?= rex_i18n::msg('sprog_inbox_batch_start') ?>
+                    </button>
+                    <button type="button" class="sprog-btn sprog-btn--primary" data-role="batch-reload" hidden>
+                        <?= rex_i18n::msg('sprog_inbox_batch_reload') ?>
+                    </button>
+                </footer>
+            </div>
+        </dialog>
+    <?php endif ?>
 </article>
 
 <script>
@@ -855,7 +1148,28 @@ window.sprogInbox = {
         notesLabel:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_notes_label'), JSON_THROW_ON_ERROR) ?>,
         modalTitleEdit:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title'), JSON_THROW_ON_ERROR) ?>,
         modalTitleCreate:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title_create'), JSON_THROW_ON_ERROR) ?>,
-        copyDone:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_copy_placeholder_done'), JSON_THROW_ON_ERROR) ?>
+        copyDone:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_copy_placeholder_done'), JSON_THROW_ON_ERROR) ?>,
+        mtLoading:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_button_loading'), JSON_THROW_ON_ERROR) ?>,
+        mtApplyConfirm:   <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_apply_confirm'), JSON_THROW_ON_ERROR) ?>,
+        historyLoading:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_loading'), JSON_THROW_ON_ERROR) ?>,
+        historyEmpty:          <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_empty'), JSON_THROW_ON_ERROR) ?>,
+        historyRestore:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_restore'), JSON_THROW_ON_ERROR) ?>,
+        historyRestoreConfirm: <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_restore_confirm'), JSON_THROW_ON_ERROR) ?>,
+        historyCurrent:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_current'), JSON_THROW_ON_ERROR) ?>,
+        historyEmptyValue:     <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_empty_value'), JSON_THROW_ON_ERROR) ?>,
+        historyOrigin_manual:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_origin_manual'), JSON_THROW_ON_ERROR) ?>,
+        historyOrigin_mt:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_origin_mt'), JSON_THROW_ON_ERROR) ?>,
+        historyOrigin_restore: <?= json_encode(rex_i18n::rawMsg('sprog_inbox_history_origin_restore'), JSON_THROW_ON_ERROR) ?>,
+        restored:              <?= json_encode(rex_i18n::rawMsg('sprog_inbox_restored'), JSON_THROW_ON_ERROR) ?>,
+        batchCountOne:         <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_count_one'), JSON_THROW_ON_ERROR) ?>,
+        batchCountMany:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_count_many'), JSON_THROW_ON_ERROR) ?>,
+        batchNone:             <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_none'), JSON_THROW_ON_ERROR) ?>,
+        batchWithoutSource:    <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_without_source'), JSON_THROW_ON_ERROR) ?>,
+        batchOnlyWithoutSourceOne:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_only_without_source_one'), JSON_THROW_ON_ERROR) ?>,
+        batchOnlyWithoutSourceMany: <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_only_without_source_many'), JSON_THROW_ON_ERROR) ?>,
+        batchRunning:          <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_running'), JSON_THROW_ON_ERROR) ?>,
+        batchSummary:          <?= json_encode(rex_i18n::rawMsg('sprog_inbox_batch_summary'), JSON_THROW_ON_ERROR) ?>,
+        staleHint:             <?= json_encode(rex_i18n::rawMsg('sprog_inbox_stale_hint'), JSON_THROW_ON_ERROR) ?>
     }
 };
 </script>

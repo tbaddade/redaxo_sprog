@@ -153,6 +153,61 @@ final class TranslationRepository
     }
 
     /**
+     * Nur die unit_ids aller Übersetzungen einer Sprache mit gegebenem Status —
+     * schlanke Arbeitsliste für die Stapelverarbeitung (ohne die vollen Werte zu
+     * laden).
+     *
+     * @throws rex_sql_exception
+     * @return list<int>
+     */
+    public function findUnitIdsByClangAndStatus(int $clangId, Status $status): array
+    {
+        $sql = rex_sql::factory();
+        $rows = $sql->getArray(
+            'SELECT unit_id FROM ' . $this->tableName() . '
+             WHERE clang_id = :clang_id AND status = :status
+             ORDER BY unit_id',
+            [
+                'clang_id' => $clangId,
+                'status' => $status->value,
+            ],
+        );
+
+        return array_map(static fn (array $row): int => (int) $row['unit_id'], $rows);
+    }
+
+    /**
+     * unit_ids, deren Zielsprache den gegebenen Status hat UND deren Quellsprache
+     * einen nicht-leeren Wert besitzt — die per MT tatsächlich übersetzbare Menge.
+     * Einträge ohne Quelltext werden von der Stapelverarbeitung gar nicht erst
+     * versucht (sonst „übersprungen"-Flut).
+     *
+     * @throws rex_sql_exception
+     * @return list<int>
+     */
+    public function findTranslatableUnitIds(int $targetClangId, int $sourceClangId, Status $status): array
+    {
+        $table = $this->tableName();
+        $sql = rex_sql::factory();
+        $rows = $sql->getArray(
+            'SELECT t.unit_id FROM ' . $table . ' t
+             INNER JOIN ' . $table . ' s
+                ON s.unit_id = t.unit_id AND s.clang_id = :source
+             WHERE t.clang_id = :target
+               AND t.status = :status
+               AND TRIM(s.value) <> \'\'
+             ORDER BY t.unit_id',
+            [
+                'target' => $targetClangId,
+                'source' => $sourceClangId,
+                'status' => $status->value,
+            ],
+        );
+
+        return array_map(static fn (array $row): int => (int) $row['unit_id'], $rows);
+    }
+
+    /**
      * Anlegen oder Aktualisieren ohne Optimistic-Lock-Check.
      *
      * Bei Update wird die revision automatisch um 1 erhöht. Geeignet für
@@ -256,8 +311,9 @@ final class TranslationRepository
     }
 
     /**
-     * Alle Übersetzungen einer Sprache als stale markieren — z.B. nach
-     * einem Bulk-Import, der die Quell-Sprache komplett neu setzt.
+     * Alle finalen Übersetzungen einer Unit als stale markieren, wenn sich der
+     * Quelltext geändert hat — die Quell-/Basissprache selbst ($sourceClangId)
+     * ist ausgenommen, sie veraltet nicht gegen sich selbst.
      *
      * Atomarer Single-UPDATE statt Schleife, sonst killt das die Performance
      * bei mehreren tausend Translations.
@@ -265,7 +321,7 @@ final class TranslationRepository
      * @throws rex_sql_exception
      * @return int Anzahl der betroffenen Rows
      */
-    public function markStaleForUnit(int $unitId): int
+    public function markStaleForUnit(int $unitId, int $sourceClangId): int
     {
         $sql = rex_sql::factory();
         // updateuser='system' macht die System-Aktion in SELECT-Reports
@@ -277,11 +333,12 @@ final class TranslationRepository
             'UPDATE ' . $this->tableName() . '
              SET status = :stale, revision = revision + 1,
                  updatedate = NOW(), updateuser = :system_user
-             WHERE unit_id = :unit_id AND status IN (:translated, :needs_review, :approved)',
+             WHERE unit_id = :unit_id AND clang_id <> :source_clang
+               AND status IN (:needs_review, :approved)',
             [
                 'stale' => Status::Stale->value,
                 'unit_id' => $unitId,
-                'translated' => Status::Translated->value,
+                'source_clang' => $sourceClangId,
                 'needs_review' => Status::NeedsReview->value,
                 'approved' => Status::Approved->value,
                 'system_user' => 'system',

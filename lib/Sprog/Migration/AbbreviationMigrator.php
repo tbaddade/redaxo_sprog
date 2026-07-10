@@ -177,7 +177,7 @@ final class AbbreviationMigrator implements MigratorInterface
 
                 foreach ($rows as $row) {
                     $value = (string) ($row['text'] ?? '');
-                    $status = '' === $value ? Status::Missing : Status::Translated;
+                    $status = '' === $value ? Status::Missing : Status::NeedsReview;
 
                     $this->translations->save(new Translation(
                         id: null,

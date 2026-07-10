@@ -49,10 +49,12 @@ final class AssetRegistry
         // Inline-`window.sprog*`-Bootstrap-Block in der jeweiligen Page muss
         // garantiert vor diesem External-Script parsen — sonst stolpern die
         // Click-Handler über noch nicht gesetzte Globals.
-        $pagePart2 = rex_be_controller::getCurrentPagePart(2);
+        // (string)-Cast: getCurrentPagePart() liefert null, wenn es keinen
+        // zweiten Page-Part gibt — null als Array-Offset ist ab PHP 8.1
+        // deprecated. '' trifft schlicht keinen Bundle-Key.
+        $pagePart2 = (string) rex_be_controller::getCurrentPagePart(2);
         $deferredBundles = [
             'migration' => 'js/sprog.migration.js',
-            'editor' => 'js/sprog.editor.js',
             'inbox' => 'js/sprog.inbox.js',
         ];
         if (isset($deferredBundles[$pagePart2])) {

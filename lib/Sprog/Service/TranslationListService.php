@@ -107,6 +107,8 @@ final class TranslationListService
         $allParams = $params;
         $allParams['display_clang'] = $filter->clangId;
 
+        $orderBy = $this->orderByClause($filter->sort, $filter->order);
+
         try {
             $rows = rex_sql::factory()->getArray(
                 'SELECT
@@ -126,7 +128,7 @@ final class TranslationListService
                  LEFT JOIN ' . $translationTable . ' d
                     ON d.unit_id = u.id AND d.clang_id = :display_clang
                  WHERE ' . $whereSql . '
-                 ORDER BY d.updatedate DESC, u.id DESC
+                 ORDER BY ' . $orderBy . '
                  LIMIT ' . (int) $filter->pageSize . ' OFFSET ' . (int) $filter->offset(),
                 $allParams,
             );
@@ -149,6 +151,33 @@ final class TranslationListService
         }
 
         return $items;
+    }
+
+    /**
+     * Baut die ORDER-BY-Klausel aus dem Sort-Feld + Richtung. sort/order sind
+     * durch TranslationListFilter gegen eine Whitelist validiert — die
+     * String-Interpolation ist daher Injection-frei. Jede Variante bekommt
+     * einen stabilen Tiebreaker, damit die Reihenfolge deterministisch ist.
+     */
+    private function orderByClause(string $sort, string $order): string
+    {
+        $dir = 'desc' === $order ? 'DESC' : 'ASC';
+
+        // Zusammengesetzter Anzeige-Name = Bereich + '.' + Key (identisch zur
+        // Frontend-Konvention in Wildcard-/ConflictService). NULLIF verhindert
+        // einen führenden Punkt bei leerem Bereich — dadurch sortieren
+        // "button.submit" (Key mit Punkt, ohne Bereich) und Bereich "button" +
+        // Key "submit" identisch und stehen so untereinander.
+        $name = "CONCAT_WS('.', NULLIF(u.context, ''), u.unit_key)";
+
+        return match ($sort) {
+            // Nach Workflow-Reihenfolge, nicht alphabetisch: Fehlt → … → Freigegeben.
+            'status' => "FIELD(d.status, 'missing', 'stale', 'revise', 'draft', 'needs_review', 'approved') " . $dir . ', ' . $name . ' ASC, u.id ASC',
+            'created' => 'u.createdate ' . $dir . ', u.id ' . $dir,
+            'updated' => 'd.updatedate ' . $dir . ', u.id ' . $dir,
+            // 'key' (Name): nach dem zusammengesetzten Anzeige-Namen.
+            default => $name . ' ' . $dir . ', u.id ' . $dir,
+        };
     }
 
     /**

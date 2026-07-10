@@ -7,6 +7,7 @@ namespace Sprog\Model;
 use InvalidArgumentException;
 use Sprog\Enum\Status;
 
+use function in_array;
 use function sprintf;
 use function strlen;
 
@@ -25,6 +26,14 @@ final readonly class TranslationListFilter
     public const MAX_SEARCH_LENGTH = 200;
     public const MAX_NAMESPACE_LEN = 64;
 
+    /** Erlaubte Sortier-Felder + Standard. ('key' = Name inkl. Bereich-Gruppierung.) */
+    public const SORT_FIELDS = ['key', 'status', 'created', 'updated'];
+    public const DEFAULT_SORT = 'key';
+
+    /** Erlaubte Richtungen + Standard. */
+    public const SORT_ORDERS = ['asc', 'desc'];
+    public const DEFAULT_ORDER = 'asc';
+
     /**
      * @param int           $clangId   rex_clang.id, > 0
      * @param ?string       $namespace Single Namespace-Filter (z.B. 'wildcard'); null = alle
@@ -42,6 +51,8 @@ final readonly class TranslationListFilter
         public int $page,
         public int $pageSize,
         public bool $conflictsOnly = false,
+        public string $sort = self::DEFAULT_SORT,
+        public string $order = self::DEFAULT_ORDER,
     ) {
         if ($clangId <= 0) {
             throw new InvalidArgumentException('clangId muss > 0 sein.');
@@ -67,6 +78,12 @@ final readonly class TranslationListFilter
         }
         if ($pageSize < 1 || $pageSize > self::MAX_PAGE_SIZE) {
             throw new InvalidArgumentException(sprintf('pageSize muss im Bereich [1, %d] liegen.', self::MAX_PAGE_SIZE));
+        }
+        if (!in_array($this->sort, self::SORT_FIELDS, true)) {
+            throw new InvalidArgumentException('sort ist kein gültiges Sortier-Feld.');
+        }
+        if (!in_array($this->order, self::SORT_ORDERS, true)) {
+            throw new InvalidArgumentException('order muss "asc" oder "desc" sein.');
         }
     }
 

@@ -24,7 +24,7 @@ final readonly class Translation
      * @param int                 $clangId                  rex_clang.id
      * @param string              $value                    Der übersetzte Text (kann leer sein bei Status=missing)
      * @param ?string             $valueHash                SHA-256 von $value, hex; NULL bei Status=missing
-     * @param ?string             $sourceHashAtTranslation  SHA-256 des Quell-Wertes zum Zeitpunkt der Übersetzung
+     * @param ?string             $sourceHashAtTranslation  SHA-256 des Quell-Wertes zum Zeitpunkt der Übersetzung (Provenienz: gegen welchen Quellstand wurde übersetzt; für einen späteren Quell-Diff, nicht mehr für die Stale-Anzeige — die folgt dem Status)
      * @param Status              $status                   Workflow-Status
      * @param ?string             $mtProvider               Wenn von MT erzeugt: Provider-Kennung
      * @param ?float              $mtConfidence             MT-Confidence im Bereich 0.0 - 1.0
@@ -50,17 +50,4 @@ final readonly class Translation
         public ?DateTimeImmutable $createdAt = null,
         public ?DateTimeImmutable $updatedAt = null,
     ) {}
-
-    /**
-     * True, wenn der Quell-Wert sich seit der Übersetzung geändert hat.
-     * Verglichen wird mit dem aktuellen source_hash der zugehörigen Unit.
-     */
-    public function isStaleAgainst(?string $currentSourceHash): bool
-    {
-        if (null === $currentSourceHash || null === $this->sourceHashAtTranslation) {
-            return false;
-        }
-
-        return !hash_equals($this->sourceHashAtTranslation, $currentSourceHash);
-    }
 }

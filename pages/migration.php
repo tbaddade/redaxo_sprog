@@ -110,14 +110,14 @@ foreach ($availableNames as $name) {
 echo $flashMessage;
 
 ?>
-<article class="sprog-migration" data-sprog-migration>
-    <header class="sprog-migration--intro">
-        <h1 class="sprog-migration--heading"><?= rex_i18n::msg('sprog_migration_heading') ?></h1>
-        <p class="sprog-migration--lead"><?= rex_i18n::rawMsg('sprog_migration_lead') ?></p>
+<article class="sprog-ui sprog-migration" data-sprog-migration>
+    <header class="sprog-intro">
+        <h1 class="sprog-heading"><?= rex_i18n::msg('sprog_migration_heading') ?></h1>
+        <p class="sprog-lead"><?= rex_i18n::rawMsg('sprog_migration_lead') ?></p>
     </header>
 
     <?php if ([] === $availableNames) : ?>
-        <p class="sprog-migration--empty"><?= rex_i18n::msg('sprog_migration_empty') ?></p>
+        <p class="sprog-empty"><?= rex_i18n::msg('sprog_migration_empty') ?></p>
     <?php else : ?>
         <ul class="sprog-migration--list" role="list">
             <?php foreach ($availableNames as $name) :
@@ -137,7 +137,7 @@ echo $flashMessage;
                     : ($hasError ? 'sprog_migration_button_retry' : 'sprog_migration_button_start');
             ?>
                 <li
-                    class="sprog-migration--item <?= rex_escape($stateClass) ?>"
+                    class="sprog-panel sprog-migration--item <?= rex_escape($stateClass) ?>"
                     data-source="<?= rex_escape($name) ?>"
                     data-total="<?= rex_escape((string) $p['total_rows']) ?>"
                     data-processed="<?= rex_escape((string) $p['processed_rows']) ?>"
@@ -174,7 +174,7 @@ echo $flashMessage;
                     <footer class="sprog-migration--actions">
                         <button
                             type="button"
-                            class="sprog-migration--button sprog-migration--button-primary"
+                            class="sprog-btn sprog-btn--primary"
                             data-role="run"
                             <?= $isCompleted ? 'disabled' : '' ?>
                         >
@@ -193,7 +193,7 @@ echo $flashMessage;
             <input type="hidden" name="func" value="reset">
             <button
                 type="submit"
-                class="sprog-migration--button sprog-migration--button-ghost"
+                class="sprog-btn"
             >
                 <?= rex_i18n::msg('sprog_migration_reset_button') ?>
             </button>

@@ -1,47 +1,195 @@
-# Coder-Session
+# Coder-Session (REDAXO 5 Edition, Namespace-Variante)
 
-Du bist die **Coder-Session** in einem Zwei-Session-Workflow. Eine parallele
-Reviewer-Session prüft deine Commits und schreibt Findings nach
-`review/feedback.md`.
+Du bist die **Coder-Session** in einem Zwei-Session-Workflow. Du entwickelst
+ein **REDAXO-5-AddOn** mit konsequenter Nutzung von **PHP-Namespaces**.
+Eine parallele Reviewer-Session prüft deine Commits und schreibt Findings
+nach `review/feedback.md`.
+
+## Projekt-Kontext: REDAXO-5-AddOn mit Namespaces
+
+Dies ist **kein generisches PHP-Projekt**. Du arbeitest mit REDAXO-5-Konventionen:
+
+- AddOn-Struktur: `lib/`, `pages/`, `fragments/`, `boot.php`, `install.php`,
+  `update.php`, `uninstall.php`, `package.yml`
+- **REDAXO-5-Autoloader durchsucht `lib/` rekursiv** und findet:
+  - Klassische Klassen ohne Namespace (z. B. `rex_demo_helper`)
+  - **Namespaced Klassen** (z. B. `MyAddon\Helper`) — das ist unsere Wahl
+- Konfiguration über `rex_config::set/get`, Defaults in `package.yml`
+- Permissions, Pages, Subpages in `package.yml`
+
+**Wichtig:** Ab REDAXO 6 ändert sich das AddOn-Modell auf Composer-Autoload
+und PSR-4. Dieses AddOn zielt aber explizit auf REDAXO 5.
+
+## Namespace-Konvention (verbindlich)
+
+Alle eigenen Klassen liegen **mit Namespace** in `lib/`. Mapping:
+
+```
+lib/Helper.php              → namespace <Vendor>\<AddOn>;  class Helper
+lib/Service/Importer.php    → namespace <Vendor>\<AddOn>\Service;  class Importer
+lib/Value/OrderId.php       → namespace <Vendor>\<AddOn>\Value;  class OrderId
+```
+
+Der Top-Level-Namespace sollte das AddOn (oder Vendor + AddOn) eindeutig
+identifizieren — z. B. `MyVendor\MyAddon` oder bei einfachen AddOns
+`MyAddon`. Festlegen, dann konsequent durchziehen.
+
+**Regeln:**
+- **Kein** `rex_<addon>_*`-Präfix für neue Klassen. Wenn du auf historische
+  Präfix-Klassen triffst, ist das ein MAJOR-Finding für den Reviewer.
+- Klassenname = Dateiname (case-sensitive). `lib/Foo/Bar.php` → `Foo\Bar`.
+- REDAXO-Core-Klassen (`rex_sql`, `rex_request`, `rex_addon` …) bleiben
+  unverändert — die haben keine Namespaces und werden im globalen Namespace
+  genutzt:
+  ```php
+  namespace MyAddon\Service;
+
+  use rex_sql;
+  use rex_addon;
+
+  final class Importer {
+      public function load(int $id): array {
+          $sql = rex_sql::factory();
+          // ...
+      }
+  }
+  ```
+- `use`-Statements am Anfang der Datei — keine voll-qualifizierten
+  REDAXO-Klassenaufrufe (`\rex_sql::factory()`) im Code verstreuen.
+
+## Pflicht-Regeln für REDAXO-Code
+
+Diese Regeln **musst** du einhalten — sonst springt der Pre-Hook an oder der
+Reviewer wirft BLOCKER-Findings:
+
+### Eingaben
+- **Niemals `$_GET`/`$_POST`/`$_REQUEST` direkt** — nutze `rex_request::get/post`
+  bzw. `rex_get($key, $type, $default)` / `rex_post($key, $type, $default)`.
+- Type-Casts mitgeben: `'int'`, `'string'`, `'bool'`, `'array'`.
+
+### Datenbank
+- **Niemals direktes PDO** — nutze `rex_sql::factory()`.
+- **Niemals SQL-Strings mit String-Konkatenation** — Parameter binden:
+  ```php
+  $sql = rex_sql::factory();
+  $sql->setQuery(
+      'SELECT * FROM ' . rex::getTable('mytable') . ' WHERE id = ?',
+      [$id]
+  );
+  ```
+- Schema-Migrationen in `install.php`/`update.php` idempotent mit
+  `rex_sql_table` oder `IF NOT EXISTS`.
+
+### CSRF
+- Jedes POST-Formular in `pages/` braucht `rex_csrf_token`:
+  ```php
+  // im Form:
+  echo rex_csrf_token::factory('my-action')->getHiddenField();
+
+  // beim Verarbeiten:
+  if (!rex_csrf_token::factory('my-action')->isValid()) {
+      throw new rex_exception('CSRF token invalid');
+  }
+  ```
+
+### Permissions
+- Page-Level in `package.yml`: `perm: myaddon[]`
+- Code-Level: `if (!rex::getUser()->hasPerm('myaddon[]')) { ... }`
+
+### Pfade
+- **Niemals hardcodiert** `/redaxo/data/...`. Stattdessen:
+  - `rex_path::addon('myaddon')` — AddOn-Code-Pfad
+  - `rex_path::addonData('myaddon')` — schreibbarer Datenpfad
+  - `rex_path::addonCache('myaddon')` — Cache
+  - `rex_path::base()` — REDAXO-Root
+
+### URLs
+- **Niemals hardcodiert** `?page=...&func=...`. Stattdessen:
+  - `rex_url::backendPage('myaddon/sub', ['id' => 42])`
+  - `rex_url::currentBackendPage(['func' => 'edit', 'id' => 42])`
+
+### Übersetzungen
+- **Niemals hardcodierte UI-Strings**. Stattdessen `rex_i18n::msg('my_key')`
+  mit Einträgen in `lang/de_de.lang` und `lang/en_gb.lang`.
+
+### Logging
+- **Niemals `error_log()`** für AddOn-Logs. Stattdessen `rex_logger::factory()`
+  oder `rex_logger::logError(...)`.
+
+### Debug-Output
+- **Niemals `var_dump`/`print_r`/`dump`** im Committed Code. Der Hook erkennt
+  und sperrt das. Während der Entwicklung OK, aber nicht committen.
+
+## boot.php Sparsamkeit
+
+`boot.php` läuft bei **JEDEM Request**, auch Frontend. Regeln:
+
+- Schwere Logik nur in Backend-Kontext: `if (rex::isBackend()) { ... }`
+- Schwere Logik nur für eingeloggte User: `if (rex::getUser()) { ... }`
+- EP-Callbacks als statische Methoden namespaced Klassen referenzieren,
+  nicht inline als große Closures:
+  ```php
+  use MyAddon\View\BodyClassExtension;
+
+  rex_extension::register('PAGE_BODY_ATTR', [BodyClassExtension::class, 'add']);
+  ```
 
 ## Workflow-Regeln
 
-Vor jedem neuen logischen Arbeitsschritt:
+### review/ ist ein Symlink
+`./review` zeigt auf den Reviewer-Worktree. Was der Reviewer schreibt, siehst
+du **sofort** — kein `git pull` nötig.
 
-1. Wenn `review/feedback.md` existiert: vollständig lesen.
-2. Alle **BLOCKER** und **MAJOR** abarbeiten, bevor du an neuen Features
-   weiterbaust.
-3. **NIT**-Punkte sammelst du, arbeitest sie aber nicht zwingend sofort ab.
-4. Nach dem Abarbeiten: `review/feedback.md` löschen (`rm review/feedback.md`),
-   die Antwort kommt im nächsten Review-Zyklus.
+### Vor jedem neuen Arbeitsschritt
+1. `review/feedback.md` lesen (falls vorhanden).
+2. Alle **BLOCKER** und **MAJOR** abarbeiten.
+3. **NIT** als TODO-Kommentar im Code sammeln, nicht zwingend sofort fixen.
+4. Erledigten Abschnitt aus `feedback.md` löschen (kein commit nötig —
+   gitignored).
 
-Nach jedem logisch abgeschlossenen Stück:
+### Nach jedem logisch abgeschlossenen Stück
+1. Commit mit aussagekräftiger Message.
+2. Bei thematischen Sammlungen von Findings: eigenen `fix/<thema>`-Branch.
 
-1. Commit auf den aktuellen Feature-Branch mit aussagekräftiger Message.
-2. Pro Feature ein eigener Branch (`feat/<kurzname>`), nicht direkt auf `main`.
+### Kommunikation zurück
+- Code-Kommentar `// REVIEWER-NOTE: ...` für Antworten an den Reviewer
+- `review/coder-notes.md` für längere Notizen
 
-## Kommunikation mit der Reviewer-Session
+## Quality-Hooks
 
-Die Reviewer-Session liest deine Commits per `git fetch` aus einem parallelen
-Worktree. Sie schreibt ausschließlich nach `review/feedback.md`. Du
-kommunizierst zurück, indem du:
+Bei jedem `Write`/`Edit` läuft `bin/check.sh` über die geänderte Datei. Es
+prüft:
 
-- die genannten Punkte im Code adressierst,
-- die Datei nach dem Abarbeiten löschst,
-- bei Uneinigkeit einen Kommentar `// REVIEWER-NOTE: ...` im Code hinterlässt,
-  den der Reviewer im nächsten Durchgang sieht.
+1. `php -l` (Syntax)
+2. REDAXO-Anti-Patterns: Superglobals, hardcodierte Pfade, fehlender
+   CSRF-Token in Forms, Debug-Output, `die()`/`exit()` in `lib/`
+3. **Namespace-Konsistenz**: Klassen unter `lib/` müssen Namespaces nutzen,
+   `rex_<addon>_*`-Klassennamen in neuem Code = FAIL
+4. Optional: PHPCS, PHP-CS-Fixer, PHPStan, Psalm (wenn Config vorhanden)
 
-## Branch-Strategie
+Wenn der Hook failt, **siehst du die Fehler in deinem eigenen Context** —
+fixe sie sofort.
 
-- Niemals direkt auf `main`/`master` committen
-- Pro Aufgabe ein Branch `feat/<kurzname>` oder `fix/<kurzname>`
-- Vor Branch-Erstellung: `git fetch && git checkout main && git pull`
+Beim `git commit` läuft zusätzlich PHPUnit (falls konfiguriert).
 
-## Was *nicht* hier reingehört
+**Notausgang** für temporär inkonsistente Zustände:
+```bash
+git commit --no-verify -m "wip"
+```
+Sparsam einsetzen, danach sauberen Lauf nachreichen.
 
-Linter-Regeln, Test-Commands, Architektur-Erklärungen → in eine separate
-`CLAUDE.md` im Projekt-Wurzelverzeichnis oder die bestehende ergänzen.
-Diese Datei ist nur für die Workflow-Mechanik.
+## REDAXO-Tooling-Tipps
+
+- DB-Migrationen idempotent: `rex_sql_table::get(rex::getTable('myaddon_things'))
+  ->ensureColumn(new rex_sql_column('foo', 'varchar(255)'))->ensure()`.
+- YForm-Tabellen: `rex_yform_manager_table::get()`.
+- Setup-Issues sichtbar machen:
+  `rex_addon::get('myaddon')->setProperty('installmsg', ...)`.
+- Statische Analyse: PHPStan mit `staabm/phpstan-redaxo`-Extension hilft
+  auch bei Namespace-Setup (siehe README).
+
+
+
 
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
@@ -75,13 +223,19 @@ A legacy `class_alias('\Sprog\Wildcard', 'Wildcard')` lives in `boot.php` for ba
 1. Tags are configurable (`wildcard_open_tag`, `wildcard_close_tag`, default `{{ ` / ` }}`) and the regexp is built in `Wildcard::getRegexp()`. It captures `wildcard`, `filter`, and `arguments`.
 2. `Wildcard::parse()` resolves all matches in a string for one `clang_id` in a single SQL query; `Wildcard::get()` resolves one wildcard.
 3. **clang_base** (config key `clang_base`, an array `clang_id => clang_id`) lets one language reuse another language's replacements. Any lookup applies this remapping before hitting the DB — keep this in mind when adding new wildcard read paths.
-4. **Clang switch mode** (`wildcard_clang_switch` config) toggles the wildcard backend page between two layouts: `pages/wildcard.clang_switch.php` (one language at a time, with per-language subnav) and `pages/wildcard.clang_all.php` (all languages in one form). The page tree is built dynamically in `boot.php`'s `PAGES_PREPARED` hook; languages where a user lacks `complexPerm('clang')` are excluded, as are languages whose `clang_base` points elsewhere.
+4. The wildcard backend page always renders `pages/wildcard.clang_all.php` (all languages in one form); the wildcard subpath is wired in `Sprog\Boot\PageTreeBuilder::buildWildcardSubpages()` on the `PAGES_PREPARED` hook. The former per-language "clang switch" layout (`wildcard_clang_switch` config + `pages/wildcard.clang_switch.php` + per-language subnav) has been removed.
 
 ### Filters
 `Sprog\Filter` is an abstract base with `name()` and `fire($value, $arguments)`. Built-ins live in `lib/Sprog/Filter/*` and are listed under `filter:` in `package.yml`. Third-party code can register more via the `SPROG_FILTER` extension point; `boot.php` instantiates each and stores `name => instance` in `rex::setProperty('SPROG_FILTER', …)`.
 
 ### Sync
-`Sprog\Sync` is wired in `Extension::articleUpdated/categoryUpdated/articleMetadataUpdated` and gated by individual config keys (`sync_structure_article_name_to_category_name`, `sync_structure_category_name_to_article_name`, `sync_structure_status`, `sync_structure_template`, `sync_metainfo_art`, `sync_metainfo_cat`). The `ART_META_UPDATED` / `CAT_UPDATED` hooks are registered with `rex_extension::LATE` so MetaInfo writes its data first. Media sync is intentionally commented out (the REDAXO media pool is not multilingual).
+The sync mechanics live in `Sprog\Service\StructureSyncService`; the thin `Extension` handlers only read config and dispatch. `Sprog\Compat\Sync` (and its `Sprog\Sync` alias) is a deprecated BC adapter that translates the old EP-param arrays into the service's typed calls.
+
+Two axes, gated by individual config keys:
+- **Across languages** (`clang_id != :clang`): status (`sync_structure_status`), template (`sync_structure_template`), MetaInfo fields (`sync_metainfo_art` / `sync_metainfo_cat`).
+- **Within one language** (`clang_id = :clang`, start article only): category `catname` ↔ start-article `name` (`sync_structure_category_name_to_article_name` / `sync_structure_article_name_to_category_name`).
+
+Handlers fire only on the matching event: status on `ART_STATUS`/`CAT_STATUS` (→ `Extension::statusUpdated`), name+template on `ART_UPDATED` (`articleUpdated`), article MetaInfo on `ART_META_UPDATED` (`articleMetadataUpdated`), category name+MetaInfo on `CAT_UPDATED` (`categoryUpdated`). The core fires no `CAT_META_UPDATED`, so category MetaInfo rides `CAT_UPDATED`; that and `ART_META_UPDATED` register `rex_extension::LATE` so MetaInfo writes its data first. `StructureSyncService::syncMetainfoAcrossLanguages(..., $toClangId)` is also used by the copy feature (`Copy\StructureMetadata`) to copy into one target language. Media sync is intentionally off (the REDAXO media pool is not multilingual).
 
 ### Helper functions (`functions/sprog.php`)
 Global helpers used in templates/modules:

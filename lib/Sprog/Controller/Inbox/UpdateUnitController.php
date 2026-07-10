@@ -42,7 +42,7 @@ final class UpdateUnitController
         JsonResponse::ensureCsrf('sprog_inbox_save', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
         if (!($user->isAdmin() || $user->hasPerm('sprog[unit_edit]'))) {
-            JsonResponse::forbidden(rex_i18n::rawMsg('sprog_editor_unit_edit_no_perm'));
+            JsonResponse::forbidden(rex_i18n::rawMsg('sprog_inbox_unit_edit_no_perm'));
         }
 
         $unit = $this->units->find($unitId);

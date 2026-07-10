@@ -189,7 +189,7 @@ final class ForeignwordMigrator implements MigratorInterface
                     // mit value=foreignword an, damit das v2-Modell konsistent
                     // bleibt (jede Unit hat ihre Translations pro clang).
                     $value = $foreignWord;
-                    $status = Status::Translated;
+                    $status = Status::NeedsReview;
 
                     $this->translations->save(new Translation(
                         id: null,
