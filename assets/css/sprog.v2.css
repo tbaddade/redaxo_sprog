@@ -907,6 +907,108 @@
     color: var(--sprog-color-muted);
 }
 
+/*
+ * sprog-copy
+ * Datenpflege → Inhalte/Metadaten kopieren: sprog-ui-Formular + fetch-basierter
+ * Chunk-Fortschritt (löst den früheren Popup/Handlebars-Flow ab).
+ */
+.sprog-copy {
+    max-width: 760px;
+}
+
+.sprog-copy.sprog-ui {
+    gap: calc(var(--sprog-spacing) * 1.25);
+}
+
+.sprog-copy--form {
+    display: grid;
+    gap: 1.6rem;
+}
+
+.sprog-copy--grid {
+    display: grid;
+    gap: 1.2rem 1.6rem;
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+}
+
+/* Feld-Auswahl (Metadaten): scrollbare Checkbox-Box, gruppiert. */
+.sprog-copy--fields {
+    display: grid;
+    gap: 0.8rem;
+    max-height: 32rem;
+    overflow-y: auto;
+    padding: 1.2rem;
+    border: 1px solid var(--sprog-color-border);
+    border-radius: var(--sprog-radius-sm);
+    background: var(--sprog-color-bg);
+}
+
+.sprog-copy--fields .sprog-settings--subhead:not(:first-child) {
+    margin-top: 0.8rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--sprog-color-border);
+}
+
+.sprog-copy--actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+}
+
+.sprog-copy--status {
+    font-size: var(--sprog-text-sm);
+    color: var(--sprog-color-muted);
+}
+
+.sprog-copy--progress {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+
+.sprog-copy--bar {
+    flex: 1;
+    height: 1.2rem;
+    border: 0;
+    border-radius: var(--sprog-radius-pill);
+    background: var(--sprog-color-surface);
+    overflow: hidden;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.sprog-copy--bar::-webkit-progress-bar {
+    background: var(--sprog-color-surface);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-copy--bar::-webkit-progress-value {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-copy--bar::-moz-progress-bar {
+    background: var(--sprog-color-accent);
+    border-radius: var(--sprog-radius-pill);
+}
+
+.sprog-copy--counter {
+    font-size: var(--sprog-text-xs);
+    color: var(--sprog-color-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.sprog-copy--error {
+    margin: 0;
+}
+
+/* Das `hidden`-Attribut soll zuverlässig gewinnen — sonst bleiben ausgeblendete
+   Flex-/Grid-Komponenten (Note, Fortschritt) als leerer Streifen sichtbar. */
+.sprog-ui [hidden] {
+    display: none !important;
+}
+
 /* Aktionsreihe (Speichern-Button) rechtsbündig. */
 .sprog-settings--actions {
     display: flex;

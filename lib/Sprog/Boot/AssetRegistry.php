@@ -8,15 +8,13 @@ use rex_addon_interface;
 use rex_be_controller;
 use rex_view;
 
-use function in_array;
-
 /**
  * Registriert Backend-CSS/JS für die Sprog-Seiten.
  *
- * v1-Bundle (sprog.css + sprog.js) sowie das globalsichere v2-CSS werden auf
- * jeder Backend-Seite eingehängt — sie sind klein und ihre Klassen-Selektoren
- * sind präfixiert (`sprog-`, `sprog__`-BEM). Seiten-spezifische JS-Bundles
- * (migration, editor, inbox) hingegen nur dort, wo die jeweilige Page sie
+ * Das v1-CSS (sprog.css) und das globalsichere v2-CSS werden auf jeder
+ * Backend-Seite eingehängt — sie sind klein und ihre Klassen-Selektoren sind
+ * präfixiert (`sprog-`, `sprog__`-BEM). Seiten-spezifische JS-Bundles
+ * (migration, inbox, copy) hingegen nur dort, wo die jeweilige Page sie
  * tatsächlich braucht, jeweils mit `defer`, damit ihre Inline-`window.sprog*`-
  * Bootstrap-Blöcke garantiert davor parsen.
  *
@@ -29,20 +27,7 @@ final class AssetRegistry
     {
         $version = $addon->getVersion();
 
-        // Popup-only Vendor-JS (Copy-Workflow): Handlebars + jQuery-Timer
-        // werden nur in den Popups gebraucht und sind zu schwer für den
-        // globalen Bundle.
-        $popupPages = [
-            'sprog.copy.structure_content_popup',
-            'sprog.copy.structure_metadata_popup',
-        ];
-        if (in_array(rex_be_controller::getCurrentPagePart(1), $popupPages, true)) {
-            rex_view::addJsFile($addon->getAssetsUrl('js/handlebars.min.js?v=' . $version));
-            rex_view::addJsFile($addon->getAssetsUrl('js/timer.jquery.min.js?v=' . $version));
-        }
-
         rex_view::addCssFile($addon->getAssetsUrl('css/sprog.css?v=' . $version));
-        rex_view::addJsFile($addon->getAssetsUrl('js/sprog.js?v=' . $version));
         rex_view::addCssFile($addon->getAssetsUrl('css/sprog.v2.css?v=' . $version));
 
         // Seiten-spezifische v2-JS-Bundles. defer ist hier wichtig: der
@@ -58,6 +43,8 @@ final class AssetRegistry
         $deferredBundles = [
             'migration' => 'js/sprog.migration.js',
             'inbox' => 'js/sprog.inbox.js',
+            'copy_structure_content' => 'js/sprog.copy.js',
+            'copy_structure_metadata' => 'js/sprog.copy.js',
         ];
         if (isset($deferredBundles[$leaf])) {
             rex_view::addJsFile(

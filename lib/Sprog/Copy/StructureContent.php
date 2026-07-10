@@ -208,4 +208,37 @@ class StructureContent extends Copy
 
         return false;
     }
+
+    /**
+     * Löscht die Slices der Zielsprache, bevor kopiert wird („vorher löschen").
+     * Ohne Start-Artikel: die gesamte Zielsprache; mit Start-Artikel: nur der
+     * Teilbaum ab diesem Artikel. Exakt das Verhalten des früheren Popups.
+     */
+    public static function purgeTargetSlices(int $clangTo, ?int $startingArticleId = null): void
+    {
+        $sql = rex_sql::factory();
+        $tableSlice = rex::getTable('article_slice');
+
+        if (null === $startingArticleId) {
+            $sql->setQuery('DELETE FROM ' . $tableSlice . ' WHERE `clang_id` = :clang', ['clang' => $clangTo]);
+            return;
+        }
+
+        $tableArticle = rex::getTable('article');
+        $ids = $sql->getArray(
+            'WITH RECURSIVE articles(id, parent_id) AS (
+                SELECT a.id, a.parent_id FROM ' . $tableArticle . ' a WHERE a.id = :article_id AND a.clang_id = :clang
+                UNION ALL
+                SELECT a.id, a.parent_id FROM ' . $tableArticle . ' a INNER JOIN articles cte ON a.parent_id = cte.id WHERE a.clang_id = :clang
+            ) SELECT id FROM articles',
+            ['clang' => $clangTo, 'article_id' => $startingArticleId],
+        );
+
+        foreach ($ids as $row) {
+            $sql->setQuery(
+                'DELETE FROM ' . $tableSlice . ' WHERE `article_id` = :article AND `clang_id` = :clang',
+                ['article' => (int) $row['id'], 'clang' => $clangTo],
+            );
+        }
+    }
 }

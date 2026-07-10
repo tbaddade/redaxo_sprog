@@ -60,11 +60,5 @@ if (rex::isBackend() && rex::getUser()) {
         PageTreeBuilder::publish($addon);
     });
 
-    rex_extension::register('PAGE_BODY_ATTR', static function (rex_extension_point $ep): void {
-        $subject = $ep->getSubject();
-        $subject['class'][] = 'rex-page-sprog-copy-popup';
-        $ep->setSubject($subject);
-    });
-
     AssetRegistry::publish($addon);
 }

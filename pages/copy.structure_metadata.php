@@ -9,165 +9,179 @@
  * file that was distributed with this source code.
  */
 
-$csrfToken = rex_csrf_token::factory('sprog_copy_metadata');
+use Sprog\Copy\StructureMetadata;
 
-$sections = '';
+$csrf = rex_csrf_token::factory('sprog_copy_metadata');
+$func = rex_request('func', 'string', '');
 
-$func = rex_request('func', 'string');
-$clangFrom = rex_request('sprog_copy_clang_from', 'int', 0);
-$clangTo = rex_request('sprog_copy_clang_to', 'int', 0);
-$fields = rex_request('sprog_copy_fields', 'array', []);
+/*
+ |-----------------------------------------------------------------------------
+ | JSON-Endpoints für den fetch-Chunk-Runner (assets/js/sprog.copy.js)
+ |-----------------------------------------------------------------------------
+ | prepare: ermittelt die Artikel-Liste; chunk: kopiert die gewählten Felder
+ | der IDs von clangFrom → clangTo (überschreibend, kein „vorher löschen").
+ */
+if ('prepare' === $func || 'chunk' === $func) {
+    rex_response::cleanOutputBuffers();
 
-if ('copy' == $func) {
-    if ($clangFrom == $clangTo) {
+    if (!$csrf->isValid()) {
+        rex_response::setStatus(rex_response::HTTP_FORBIDDEN);
+        rex_response::sendJson(['success' => false, 'error' => rex_i18n::msg('csrf_token_invalid')]);
+        exit;
     }
-    // echo \rex_view::success($this->i18n('settings_config_saved'));
+
+    $clangFrom = rex_request('clangFrom', 'int', 0);
+    $clangTo = rex_request('clangTo', 'int', 0);
+    $fields = rex_request('fields', 'array', []);
+
+    try {
+        if (0 === $clangTo || $clangFrom === $clangTo) {
+            throw new rex_exception($this->i18n('sprog_copy_error_clang'));
+        }
+        if (0 === count($fields)) {
+            throw new rex_exception($this->i18n('sprog_copy_error_no_fields'));
+        }
+
+        if ('prepare' === $func) {
+            $items = StructureMetadata::getArticleIds();
+            rex_response::sendJson(['success' => true, 'total' => count($items), 'items' => array_values($items)]);
+            exit;
+        }
+
+        // chunk
+        $startClang = rex_clang::getStartId();
+        $ids = array_values(array_filter(array_map('intval', explode(',', rex_request('ids', 'string', '')))));
+        $items = array_map(static fn (int $id): array => [$id, $startClang], $ids);
+        StructureMetadata::fire($items, [
+            'clangFrom' => $clangFrom,
+            'clangTo' => $clangTo,
+            'fields' => implode(',', array_map('strval', $fields)),
+        ]);
+        rex_response::sendJson(['success' => true, 'processed' => count($items)]);
+        exit;
+    } catch (Throwable $e) {
+        rex_response::setStatus(rex_response::HTTP_INTERNAL_ERROR);
+        rex_response::sendJson(['success' => false, 'error' => $e->getMessage()]);
+        exit;
+    }
 }
 
-if ('' == $func) {
-    $panelElements = '';
+/*
+ |-----------------------------------------------------------------------------
+ | HTML
+ |-----------------------------------------------------------------------------
+ */
+$clangOptions = [];
+foreach (rex_clang::getAll() as $clang) {
+    $clangOptions[$clang->getId()] = $clang->getName();
+}
 
-    $clangAll = rex_clang::getAll();
-    $clangOptions = [];
-    foreach ($clangAll as $clang) {
-        $clangOptions[$clang->getId()] = $clang->getName();
-    }
+$fromSelect = new rex_select();
+$fromSelect->setId('sprog-copy-meta-clang-from');
+$fromSelect->setName('clangFrom');
+$fromSelect->setAttribute('class', 'sprog-control');
+$fromSelect->addArrayOptions($clangOptions);
+$fromSelect->setSelected(rex_clang::getStartId());
 
-    $formElements = [];
+$toSelect = new rex_select();
+$toSelect->setId('sprog-copy-meta-clang-to');
+$toSelect->setName('clangTo');
+$toSelect->setAttribute('class', 'sprog-control');
+$toSelect->addOption('–', 0);
+$toSelect->addArrayOptions($clangOptions);
 
-    $select = new rex_select();
-    $select->setId('sprog-copy-clang-from');
-    $select->setName('sprog_copy_clang_from');
-    $select->setSelected($clangFrom);
-    $select->setAttribute('data-sprog-param', 'clangFrom');
-    $select->addArrayOptions($clangOptions);
-    $n = [];
-    $n['header'] = '<div class="row"><div class="col-md-6">';
-    $n['footer'] = '</div>';
-    $n['label'] = '<label for="sprog-copy-clang-from">' . $this->i18n('copy_clang_from') . '</label>';
-    $n['field'] = $select->get();
-    $formElements[] = $n;
+// Feld-Gruppen: Struktur (feste Spalten) + Kategorie-/Artikel-MetaInfo.
+$metaQuery = 'SELECT `title`, `name` FROM ' . rex::getTable('metainfo_field') . ' WHERE `name` LIKE :name AND `type_id` != :type_id ORDER BY name';
+$catOptions = rex_sql::factory()->getArray($metaQuery, ['name' => 'cat_%', 'type_id' => '12']);
+$artOptions = rex_sql::factory()->getArray($metaQuery, ['name' => 'art_%', 'type_id' => '12']);
 
-    $select = new rex_select();
-    $select->setId('sprog-copy-clang-to');
-    $select->setName('sprog_copy_clang_to');
-    $select->setSelected($clangTo);
-    $select->setAttribute('data-sprog-param', 'clangTo');
-    $select->addArrayOptions($clangOptions);
-    $n = [];
-    $n['header'] = '<div class="col-md-6">';
-    $n['footer'] = '</div></div>';
-    $n['label'] = '<label for="sprog-copy-clang-to">' . $this->i18n('copy_clang_to') . '</label>';
-    $n['field'] = $select->get();
-    $formElements[] = $n;
+$renderCheck = static function (string $value, string $label): string {
+    return '<label class="sprog-settings--check">'
+        . '<input type="checkbox" name="fields[]" value="' . rex_escape($value) . '">'
+        . '<span>' . rex_escape($label) . '</span>'
+        . '</label>';
+};
 
-    $query = 'SELECT `title`, `name` FROM ' . rex::getTable('metainfo_field') . ' WHERE `name` LIKE :name AND `type_id` != :type_id ORDER BY name';
-    $catOptions = rex_sql::factory()->getArray($query, ['name' => 'cat_%', 'type_id' => '12']);
-    $artOptions = rex_sql::factory()->getArray($query, ['name' => 'art_%', 'type_id' => '12']);
+$structureChecks = '';
+foreach (['catname', 'catpriority', 'name', 'priority', 'status', 'template_id'] as $col) {
+    $structureChecks .= $renderCheck($col, $col . '  ·  ' . $this->i18n('copy_' . $col));
+}
 
-    $fieldsSelect = new rex_select();
-    $fieldsSelect->setId('sprog-copy-fields');
-    $fieldsSelect->setName('sprog_copy_fields');
-    $fieldsSelect->setAttribute('data-sprog-param', 'fields');
-    $fieldsSelect->setAttribute('class', 'form-control');
-    $fieldsSelect->setMultiple();
-    $fieldsSelect->setSize(15);
-    $fieldsSelect->setSelected($fields);
+$catChecks = '';
+foreach ($catOptions as $o) {
+    $catChecks .= $renderCheck($o['name'], $o['name'] . '  ·  ' . rex_i18n::translate($o['title']));
+}
 
-    $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_structure'));
-    foreach (['catname', 'catpriority', 'name', 'priority', 'status', 'template_id'] as $option) {
-        $fieldsSelect->addOption($option . '   |   ' . $this->i18n('copy_' . $option), $option);
-    }
-    if (count($catOptions)) {
-        $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_categories'));
-        foreach ($catOptions as $option) {
-            $fieldsSelect->addOption($option['name'] . '   |   ' . rex_i18n::translate($option['title']) . '', $option['name']);
-        }
-    }
-    if (count($artOptions)) {
-        $fieldsSelect->addOptgroup($this->i18n('copy_structure_metadata_articles'));
-        foreach ($artOptions as $option) {
-            $fieldsSelect->addOption($option['name'] . '   |   ' . rex_i18n::translate($option['title']) . '', $option['name']);
-        }
-    }
-    $n = [];
-    $n['label'] = '<label for="sprog-copy-fields">' . $this->i18n('copy_structure_metadata_fields') . '</label>';
-    $n['field'] = $fieldsSelect->get();
-    $formElements[] = $n;
+$artChecks = '';
+foreach ($artOptions as $o) {
+    $artChecks .= $renderCheck($o['name'], $o['name'] . '  ·  ' . rex_i18n::translate($o['title']));
+}
 
-    $fragment = new rex_fragment();
-    $fragment->setVar('elements', $formElements, false);
-    $panelElements .= $fragment->parse('core/form/form.php');
+$chunkSize = (int) $this->getConfig('chunk_size_articles') ?: 4;
+?>
+<article class="sprog-ui sprog-copy" data-sprog-copy>
+    <header class="sprog-intro">
+        <h1 class="sprog-heading"><?= rex_escape($this->i18n('copy_structure_metadata')) ?></h1>
+        <p class="sprog-lead"><?= rex_escape($this->i18n('sprog_copy_metadata_lead')) ?></p>
+    </header>
 
-    $formElements = [];
-    $n = [];
-    $n['field'] = '<a class="btn btn-apply sprog-copy-button-start" href="' . rex_url::backendPage('sprog.copy.structure_metadata_popup', $csrfToken->getUrlParams()) . '">' . $this->i18n('sprog_copy_button_start') . '</a>';
-    $formElements[] = $n;
+    <section class="sprog-panel sprog-copy--panel">
+        <form class="sprog-copy--form" data-role="form" onsubmit="return false">
+            <div class="sprog-copy--grid">
+                <label class="sprog-field">
+                    <span class="sprog-field--label"><?= rex_escape($this->i18n('copy_clang_from')) ?></span>
+                    <?= $fromSelect->get() ?>
+                </label>
+                <label class="sprog-field">
+                    <span class="sprog-field--label"><?= rex_escape($this->i18n('copy_clang_to')) ?></span>
+                    <?= $toSelect->get() ?>
+                </label>
+            </div>
 
-    $fragment = new rex_fragment();
-    $fragment->setVar('elements', $formElements, false);
-    $buttons = $fragment->parse('core/form/form.php');
+            <div class="sprog-field">
+                <span class="sprog-field--label"><?= rex_escape($this->i18n('copy_structure_metadata_fields')) ?></span>
+                <div class="sprog-copy--fields">
+                    <div class="sprog-settings--subhead"><span class="sprog-settings--subhead-title"><?= rex_escape($this->i18n('copy_structure_metadata_structure')) ?></span></div>
+                    <div class="sprog-settings--checks"><?= $structureChecks ?></div>
+                    <?php if ('' !== $catChecks) : ?>
+                        <div class="sprog-settings--subhead"><span class="sprog-settings--subhead-title"><?= rex_escape($this->i18n('copy_structure_metadata_categories')) ?></span></div>
+                        <div class="sprog-settings--checks"><?= $catChecks ?></div>
+                    <?php endif ?>
+                    <?php if ('' !== $artChecks) : ?>
+                        <div class="sprog-settings--subhead"><span class="sprog-settings--subhead-title"><?= rex_escape($this->i18n('copy_structure_metadata_articles')) ?></span></div>
+                        <div class="sprog-settings--checks"><?= $artChecks ?></div>
+                    <?php endif ?>
+                </div>
+            </div>
 
-    $panelBody = '
-        <fieldset>
-            <input type="hidden" name="func" value="update" />
-            ' . $panelElements . '
-        </fieldset>';
+            <div class="sprog-copy--actions">
+                <button type="button" class="sprog-btn sprog-btn--primary" data-role="run">
+                    <?= rex_escape($this->i18n('sprog_copy_button_start')) ?>
+                </button>
+                <span class="sprog-copy--status" data-role="status" role="status" aria-live="polite"></span>
+            </div>
 
-    $fragment = new rex_fragment();
-    $fragment->setVar('class', 'edit', false);
-    $fragment->setVar('title', $this->i18n('copy_structure_metadata'), false);
-    $fragment->setVar('body', $panelBody, false);
-    $fragment->setVar('buttons', $buttons, false);
-    $section = $fragment->parse('core/page/section.php');
+            <div class="sprog-copy--progress" data-role="progress" hidden>
+                <progress class="sprog-copy--bar" data-role="bar" max="1" value="0"></progress>
+                <output class="sprog-copy--counter" data-role="counter">0 / 0</output>
+            </div>
 
-    echo '
-        <form action="' . rex_url::currentBackendPage() . '" method="post">
-            ' . $section . '
+            <p class="sprog-note sprog-note--warning sprog-copy--error" data-role="error" hidden></p>
         </form>
-    ';
-}
+    </section>
+</article>
 
-// - - - - - - - - - - - - - - - - - - - - - -
-$clangAll = rex_clang::getAll();
-if (count($clangAll) >= 2) {
-    $clangOptions = [];
-    foreach ($clangAll as $clang) {
-        $clangOptions[$clang->getId()] = $clang->getName();
+<script nonce="<?= rex_response::getNonce() ?>">
+window.sprogCopy = {
+    csrf:      { name: <?= json_encode(rex_csrf_token::PARAM, JSON_THROW_ON_ERROR) ?>, value: <?= json_encode($csrf->getValue(), JSON_THROW_ON_ERROR) ?> },
+    endpoint:  <?= json_encode(rex_url::currentBackendPage(), JSON_THROW_ON_ERROR) ?>,
+    chunkSize: <?= json_encode($chunkSize, JSON_THROW_ON_ERROR) ?>,
+    strings: {
+        running:     <?= json_encode(rex_i18n::rawMsg('sprog_copy_running'), JSON_THROW_ON_ERROR) ?>,
+        done:        <?= json_encode(rex_i18n::rawMsg('sprog_copy_done'), JSON_THROW_ON_ERROR) ?>,
+        failed:      <?= json_encode(rex_i18n::rawMsg('sprog_copy_failed'), JSON_THROW_ON_ERROR) ?>,
+        serverError: <?= json_encode(rex_i18n::rawMsg('sprog_copy_ajax_server_error'), JSON_THROW_ON_ERROR) ?>,
+        badResponse: <?= json_encode(rex_i18n::rawMsg('sprog_copy_ajax_bad_response'), JSON_THROW_ON_ERROR) ?>
     }
-    $panelElements = '';
-    $formElements = [];
-    $clangBase = $this->getConfig('clang_base');
-    foreach ($clangAll as $clang) {
-        $select = new rex_select();
-        $select->setName('clang_base[' . $clang->getId() . ']');
-        if (isset($clangBase[$clang->getId()])) {
-            $select->setSelected($clangBase[$clang->getId()]);
-        } else {
-            $select->setSelected($clang->getId());
-        }
-        $select->addArrayOptions($clangOptions);
-
-        $n = [];
-        $n['header'] = '<div class="col-md-5">';
-        $n['footer'] = '</div>';
-        $n['label'] = '<label>' . $clang->getName() . '</label>';
-        $n['field'] = $select->get();
-        $formElements[] = $n;
-    }
-
-    $fragment = new rex_fragment();
-    $fragment->setVar('elements', $formElements, false);
-    $panelElements .= $fragment->parse('core/form/form.php');
-
-    $panelBody = '
-        <fieldset>
-            <div class="row">' . $panelElements . '</div>
-        </fieldset>';
-
-    $fragment = new rex_fragment();
-    $fragment->setVar('class', 'edit', false);
-    $fragment->setVar('title', $this->i18n('settings_clang_base'), false);
-    $fragment->setVar('body', $panelBody, false);
-    $sections .= $fragment->parse('core/page/section.php');
-}
+};
+</script>

@@ -116,9 +116,20 @@ sprog_copy_structure_metadata_structure = Struktur
 
 
 
-sprog_copy_button_start = Los geht es!
+sprog_copy_button_start = Kopieren starten
 sprog_copy_button_success = Prima, danke!
 sprog_copy_button_cancel = Abbrechen
+
+sprog_copy_content_lead = Kopiert die Artikel-Inhalte (Slices) von einer Sprache in eine andere. Optional nur ab einem Startartikel und/oder mit vorherigem Leeren der Zielsprache.
+sprog_copy_metadata_lead = Übernimmt ausgewählte Struktur- und Meta-Info-Felder von einer Sprache in eine andere (überschreibend).
+sprog_copy_starting_article_hint = Optional. Leer lassen, um alle Artikel zu berücksichtigen.
+sprog_copy_error_clang = Bitte unterschiedliche Quell- und Zielsprache wählen.
+sprog_copy_error_no_fields = Bitte mindestens ein Feld auswählen.
+sprog_copy_running = Kopiere …
+sprog_copy_done = Fertig – {0} Artikel verarbeitet.
+sprog_copy_failed = Fehlgeschlagen.
+sprog_copy_ajax_server_error = Serverfehler beim Kopieren.
+sprog_copy_ajax_bad_response = Unerwartete Server-Antwort.
 sprog_copy_button_again = Nochmal versuchen
 
 

@@ -113,10 +113,21 @@ sprog_copy_structure_metadata_structure = Structure
 
 
 
-sprog_copy_button_start = Let's do this!
+sprog_copy_button_start = Start copying
 sprog_copy_button_success = Coo, thanks!
 sprog_copy_button_cancel = Cancel
 sprog_copy_button_again = Try again
+
+sprog_copy_content_lead = Copies article content (slices) from one language to another. Optionally only from a starting article and/or clearing the target language first.
+sprog_copy_metadata_lead = Applies selected structure and meta info fields from one language to another (overwriting).
+sprog_copy_starting_article_hint = Optional. Leave empty to include all articles.
+sprog_copy_error_clang = Please choose different source and target languages.
+sprog_copy_error_no_fields = Please select at least one field.
+sprog_copy_running = Copying …
+sprog_copy_done = Done – processed {0} articles.
+sprog_copy_failed = Failed.
+sprog_copy_ajax_server_error = Server error while copying.
+sprog_copy_ajax_bad_response = Unexpected server response.
 
 
 sprog_copy_time_elapsed = Time passed
