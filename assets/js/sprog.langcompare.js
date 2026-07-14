@@ -516,7 +516,11 @@
     // die EP-Position, falls .rex-language fehlt.
     function relocateSwitch() {
         var sw = el('sprog-langcompare-switch');
-        var lang = document.querySelector('.rex-language');
+        // REDAXO rendert die Sprachauswahl bei >= 4 clangs als Dropdown
+        // (.rex-language), bei 2-3 clangs als Button-Gruppe (.rex-nav-language).
+        // Beide werden float:right ausgegeben; wir setzen den Switch direkt davor,
+        // damit er (ebenfalls float:right) rechts daneben in derselben Zeile sitzt.
+        var lang = document.querySelector('.rex-language, .rex-nav-language');
         if (sw && lang && sw.nextElementSibling !== lang) {
             lang.parentNode.insertBefore(sw, lang);
         }
