@@ -16,7 +16,9 @@ use rex_sql_table;
  *
  * Die v2-Tabellen werden parallel zu v1 angelegt; v1 bleibt während der
  * gesamten v2.x-Reihe unverändert. Die Migration der Bestandsdaten erfolgt
- * in einem eigenen Schritt (siehe Sprog\Migration\V2Migration, folgt).
+ * in einem eigenen Schritt über den Sprog\Service\MigrationService und die
+ * Sprog\Migration\*Migrator (v1 → v2); bei Installation/Update wird sie von
+ * install.php automatisch angestoßen.
  *
  * ensure() ist idempotent und kann beliebig oft aufgerufen werden — die
  * darunterliegende REDAXO-API legt nur an, was noch fehlt.
