@@ -196,14 +196,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-`sprog` is a REDAXO 5 AddOn (>= 5.11) that provides multilingual features for REDAXO websites:
+`sprog` is a REDAXO 5 AddOn (>= 5.11) for multilingual websites. **v2 is an "inbox-first" redesign**: every translatable string is a language-independent **Unit** (`sprog_unit`) with one **Translation** (`sprog_translation`) per language, each carrying a value and a workflow status. A central **Inbox** lets editors filter, machine-translate, edit and review translations; a two-role workflow (translator/reviewer), a glossary, translation memory, coverage stats and per-value history back it.
 
-- **Wildcards** — placeholders like `{{ foo }}` written into code/templates/content that are replaced at output time with the translation for the current `clang_id`.
-- **Abbreviations** — auto-wraps configured terms inside `<body>` with `<abbr title="…">…</abbr>`, per language.
-- **Foreignwords** — marks foreign-language terms in the rendered HTML, per language.
-- **Sync** — keeps article/category names, status, template, and selected MetaInfo fields in sync across `rex_clang` languages.
-- **Copy** — copy article/category content or metadata from one language to another (incl. popup + chunked generate pages).
-- **Artefact** — CSV import/export of wildcards (uses `symfony/serializer`).
+Units are grouped by **namespace** (`Sprog\Enum\SourceType`):
+- **wildcard** — placeholders like `{{ foo }}` in code/templates/content, replaced at output time with the current `clang_id`'s translation.
+- **abbreviation** — terms auto-wrapped inside `<body>` as `<abbr title="…">…</abbr>`, per language.
+- **foreignword** — foreign-language terms marked in the rendered HTML, per language.
+- **article / slice / yform / media / custom** — fed by the sync path or third-party addons (need a `source_ref`); not user-creatable in the UI.
+
+The first three are user-creatable (inbox modal / `pages/create.php`). Further features: **Sync** (keep article/category name, status, template and MetaInfo in sync across `rex_clang`), **Copy** (content/metadata across languages, chunked), **CSV artefact** (import/export via `symfony/serializer`), and an experimental **article language-comparison** in the content edit mask.
 
 The addon is German-first; UI labels, lang files (`lang/*.lang`), and code comments are in German.
 
@@ -211,19 +212,39 @@ The addon is German-first; UI labels, lang files (`lang/*.lang`), and code comme
 
 ### Entry points
 - `boot.php` — runs on every request. Registers permissions (`sprog[unit_edit]`, `sprog[translator]`, `sprog[reviewer]`), loads helper functions, builds the filter registry, hooks REDAXO extension points (incl. the article language-comparison via the `STRUCTURE_CONTENT_*` EPs), and persists `clang_base` in `PAGES_PREPARED` via `Sprog\Boot\PageTreeBuilder`. Frontend rewriting (wildcards, abbreviations, foreignwords) is wired here via three `OUTPUT_FILTER` registrations — none of them run in the backend. (The legacy `sprog[wildcard]`/`sprog[abbreviation]` perms and per-language wildcard/abbreviation backend pages were removed in v2; editing runs through the inbox.)
-- `install.php` — creates three tables: `rex_sprog_wildcard`, `rex_sprog_abbreviation`, `rex_sprog_foreignword`. Wildcard rows are scoped by `(clang_id, wildcard)`; the addon links them across languages via a shared `id` column (distinct from the `pid` primary key) so the same wildcard in different languages share an `id`.
-- `package.yml` — declares the page tree, registers the eight built-in filters under the `filter:` key, and seeds `wildcard_open_tag`/`wildcard_close_tag` config.
+- `install.php` — runs `V1Schema::ensure()` (legacy `rex_sprog_wildcard`/`_abbreviation`/`_foreignword`, kept as a read-only fallback until v3), then `V2Schema::ensure()` (the six v2 tables, see Data model), then a **flag-guarded auto-migration** (`MigrationService::migrateAll()`, config flag `migration_autorun_done`) so a deploy migrates the instance itself. All steps are idempotent; a migration error is caught (installmsg) and never aborts the install. `update.php` just includes `install.php`; `uninstall.php` calls `V2Schema::drop()`.
+- `package.yml` — declares the page tree (`dashboard`, `inbox`, hidden `create`, `glossary`, `datenpflege` → copy/CSV/migration, `settings`, `help`), the hidden `sprog.langcompare` AJAX endpoint, the eight built-in filters under `filter:`, and config defaults (`wildcard_open_tag`/`wildcard_close_tag`, `chunk_size_articles`, `workflow_dev_self_approve`).
 
 ### Namespace and autoloading
 PSR-4-style: classes live under `lib/Sprog/` in the `Sprog\` namespace. REDAXO's class loader picks them up automatically — no `composer dump-autoload` step. Note `composer.json`'s `post-install-cmd` deliberately deletes `vendor/composer` and `vendor/autoload.php` after install so Composer's autoloader doesn't conflict with REDAXO's.
 
 A legacy `class_alias('\Sprog\Wildcard', 'Wildcard')` lives in `boot.php` for back-compat with pre-1.3 code; do not rely on the global alias in new code.
 
-### Wildcard pipeline
-1. Tags are configurable (`wildcard_open_tag`, `wildcard_close_tag`, default `{{ ` / ` }}`) and the regexp is built in `Wildcard::getRegexp()`. It captures `wildcard`, `filter`, and `arguments`.
-2. `Wildcard::parse()` resolves all matches in a string for one `clang_id` in a single SQL query; `Wildcard::get()` resolves one wildcard.
-3. **clang_base** (config key `clang_base`, an array `clang_id => clang_id`) lets one language reuse another language's replacements. Any lookup applies this remapping before hitting the DB — keep this in mind when adding new wildcard read paths.
-4. There is no longer a dedicated wildcard backend page — wildcard/abbreviation/foreignword editing runs through the inbox (v2 `sprog_unit`/`sprog_translation` model, distinguished by `namespace`). The frontend read path (`Wildcard::parse()` via `Sprog\Compat\Wildcard` → `WildcardLookupService`) is v2-first with a v1 fallback and is unchanged.
+### Data model (v2)
+The v2 tables live alongside the v1 ones (v1 stays until v3). `status` and `namespace`/`source_type` are plain `varchar`, **not** MySQL ENUMs — the whitelists are the PHP enums `Sprog\Enum\Status` / `Sprog\Enum\SourceType`, validated in the service/repository layer.
+- **`sprog_unit`** — language-independent anchor, one row per translatable thing. UNIQUE on (`namespace`, `context`, `unit_key`); `context` is an optional user-defined area so the same key can live in several scopes. Optional `source_type`/`source_ref` backlink to a REDAXO entity; `source_hash` (SHA-256 of the source value) drives stale-detection; `tags`/`notes` are JSON.
+- **`sprog_translation`** — one row per (`unit_id`, `clang_id`) (UNIQUE). Holds `value`, `value_hash`, `source_hash_at_translation` (compared against `unit.source_hash` → *stale*), `status`, MT metadata (`mt_provider`/`mt_confidence`), `translator_id`/`reviewer_id`, and `revision` (optimistic lock).
+- **`sprog_glossary`** — binding term pairs per language pair, injected into the MT prompt.
+- **`sprog_tm`** — translation memory: non-binding fuzzy-match suggestions.
+- **`sprog_activity`** — append-only audit log (hashes only, no plaintext).
+- **`sprog_translation_history`** — append-only full-value snapshots for the inbox undo/restore.
+
+### Translation workflow
+Status flow (`Sprog\Enum\Status`): `missing → draft → needs_review → approved`, plus `revise` (reviewer returns for rework) and `stale` (system-set when the source changed). Only `approved` is final. Allowed transitions are whitelisted in `Status::allowedNextStates()`; **who** may trigger each is decided by `Sprog\Service\WorkflowService` from roles: `sprog[translator]` submits (》Zur Prüfung《), `sprog[reviewer]` approves/returns, and someone with both (or admin) can direct-approve without the review step. Transition validation lives in `TranslationService`; an empty value resets a translation to `missing` (bypassing the whitelist by design).
+
+### Lib layout
+`lib/Sprog/`: `Controller/Inbox/*` (AJAX handlers), `Service/*` (business logic — `TranslationService`, `WorkflowService`, `MtService`, the `*LookupService`s, `MigrationService`, `StructureSyncService`, `GlossaryService`, `CoverageService`, …), `Repository/*` (SQL for units/translations/glossary/activity/history), `Model/*` (value objects), `Enum/*` (`Status`, `SourceType`), `Mt/*` (translation providers), `Migration/*` (v1→v2 migrators), `Compat/*` (deprecated v1 API adapters), `Support/*` (`BaseLang`, `ClangBase`, `ContentHash`, `Labels`), `View/*`, `Boot/*` (asset/filter/page-tree registration), `Filter/*`, `Schema/*`.
+
+### Inbox (backend)
+`pages/inbox.php` renders the list; AJAX actions are dispatched by `Sprog\Controller\Inbox\InboxRouter` to focused controllers — `SaveTranslationController`, `TransitionController`, `UpdateUnitController`, `CreateUnitController`, `BatchTranslateController`, `MtController`, `HistoryController`. The filtered/paginated list is built by `TranslationListService` (filters modelled in `TranslationListFilter`); `CoverageService` computes the per-language coverage shown on the dashboard.
+
+### Machine translation (MT)
+`Sprog\Service\MtService` orchestrates providers implementing `Sprog\Mt\ProviderInterface`: `NoopProvider` (default), `DeepLProvider`, and `AiPlatformProvider` (LLM via the optional `ai_platform` addon). The provider is chosen from config and the glossary for the language pair is passed in. `AiPlatformProvider` prompts a strict "translate-only" role and rejects implausibly long output (hallucination guard). Results are a `Sprog\Mt\TranslationResult` (`text`, `provider`, `confidence`) and are always a *draft suggestion*, never auto-approved.
+
+### Frontend rendering: wildcards, abbreviations, foreignwords
+There is no wildcard/abbreviation/foreignword backend page any more — editing runs through the inbox. Output-time replacement is frontend-only: `boot.php` registers three `OUTPUT_FILTER`s → `Extension::replaceWildcards/replaceAbbreviations/replaceForeignwords` → the deprecated `Sprog\Compat\Wildcard/Abbreviation/Foreignword` adapters → the v2 `*LookupService`s. Each lookup is **v2-first with a v1 fallback** (the v1 table is only read when the entire v2 map for a clang is empty).
+
+Wildcards specifically: tags are configurable (`wildcard_open_tag`/`wildcard_close_tag`, default `{{ ` / ` }}`), the regexp is built in `Wildcard::getRegexp()` (captures `wildcard`, `filter`, `arguments`), `Wildcard::parse()` resolves all matches in a string for one `clang_id`, `Wildcard::get()` resolves one. **clang_base** (config `clang_base`, an array `clang_id => clang_id`) lets one language reuse another's replacements; the remapping is applied before every lookup — keep this in mind on any new read path. `Sprog\Wildcard`/`Abbreviation`/`Foreignword` are deprecated BC aliases over the `Compat\*` classes.
 
 ### Filters
 `Sprog\Filter` is an abstract base with `name()` and `fire($value, $arguments)`. Built-ins live in `lib/Sprog/Filter/*` and are listed under `filter:` in `package.yml`. Third-party code can register more via the `SPROG_FILTER` extension point; `boot.php` instantiates each and stores `name => instance` in `rex::setProperty('SPROG_FILTER', …)`.
@@ -244,8 +265,8 @@ Global helpers used in templates/modules:
 - `sprogfield($field, $sep = '_')` — append the current clang_id, e.g. `sprogfield('name')` → `name_1`.
 - `sprogarray($array, $fields, $fallback_clang_id = 0, $sep = '_')` / `sprogvalue(...)` — pick the right clang-suffixed key with a fallback chain.
 
-### Pages
-Live under `pages/`. The `copy.*` and `sprog.copy.*` pages implement a popup + chunked generator flow; `chunkSizeArticles` in `boot.php` (default 4) tunes how many articles each generate request handles. The artefact import/export pages live under `pages/artefact.*.php` and use `symfony/serializer` via `lib/Sprog/Export/CsvExport.php`.
+### Copy, CSV artefact, migration (Datenpflege)
+Under the admin-only `datenpflege` node: **Copy** (`pages/copy.structure_content.php` / `copy.structure_metadata.php` + `Sprog\Copy\*`) copies/synchronises content or metadata across languages via a chunked generator flow (`chunk_size_articles` config, default 4). **CSV artefact** (`pages/artefact.import.php` / `artefact.export.php` + `Sprog\Export\CsvExport`, using `symfony/serializer`) is the bulk import/export. **Migration** (`pages/migration.php` + `Sprog\Service\MigrationService` + `Sprog\Migration\*Migrator`) is the manual v1→v2 tool — the same code the install-time auto-migration runs — chunked and idempotent.
 
 ## Running, testing, building
 
@@ -253,11 +274,11 @@ This is a plain REDAXO addon — there is no build system, no lint config, and n
 
 - **Install vendor deps** (rarely needed; `vendor/` is committed and the post-install script removes Composer's autoloader): `composer install` from the addon directory.
 - **Apply install.php** (creates/updates DB tables): re-install the addon via the REDAXO backend (System → AddOns), or call its `install.php` through REDAXO's API.
-- **Frontend assets**: `assets/css/sprog.css` and `assets/js/sprog.js` are loaded directly in `boot.php` with `?v=` cache-busting from `$this->getVersion()`. There is no JS/CSS build step — edit them in place.
+- **Assets**: registered in `Sprog\Boot\AssetRegistry` (not inline in `boot.php`), `?v=` cache-busted from the addon version. v2 styles are in `assets/css/sprog.v2.css`; JS is split into per-page bundles (`sprog.inbox.js`, `sprog.migration.js`, `sprog.copy.js`, `sprog.langcompare.js`) loaded only where needed. No JS/CSS build step — edit in place; REDAXO republishes addon assets on (re)install.
 
 ## Conventions
 
 - All user-facing strings go through `rex_i18n` keys defined in `lang/*.lang` (German is canonical in `de_de.lang`).
 - Permission checks: page-level perms live in `package.yml` (`sprog[]`, `admin[]`). For per-language access (e.g. the article language-comparison endpoint), gate on `rex::getUser()->getComplexPerm('clang')->hasPerm($id)`.
-- Backend-only behavior (sub-page registration, asset loading) must stay inside the `if (rex::isBackend() && rex::getUser())` block in `boot.php`; the frontend `OUTPUT_FILTER` hooks live in the `if (!rex::isBackend())` block above it.
+- Backend-only behavior (sync/language-comparison EP registration, `clang_base` persistence, asset loading) must stay inside the `if (rex::isBackend() && rex::getUser())` block in `boot.php`; the frontend `OUTPUT_FILTER` hooks live in the `if (!rex::isBackend())` block above it.
 - When adding extension-point handlers that observe metadata, register them `LATE` so MetaInfo writes finish first (mirrors the existing `ART_META_UPDATED` / `CAT_UPDATED` registrations).
