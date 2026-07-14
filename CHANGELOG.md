@@ -34,6 +34,19 @@ Sprog - Changelog
   aktiv → approved, inaktiv → draft). Der Review-Workflow greift damit nur für
   neue und MT-Übersetzungen.
 
+### Behoben
+
+- Artikel-Sprachvergleich: Beim Start des Vergleichs waren je nach REDAXO-Version
+  **alle Aktionen dauerhaft gesperrt** (Buttons disabled), weil die native
+  Slice-Liste im Ruhezustand ein Formular enthalten kann. Der Sperrzustand hängt
+  jetzt am Bearbeiten-Modus, nicht mehr am bloßen Vorhandensein eines Formulars.
+- Artikel-Sprachvergleich: Das „Vergleichen mit"-Dropdown rutschte bei 2-3
+  Sprachen (Button-Auswahl statt Dropdown) unter die Sprachauswahl statt rechts
+  daneben.
+- Artikelinhalte kopieren: Ein in der Zielsprache nicht renderbarer Artikel
+  (z.B. Zielsprache nicht in yrewrite gemountet) brach den gesamten Kopiervorgang
+  ab. Das Cache-Warmup ist jetzt fehlertolerant.
+
 ## Version 1.3.0 - 19.11.2021
 
 ### Neu
