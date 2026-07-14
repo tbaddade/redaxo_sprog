@@ -1,42 +1,85 @@
 Sprog
 ================================================================================
 
-**AddOn für Sprachen**
+**Mehrsprachigkeit für REDAXO** — Übersetzungen zentral in einer Inbox verwalten,
+per DeepL oder KI vorübersetzen und in einem Review-Workflow freigeben.
 
 ## Voraussetzungen
 
 - REDAXO `^5.21`
 - PHP `^8.4` (Minimum PHP 8.4)
 
+## Was Sprog kann
+
+- **Platzhalter (Wildcards)** — `{{ … }}` in Templates, Modulen, Artikelinhalten
+  oder Tabellendaten, die bei der Ausgabe pro Sprache ersetzt werden.
+- **Abkürzungen** — konfigurierte Begriffe werden im Frontend automatisch als
+  `<abbr title="…">…</abbr>` ausgezeichnet.
+- **Fremdwörter** — fremdsprachige Begriffe werden als `<span lang="…">…</span>`
+  markiert (korrekte Sprachausgabe für Screenreader).
+- **Inbox** — zentrale Verwaltung aller Übersetzungen: filtern nach Sprache,
+  Namespace und Status, inline bearbeiten, maschinell vorübersetzen, Verlauf.
+- **Maschinelle Übersetzung (MT)** — DeepL oder KI (über das `ai_platform`-AddOn),
+  glossargestützt.
+- **Glossar** — verbindliche Begriffs-Vorgaben, die in die MT einfließen.
+- **Synchronisierung & Kopieren** — Struktur-Metadaten und Artikelinhalte zwischen
+  den Sprachen abgleichen bzw. kopieren.
+
+## Inbox & Übersetzungs-Workflow
+
+Jede übersetzbare Einheit (Platzhalter, Abkürzung, Fremdwort) besitzt pro Sprache
+eine Übersetzung mit einem Status. Der Workflow:
+
+`fehlt → Entwurf → zur Prüfung → freigegeben` (dazu „zurückgeben" und der
+System-Status „veraltet", wenn sich der Quelltext geändert hat).
+
+- Rollen (je Sprache über die clang-Rechte wirksam): `sprog[translator]` reicht
+  Übersetzungen zur Prüfung ein, `sprog[reviewer]` gibt frei bzw. gibt zurück. Wer
+  beides darf (oder Admin) kann direkt freigeben.
+- **Wichtig:** Im **Frontend erscheinen ausschließlich freigegebene** (`approved`)
+  Übersetzungen. Entwürfe und zur Prüfung eingereichte Texte sind nicht öffentlich.
+
+## Maschinelle Übersetzung (MT)
+
+- **DeepL** — API-Key in der Sprog-Konfiguration hinterlegen.
+- **KI** — über das optionale `ai_platform`-AddOn (OpenAI, Claude, Gemini, Ollama);
+  genutzt wird dessen Standard-Text-Profil.
+- Begriffe aus dem **Glossar** werden dem Provider verbindlich mitgegeben.
+- MT-Ergebnisse sind immer **Vorschläge** (Entwurf) und durchlaufen den Workflow —
+  nichts wird automatisch freigegeben.
+
 ## Platzhalter
- 
-- einfaches Erstellen von Platzhaltern und deren Ersetzungen
-- Eine Sprache kann die Ersetzungen einer anderen Sprache verwenden (Sprachbasis)
+
+- einfaches Anlegen von Platzhaltern und deren Ersetzungen in der Inbox
+- eine Sprache kann die Ersetzungen einer anderen Sprache verwenden (Sprachbasis)
 
 ### Anwendung
 
-Das **Anlegen** des Platzhalters erfolgt **ohne** das öffnende bzw. schließende **Tag**.
+Das **Anlegen** des Platzhalters (Inbox → „Neu", Namespace „Platzhalter") erfolgt
+**ohne** öffnendes bzw. schließendes **Tag**.
 
 **Beispiel**
-    
-    platzhalter 
 
-Das **Notieren** des Platzhalters **im Code** (Klassen, Funktionen, Templates, Module, etc.), in **Artikelinhalten** oder **Tabellendaten** usw. erfolgt **mit** öffnenden und schließenden **Tag**.
+    platzhalter
+
+Das **Notieren** des Platzhalters **im Code** (Klassen, Funktionen, Templates,
+Module, etc.), in **Artikelinhalten** oder **Tabellendaten** usw. erfolgt **mit**
+öffnendem und schließendem **Tag**.
 
 **Beispiel**
 
     {{ platzhalter }}
- 
- 
+
+
 ### Filter verwenden
 
 Filter werden direkt am Platzhalter im Code notiert und haben Einfluss auf deren Übersetzung.
 
 #### Mögliche Filter
-- - - - - - - - - - - - - - - - - - - - 
+- - - - - - - - - - - - - - - - - - - -
 
 - format <small>(sprintf)</small>
-- limit  
+- limit
 - lower
 - markdown
 - raw <small>(kein nl2br)</small>
@@ -63,7 +106,7 @@ Filter werden direkt am Platzhalter im Code notiert und haben Einfluss auf deren
 ```php
 echo sprogdown($text, $clang_id = null);
 ```
-    
+
 **Übersetzung eines einzelnen Platzhalters**
 
 ```php
@@ -105,12 +148,25 @@ foreach ($items as $item) {
 - Kategoriename mit Artikelname innerhalb derselben Sprache
 - Status (Online/Offline) zwischen den Sprachen
 - Template zwischen den Sprachen
+- ausgewählte MetaInfo-Felder zwischen den Sprachen
 
+## Inhalte & Metadaten kopieren
 
-## Inhalte kopieren/synchronisieren
- 
-- Inhalte können von einer Sprache zur anderen Sprache kopiert werden
-- Metadaten der Artikel/Kategorien können von einer Sprache zur anderen Sprache synchronisiert werden
+Unter **Datenpflege**:
+
+- **Artikelinhalte kopieren** — die Slices eines Artikels von einer Sprache in
+  eine andere übertragen (optional ab einem Startartikel und/oder mit vorherigem
+  Leeren der Zielsprache).
+- **Metadaten kopieren** — Struktur-/Artikel-Metadaten von einer Sprache in eine
+  andere übernehmen.
+- **Import / Export** — Platzhalter als CSV importieren bzw. exportieren.
+
+## Migration von Sprog 1.x
+
+Beim Installieren bzw. Update überführt Sprog vorhandene Bestandsdaten (Platzhalter,
+Abkürzungen, Fremdwörter) automatisch in das neue v2-Modell — bereits live
+geschaltete Inhalte bleiben dabei sichtbar. Der Vorgang ist idempotent und lässt
+sich bei Bedarf manuell unter **Datenpflege → Migration** wiederholen.
 
 
 ## Bugtracker
