@@ -3,6 +3,24 @@ version: '2.0.0-beta1'
 author: Thomas Blum
 supportpage: www.redaxo.org/de/forum/
 
+# Vom Backend-Upload zu redaxo.org ausschließen (Installer packt das echte
+# Verzeichnis via rex_finder — .gitignore greift dabei NICHT). Ergänzt die
+# fixen Defaults des Installers (.gitattributes/.github/.gitignore/.idea/.vscode)
+# und die Upload-Checkboxen (Assets/Tests). Besonders wichtig: .git (Historie)
+# und der review-Symlink dürfen nicht ins Paket.
+installer_ignore:
+    - .git
+    - .php-cs-fixer.dist.php
+    - .php-cs-fixer.cache
+    - phpstan.neon
+    - phpunit.xml.dist
+    - composer.lock
+    - tests
+    - docs
+    - bin
+    - review
+    - CLAUDE.md
+
 requires:
     redaxo: '^5.21'
     php: '^8.4'
