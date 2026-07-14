@@ -235,11 +235,6 @@ $sourceGlyph = static function (string $ns): string {
         SourceType::Wildcard->value     => '{}',
         SourceType::Abbreviation->value => 'Ab',
         SourceType::Foreignword->value  => 'æø',
-        SourceType::Article->value      => 'Ar',
-        SourceType::Slice->value        => 'Sl',
-        SourceType::YForm->value        => 'YF',
-        SourceType::Media->value        => 'Me',
-        SourceType::Custom->value       => '∗',
         default                         => rex_escape(mb_strtoupper(mb_substr($ns, 0, 2))),
     };
 };

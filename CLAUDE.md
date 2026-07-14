@@ -198,13 +198,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 `sprog` is a REDAXO 5 AddOn (>= 5.11) for multilingual websites. **v2 is an "inbox-first" redesign**: every translatable string is a language-independent **Unit** (`sprog_unit`) with one **Translation** (`sprog_translation`) per language, each carrying a value and a workflow status. A central **Inbox** lets editors filter, machine-translate, edit and review translations; a two-role workflow (translator/reviewer), a glossary, translation memory, coverage stats and per-value history back it.
 
-Units are grouped by **namespace** (`Sprog\Enum\SourceType`):
+Units are grouped by **namespace** (`Sprog\Enum\SourceType`) — the three user-creatable kinds (inbox modal / `pages/create.php`):
 - **wildcard** — placeholders like `{{ foo }}` in code/templates/content, replaced at output time with the current `clang_id`'s translation.
 - **abbreviation** — terms auto-wrapped inside `<body>` as `<abbr title="…">…</abbr>`, per language.
 - **foreignword** — foreign-language terms marked in the rendered HTML, per language.
-- **article / slice / yform / media / custom** — fed by the sync path or third-party addons (need a `source_ref`); not user-creatable in the UI.
 
-The first three are user-creatable (inbox modal / `pages/create.php`). Further features: **Sync** (keep article/category name, status, template and MetaInfo in sync across `rex_clang`), **Copy** (content/metadata across languages, chunked), **CSV artefact** (import/export via `symfony/serializer`), and an experimental **article language-comparison** in the content edit mask.
+Further features: **Sync** (keep article/category name, status, template and MetaInfo in sync across `rex_clang`), **Copy** (content/metadata across languages, chunked), **CSV artefact** (import/export via `symfony/serializer`), and an experimental **article language-comparison** in the content edit mask.
 
 The addon is German-first; UI labels, lang files (`lang/*.lang`), and code comments are in German.
 

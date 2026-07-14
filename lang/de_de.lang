@@ -147,11 +147,6 @@ sprog_status_stale = Veraltet
 sprog_source_wildcard = Platzhalter
 sprog_source_abbreviation = Abkürzung
 sprog_source_foreignword = Fremdwort
-sprog_source_article = Artikel
-sprog_source_slice = Slice
-sprog_source_yform = YForm
-sprog_source_media = Medium
-sprog_source_custom = Sonstige
 
 sprog_datenpflege_subpage = Datenpflege
 sprog_migration_subpage = Migration v1 → v2

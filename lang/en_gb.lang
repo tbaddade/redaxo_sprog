@@ -144,11 +144,6 @@ sprog_status_stale = Stale
 sprog_source_wildcard = wildcard
 sprog_source_abbreviation = abbreviation
 sprog_source_foreignword = foreign word
-sprog_source_article = article
-sprog_source_slice = slice
-sprog_source_yform = YForm
-sprog_source_media = media
-sprog_source_custom = other
 
 sprog_datenpflege_subpage = Data maintenance
 sprog_migration_subpage = Migration v1 → v2
