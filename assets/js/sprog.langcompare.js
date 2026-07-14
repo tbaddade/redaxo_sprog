@@ -775,9 +775,16 @@
                 return;
             }
 
-            // Ist ein Formular offen, sind alle Aktionen außerhalb davon gesperrt
-            // (Backup zur CSS-Sperre — verhindert ein zweites offenes Formular).
-            var openForm = host.querySelector('form');
+            // Ein echtes offenes Bearbeiten-/Hinzufügen-Formular sperrt alle
+            // Aktionen außerhalb davon (Backup zur CSS-Sperre, verhindert ein
+            // zweites offenes Formular). Erkennung über die editierende Spalte
+            // (.sprog-lc-col--editing) — bewusst NICHT über host.querySelector('form'):
+            // die native Slice-Liste enthält je nach REDAXO-Version schon im
+            // Ruhezustand ein <form> (z.B. die „Block hinzufügen"-Modulauswahl),
+            // wodurch Kopieren und native Slice-Aktionen sonst dauerhaft ins Leere
+            // klicken.
+            var editingCol = host.querySelector('.sprog-lc-col--editing');
+            var openForm = editingCol ? editingCol.querySelector('form') : null;
 
             // MT-Buttons (vor der Sperr-Logik, damit „Alle übersetzen" im Kopf greift)
             var mtAll = e.target.closest('.sprog-lc-mt-all');
