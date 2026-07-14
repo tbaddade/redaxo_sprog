@@ -88,12 +88,16 @@
         }
     }
 
-    // Sperrt alle Aktionen (beide Spalten), solange irgendwo ein Formular offen
-    // ist — verhindert zwei gleichzeitig offene Formulare + schützt das offene.
+    // Sperrt alle Aktionen (beide Spalten), solange eine Spalte im Bearbeiten-/
+    // Hinzufügen-Modus ist — verhindert zwei gleichzeitig offene Formulare und
+    // schützt das offene. Bewusst NICHT an ein `<form>` gekoppelt: die native
+    // Slice-Liste enthält je nach REDAXO-Version schon im Ruhezustand Formulare
+    // (z.B. die „Block hinzufügen"-Modulauswahl oder Status-Toggles), was den
+    // Vergleich sonst dauerhaft sperren würde (alle Buttons disabled).
     function updateLockState() {
         var host = panelHost();
         if (host) {
-            host.classList.toggle('sprog-lc-locked', !!host.querySelector('form'));
+            host.classList.toggle('sprog-lc-locked', !!host.querySelector('.sprog-lc-col--editing'));
         }
     }
 
@@ -234,6 +238,12 @@
             var newCol = tmp.querySelector('.sprog-langcompare--col') || tmp.firstElementChild;
             if (!newCol) {
                 return;
+            }
+            // Bearbeiten/Hinzufügen → Spalte als „editierend" markieren, damit
+            // updateLockState() den Vergleich sperrt (unabhängig davon, ob die
+            // Slice-Liste ohnehin schon Formulare enthält).
+            if ('edit' === fn || 'add' === fn) {
+                newCol.classList.add('sprog-lc-col--editing');
             }
             col.replaceWith(newCol);
             injectCopyButtons();
