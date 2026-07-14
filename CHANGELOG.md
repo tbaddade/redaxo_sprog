@@ -36,9 +36,10 @@ Sprog - Changelog
 
 ### Behoben
 
-- Artikel-Sprachvergleich: Beim Start des Vergleichs waren je nach REDAXO-Version
-  **alle Aktionen dauerhaft gesperrt** (Buttons disabled), weil die native
-  Slice-Liste im Ruhezustand ein Formular enthalten kann. Der Sperrzustand hängt
+- Artikel-Sprachvergleich: Je nach REDAXO-Version waren beim Start des Vergleichs
+  **alle Aktionen gesperrt bzw. Kopier-Button und Slice-Aktionen lösten nichts
+  aus** — weil die native Slice-Liste im Ruhezustand ein Formular enthalten kann
+  (z.B. die „Block hinzufügen"-Modulauswahl). Sperr- und Aktions-Guards hängen
   jetzt am Bearbeiten-Modus, nicht mehr am bloßen Vorhandensein eines Formulars.
 - Artikel-Sprachvergleich: Das „Vergleichen mit"-Dropdown rutschte bei 2-3
   Sprachen (Button-Auswahl statt Dropdown) unter die Sprachauswahl statt rechts
@@ -46,6 +47,10 @@ Sprog - Changelog
 - Artikelinhalte kopieren: Ein in der Zielsprache nicht renderbarer Artikel
   (z.B. Zielsprache nicht in yrewrite gemountet) brach den gesamten Kopiervorgang
   ab. Das Cache-Warmup ist jetzt fehlertolerant.
+- WebAwesome-Kompatibilität: Ist WebAwesome `native.css` geladen, überschrieb es
+  Border/Radius/Hintergrund und Abstände nativer `<details>` in der Sprog-UI. Wird
+  im Sprog-Layer neutralisiert; Sprogs eigene Karten (z.B. die Legende) bleiben
+  erhalten.
 
 ## Version 1.3.0 - 19.11.2021
 
