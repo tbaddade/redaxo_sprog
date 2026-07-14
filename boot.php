@@ -21,8 +21,6 @@ $addon = rex_addon::get('sprog');
  */
 class_alias('\Sprog\Wildcard', 'Wildcard');
 
-rex_perm::register('sprog[abbreviation]', null, rex_perm::OPTIONS);
-rex_perm::register('sprog[wildcard]', null, rex_perm::OPTIONS);
 rex_perm::register('sprog[unit_edit]', null, rex_perm::OPTIONS);
 // Workflow-Rollen (je Sprache über die clang-Zuweisung wirksam): translator
 // reicht Übersetzungen zur Prüfung ein, reviewer gibt frei / gibt zurück.
@@ -56,8 +54,14 @@ if (rex::isBackend() && rex::getUser()) {
     rex_extension::register('CLANG_ADDED', [Extension::class, 'clangAdded']);
     rex_extension::register('CLANG_DELETED', [Extension::class, 'clangDeleted']);
 
-    rex_extension::register('PAGES_PREPARED', static function () use ($addon): void {
-        PageTreeBuilder::publish($addon);
+    // Artikel-Sprachvergleich in die Struktur-Content-Maske einhängen (Toolbar
+    // oben, Panel-Host unter der Slice-Liste). Rechte werden im Endpoint
+    // (pages/sprog.langcompare.php) und beim Aufbau der Sprachauswahl geprüft.
+    rex_extension::register('STRUCTURE_CONTENT_HEADER', [Extension::class, 'langCompareHeader']);
+    rex_extension::register('STRUCTURE_CONTENT_AFTER_SLICES', [Extension::class, 'langCompareContainer']);
+
+    rex_extension::register('PAGES_PREPARED', static function (): void {
+        PageTreeBuilder::publish();
     });
 
     AssetRegistry::publish($addon);

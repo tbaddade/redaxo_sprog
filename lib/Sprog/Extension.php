@@ -15,7 +15,6 @@ namespace Sprog;
 
 use rex;
 use rex_addon;
-use rex_clang;
 use rex_extension_point;
 use rex_sql;
 use rex_sql_exception;
@@ -23,6 +22,7 @@ use Sprog\Compat\Abbreviation;
 use Sprog\Compat\Foreignword;
 use Sprog\Compat\Wildcard;
 use Sprog\Service\StructureSyncService;
+use Sprog\View\LangCompare;
 
 use function array_values;
 use function count;
@@ -140,7 +140,6 @@ class Extension
     {
         $clangId = $ep->getParam('clang')->getId();
 
-        self::clangAddedV1($clangId);
         self::clangAddedV2($clangId);
     }
 
@@ -151,41 +150,7 @@ class Extension
     {
         $clangId = $ep->getParam('clang')->getId();
 
-        $deleteLang = rex_sql::factory();
-        $deleteLang->setQuery('DELETE FROM ' . rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [$clangId]);
-
         self::clangDeletedV2($clangId);
-    }
-
-    /**
-     * v1-Verhalten beibehalten: Wildcard-Rows der Start-Sprache für die
-     * neue clang replizieren. Bestandsinstallationen, die v2 (noch) nicht
-     * benutzen, sehen kein Verhaltens-Delta.
-     */
-    private static function clangAddedV1(int $clangId): void
-    {
-        $firstLang = rex_sql::factory();
-        $firstLang->setQuery('SELECT * FROM ' . rex::getTable('sprog_wildcard') . ' WHERE clang_id=?', [rex_clang::getStartId()]);
-        $fields = $firstLang->getFieldnames();
-
-        $newLang = rex_sql::factory();
-        $newLang->setDebug(false);
-        foreach ($firstLang as $firstLangEntry) {
-            $newLang->setTable(rex::getTable('sprog_wildcard'));
-
-            foreach ($fields as $key => $value) {
-                if ('pid' == $value) {
-                    continue;
-                }
-                if ('clang_id' == $value) {
-                    $newLang->setValue('clang_id', $clangId);
-                } else {
-                    $newLang->setValue($value, $firstLangEntry->getValue($value));
-                }
-            }
-
-            $newLang->insert();
-        }
     }
 
     /**
@@ -232,6 +197,37 @@ class Extension
         } catch (rex_sql_exception) {
             // v2-Schema noch nicht installiert — keine v2-Daten vorhanden.
         }
+    }
+
+    /**
+     * Toolbar des Artikel-Sprachvergleichs in die Content-Maske einhängen
+     * (STRUCTURE_CONTENT_HEADER). Subject ist der bisher aufgebaute HTML-String.
+     *
+     * @param rex_extension_point<string> $ep
+     */
+    public static function langCompareHeader(rex_extension_point $ep): void
+    {
+        $html = LangCompare::renderBar(
+            (int) $ep->getParam('article_id'),
+            (int) $ep->getParam('clang'),
+            (int) $ep->getParam('ctype'),
+            (int) $ep->getParam('article_revision'),
+        );
+
+        if ('' !== $html) {
+            $ep->setSubject($ep->getSubject() . $html);
+        }
+    }
+
+    /**
+     * Leeren Panel-Host unter die Slice-Liste hängen
+     * (STRUCTURE_CONTENT_AFTER_SLICES); Befüllung erfolgt per JS.
+     *
+     * @param rex_extension_point<string> $ep
+     */
+    public static function langCompareContainer(rex_extension_point $ep): void
+    {
+        $ep->setSubject($ep->getSubject() . LangCompare::renderContainer());
     }
 
     /**

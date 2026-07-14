@@ -17,8 +17,10 @@ use Sprog\Migration\MigratorInterface;
 use Sprog\Migration\WildcardMigrator;
 use Throwable;
 
+use function ceil;
 use function is_array;
 use function is_string;
+use function max;
 use function sprintf;
 
 use const JSON_THROW_ON_ERROR;
@@ -143,6 +145,43 @@ final class MigrationService
         ]);
 
         return $state;
+    }
+
+    /**
+     * Migriert alle verfügbaren Quellen in einem Rutsch vollständig durch —
+     * für den automatischen Aufruf bei Installation/Update (install.php), damit
+     * deployte Instanzen sich selbst migrieren, ohne dass ein Admin die
+     * Datenpflege-Seite öffnen muss.
+     *
+     * Setzt den Fortschritts-State neu auf und arbeitet jede Quelle chunk-weise
+     * bis completed. Idempotent: bereits in v2 vorhandene Units überspringen die
+     * Migratoren, ein erneuter Aufruf (z.B. bei einem weiteren Deploy) erzeugt
+     * keine Duplikate. Ein Endlosschleifen-Schutz begrenzt die Chunk-Iterationen
+     * je Quelle auf ihre Gesamtgröße.
+     *
+     * @throws JsonException
+     */
+    public function migrateAll(int $chunkSize = 200, ?int $userId = null): MigrationState
+    {
+        $state = $this->reset($userId);
+
+        foreach ($this->migrators as $source => $migrator) {
+            if (!$migrator->isAvailable()) {
+                continue;
+            }
+
+            $progress = $state->for($source);
+            $maxIterations = (int) ceil(max(1, $migrator->totalCount()) / $chunkSize) + 1;
+
+            for ($i = 0; $i < $maxIterations; ++$i) {
+                if (null === $progress || $progress->isCompleted()) {
+                    break;
+                }
+                $progress = $this->runChunk($source, $chunkSize, $userId);
+            }
+        }
+
+        return $this->state();
     }
 
     /**

@@ -33,12 +33,6 @@ page:
         glossary:
             title: 'translate:sprog_glossary_subpage'
             perm: admin[]
-        wildcard:
-            title: 'translate:wildcard'
-            perm: sprog[wildcard]
-        abbreviation:
-            title: 'translate:abbreviations'
-            perm: sprog[abbreviation]
         datenpflege:
             title: 'translate:sprog_datenpflege_subpage'
             perm: admin[]
@@ -70,6 +64,17 @@ page:
             perm: admin[]
             itemClass: pull-right
 
+
+pages:
+    # AJAX-Endpoint des Artikel-Sprachvergleichs (in der Content-Maske
+    # eingehängt via STRUCTURE_CONTENT_*-EPs). hasLayout:false → nur der
+    # Fragment-/JSON-Output. Rechte werden im Endpoint geprüft (copyContent[]
+    # + clang-/Kategorie-Perm), daher hier kein restriktives perm.
+    sprog.langcompare:
+        title: 'translate:sprog_langcompare_heading'
+        main: true
+        hasLayout: false
+        hidden: true
 
 default_config:
     wildcard_open_tag: '{{ '

@@ -52,5 +52,15 @@ final class AssetRegistry
                 [rex_view::JS_DEFERED => true],
             );
         }
+
+        // Artikel-Sprachvergleich: hängt via STRUCTURE_CONTENT_*-EPs in der
+        // Content-Maske (structure/content). Das Bundle wird nur dort geladen;
+        // sein Inline-`window.sprogLangCompare`-Bootstrap ruft danach boot().
+        if ('content' === rex_be_controller::getCurrentPagePart(1)) {
+            rex_view::addJsFile(
+                $addon->getAssetsUrl('js/sprog.langcompare.js?v=' . $version),
+                [rex_view::JS_DEFERED => true],
+            );
+        }
     }
 }

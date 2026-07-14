@@ -5,30 +5,24 @@ declare(strict_types=1);
 namespace Sprog\Boot;
 
 use rex;
-use rex_addon_interface;
 use rex_be_controller;
-use rex_be_page;
-use rex_clang;
 use rex_config;
-use rex_path;
 use rex_user;
 
 /**
- * Baut die clang-spezifischen Subpages im Backend-Page-Tree.
+ * Persistiert die Sprachbasis (`clang_base`) auf PAGES_PREPARED.
  *
- * Hängt auf PAGES_PREPARED — vor dem Render, nachdem package.yml verarbeitet
- * wurde. Die package.yml-Struktur legt nur die Root-Pages (`sprog/wildcard`,
- * `sprog/abbreviation`, …) an; pro rex_clang muss dynamisch eine Subpage
- * eingehängt werden, damit der User die Sprache wechseln kann ohne die Page
- * neu zu laden. clang-Permissions filtern Subpages weg, auf die der User
- * keinen Zugriff hat.
+ * Läuft vor dem Page-Render, damit ein gerade gespeicherter `clang_base`-Wert
+ * im selben Request schon den Page-Tree beeinflusst (welche Sprachen als
+ * eigenständig übersetzbar in der Navigation erscheinen).
  *
- * Bisher als 90-LOC-Closure inline in boot.php; hier in kleinere, einzeln
- * testbare static-Methoden zerlegt.
+ * Früher baute diese Klasse zusätzlich die clang-spezifischen Wildcard-/
+ * Abbreviation-Subpages; diese v1-Seiten sind in v2 entfallen — die Pflege
+ * läuft jetzt über die Inbox.
  */
 final class PageTreeBuilder
 {
-    public static function publish(rex_addon_interface $addon): void
+    public static function publish(): void
     {
         $user = rex::getUser();
         if (null === $user) {
@@ -36,8 +30,6 @@ final class PageTreeBuilder
         }
 
         self::handleSettingsUpdate($user);
-        self::buildAbbreviationSubpages($user);
-        self::buildWildcardSubpages($user);
     }
 
     /**
@@ -64,50 +56,5 @@ final class PageTreeBuilder
         }
 
         rex_config::set('sprog', 'clang_base', rex_request('clang_base', 'array'));
-    }
-
-    private static function buildAbbreviationSubpages(rex_user $user): void
-    {
-        if (!($user->isAdmin() || $user->hasPerm('sprog[abbreviation]'))) {
-            return;
-        }
-
-        // getPageObject() liefert NULL, wenn die Subpage nicht (mehr) im Tree
-        // ist — z.B. wenn das Addon aktiv aber nicht installiert ist. Vorher
-        // hat boot.php hier mit "Call to a member function addSubpage() on
-        // null" gecrasht.
-        $page = rex_be_controller::getPageObject('sprog/abbreviation');
-        if (null === $page) {
-            return;
-        }
-
-        $currentClangId = (int) str_replace('clang', '', (string) rex_be_controller::getCurrentPagePart(3, ''));
-
-        foreach (rex_clang::getAll() as $id => $clang) {
-            if (!$user->getComplexPerm('clang')->hasPerm($id)) {
-                continue;
-            }
-            $bePage = new rex_be_page('clang' . $id, $clang->getName());
-            $bePage->setSubPath(rex_path::addon('sprog', 'pages/abbreviation.php'));
-            $bePage->setIsActive($id === $currentClangId);
-            $page->addSubpage($bePage);
-        }
-    }
-
-    private static function buildWildcardSubpages(rex_user $user): void
-    {
-        if (!($user->isAdmin() || $user->hasPerm('sprog[wildcard]'))) {
-            return;
-        }
-
-        $page = rex_be_controller::getPageObject('sprog/wildcard');
-        if (null === $page) {
-            return;
-        }
-
-        // Alle Sprachen in einem Formular (pages/wildcard.clang_all.php). Das
-        // frühere „Sprachen als Unternavigation"-Layout (clang_switch) samt der
-        // dynamisch pro Sprache eingehängten Subpages ist entfallen.
-        $page->setSubPath(rex_path::addon('sprog', 'pages/wildcard.clang_all.php'));
     }
 }

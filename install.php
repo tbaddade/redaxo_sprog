@@ -3,6 +3,7 @@
 declare(strict_types=1);
 use Sprog\Schema\V1Schema;
 use Sprog\Schema\V2Schema;
+use Sprog\Service\MigrationService;
 
 /*
  * Sprog Schema-Setup.
@@ -26,3 +27,27 @@ use Sprog\Schema\V2Schema;
 
 V1Schema::ensure();
 V2Schema::ensure();
+
+/*
+ * Automatische v1 → v2 Datenmigration bei Installation/Update.
+ *
+ * Damit deployte Instanzen sich selbst migrieren, statt dass ein Admin die
+ * Datenpflege-Seite öffnen muss. Einmalig gesteuert über ein Flag: nach dem
+ * ersten erfolgreichen Durchlauf setzen wir `migration_autorun_done`, sodass
+ * weitere Deploys den (idempotenten, aber unnötigen) Rescan überspringen.
+ *
+ * Ein Fehler darf die Installation NICHT abbrechen — sonst könnte ein
+ * Daten-Edge-Case das Addon unbrauchbar machen. Deshalb Try/Catch: der Fehler
+ * wird geloggt und als installmsg gezeigt, die manuelle Migrations-Seite bleibt
+ * als Retry.
+ */
+if (!rex_config::get('sprog', 'migration_autorun_done', false)) {
+    try {
+        set_time_limit(0);
+        MigrationService::create()->migrateAll();
+        rex_config::set('sprog', 'migration_autorun_done', true);
+    } catch (Throwable $migrationError) {
+        rex_logger::logException($migrationError);
+        $this->setProperty('installmsg', rex_i18n::msg('sprog_migration_autorun_failed', $migrationError->getMessage()));
+    }
+}

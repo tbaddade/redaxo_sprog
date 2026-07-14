@@ -12,6 +12,8 @@ use Throwable;
 use function class_exists;
 use function implode;
 use function is_string;
+use function max;
+use function mb_strlen;
 use function preg_replace;
 use function sprintf;
 use function str_ends_with;
@@ -135,12 +137,52 @@ final class AiPlatformProvider implements ProviderInterface
             throw new ProviderException('ai_platform-Aufruf fehlgeschlagen: ' . $e->getMessage(), $this->name(), $e);
         }
 
+        $translated = $this->clean($raw);
+        $this->assertPlausibleLength($text, $translated);
+
         return new TranslationResult(
-            text: $this->clean($raw),
+            text: $translated,
             confidence: null, // LLM liefert keine verlässliche Confidence-Schätzung.
             provider: $this->name(),
             meta: ['source_lang' => $sourceLang, 'target_lang' => $targetLang],
         );
+    }
+
+    /**
+     * Schutz gegen halluzinierende LLMs: Eine Übersetzung ist inhaltlich
+     * ungefähr so lang wie ihre Eingabe. Ist die Ausgabe unverhältnismäßig
+     * länger, hat das Modell die "nur übersetzen"-Rolle verlassen und eigenen
+     * Text ergänzt (Erklärungen, Wiederholungen, frei erfundene Absätze).
+     * Solch ein Ergebnis darf NICHT ins Feld — lieber ein klarer Fehler, den
+     * der Aufrufer als Meldung zeigt, statt still Müll zu übernehmen.
+     *
+     * Schwelle bewusst großzügig (Faktor 2.5 plus additiver Sockel), damit
+     * echte Längenunterschiede zwischen Sprachen (z.B. Komposita, kurze
+     * Strings) nicht fälschlich abgelehnt werden. Gemessen an getrimmten
+     * Multibyte-Zeichenlängen.
+     *
+     * @throws ProviderException wenn die Ausgabe unplausibel lang ist
+     */
+    private function assertPlausibleLength(string $input, string $output): void
+    {
+        $in = mb_strlen(trim($input));
+        if (0 === $in) {
+            return;
+        }
+
+        $out = mb_strlen(trim($output));
+        $allowed = (int) max($in * 2.5, $in + 80);
+
+        if ($out > $allowed) {
+            throw new ProviderException(
+                sprintf(
+                    'Das KI-Ergebnis wurde verworfen: Die Übersetzung ist unplausibel lang (%d Zeichen aus %d Zeichen Eingabe). Das Modell hat vermutlich zusätzlichen Text erzeugt statt nur zu übersetzen. Bitte ein stärkeres Text-Modell verwenden oder auf DeepL wechseln.',
+                    $out,
+                    $in,
+                ),
+                $this->name(),
+            );
+        }
     }
 
     /**
@@ -152,8 +194,9 @@ final class AiPlatformProvider implements ProviderInterface
     private function buildSystemPrompt(string $source, string $target, array $glossary, ?string $context): string
     {
         $lines = [
-            sprintf('Du bist ein professioneller Fachübersetzer. Übersetze den Text von "%s" nach "%s".', $source, $target),
-            'Gib ausschließlich die Übersetzung zurück – ohne Anführungszeichen, ohne Vor- oder Nachbemerkungen.',
+            sprintf('Du bist ein reines Übersetzungssystem, kein Chat-Assistent. Übersetze den folgenden Text von "%s" nach "%s".', $source, $target),
+            'Gib AUSSCHLIESSLICH die Übersetzung zurück: kein zusätzlicher Text, keine Erklärungen, keine Kommentare, keine Wiederholung des Originals, keine Vor- oder Nachbemerkungen, keine Anführungszeichen.',
+            'Füge nichts hinzu und lasse nichts weg. Die Übersetzung entspricht dem Original inhaltlich und ungefähr in der Länge. Besteht die Eingabe nur aus einer Überschrift, einem Titel oder einem einzelnen Wort, übersetze genau das – nicht mehr.',
             'Lasse Platzhalter der Form {{ … }}, HTML-Tags und Variablen unverändert. Erhalte Zeilenumbrüche und Formatierung.',
         ];
 
