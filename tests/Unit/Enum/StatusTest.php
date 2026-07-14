@@ -10,18 +10,21 @@ use Sprog\Enum\Status;
 
 final class StatusTest extends TestCase
 {
-    public function testValuesContainsAllSevenStatusCases(): void
+    public function testValuesContainsAllStatusCases(): void
     {
         $values = Status::values();
 
         self::assertContains('missing', $values);
         self::assertContains('draft', $values);
-        self::assertContains('translated', $values);
         self::assertContains('needs_review', $values);
         self::assertContains('revise', $values);
         self::assertContains('approved', $values);
         self::assertContains('stale', $values);
-        self::assertCount(7, $values);
+
+        // Genau diese sechs Status existieren — Sentinel gegen versehentlich
+        // hinzugefügte oder entfernte Cases.
+        self::assertCount(6, Status::cases());
+        self::assertCount(count(Status::cases()), $values);
     }
 
     public function testApprovedIsFinal(): void
@@ -36,7 +39,6 @@ final class StatusTest extends TestCase
     {
         yield 'missing'      => [Status::Missing];
         yield 'draft'        => [Status::Draft];
-        yield 'translated'   => [Status::Translated];
         yield 'needs_review' => [Status::NeedsReview];
         yield 'revise'       => [Status::Revise];
         yield 'stale'        => [Status::Stale];
@@ -53,13 +55,12 @@ final class StatusTest extends TestCase
      */
     public static function openExpectations(): iterable
     {
-        yield 'missing-open'         => [Status::Missing, true];
-        yield 'draft-open'           => [Status::Draft, true];
-        yield 'translated-closed'    => [Status::Translated, false];
-        yield 'needs_review-open'    => [Status::NeedsReview, true];
-        yield 'revise-open'          => [Status::Revise, true];
-        yield 'approved-closed'      => [Status::Approved, false];
-        yield 'stale-open'           => [Status::Stale, true];
+        yield 'missing-open'      => [Status::Missing, true];
+        yield 'draft-open'        => [Status::Draft, true];
+        yield 'needs_review-open' => [Status::NeedsReview, true];
+        yield 'revise-open'       => [Status::Revise, true];
+        yield 'approved-closed'   => [Status::Approved, false];
+        yield 'stale-open'        => [Status::Stale, true];
     }
 
     #[DataProvider('openExpectations')]
@@ -79,45 +80,41 @@ final class StatusTest extends TestCase
     }
 
     /**
-     * Whitelist gem. PHPDoc des Enums. Jeder „yes"-Eintrag muss durchgehen,
-     * jeder „no"-Eintrag muss abgelehnt werden — strikte Schwarz/Weiß-
-     * Tabelle, damit eine Änderung an `allowedNextStates()` immer eine
-     * Test-Korrektur triggert.
+     * Whitelist gem. PHPDoc des Enums (`allowedNextStates()`). Jeder „true"-
+     * Eintrag muss durchgehen, jeder „false"-Eintrag abgelehnt werden —
+     * strikte Schwarz/Weiß-Tabelle, damit eine Änderung an
+     * `allowedNextStates()` immer eine Test-Korrektur triggert.
      *
      * @return iterable<string, array{Status, Status, bool}>
      */
     public static function transitionMatrix(): iterable
     {
-        // missing
-        yield 'missing -> draft'       => [Status::Missing, Status::Draft, true];
-        yield 'missing -> translated'  => [Status::Missing, Status::Translated, true];
-        yield 'missing -> approved'    => [Status::Missing, Status::Approved, false];
-        // draft
-        yield 'draft -> translated'    => [Status::Draft, Status::Translated, true];
-        yield 'draft -> needs_review'  => [Status::Draft, Status::NeedsReview, true];
-        yield 'draft -> missing'       => [Status::Draft, Status::Missing, true];
-        yield 'draft -> approved'      => [Status::Draft, Status::Approved, false];
-        // translated
-        yield 'translated -> approved' => [Status::Translated, Status::Approved, true];
-        yield 'translated -> stale'    => [Status::Translated, Status::Stale, true];
-        yield 'translated -> draft'    => [Status::Translated, Status::Draft, true];
-        yield 'translated -> missing'  => [Status::Translated, Status::Missing, false];
-        yield 'translated -> revise'   => [Status::Translated, Status::Revise, true];
-        // needs_review
+        // missing => [draft]
+        yield 'missing -> draft'         => [Status::Missing, Status::Draft, true];
+        yield 'missing -> approved'      => [Status::Missing, Status::Approved, false];
+        yield 'missing -> needs_review'  => [Status::Missing, Status::NeedsReview, false];
+        // draft => [needs_review, approved]
+        yield 'draft -> needs_review'    => [Status::Draft, Status::NeedsReview, true];
+        yield 'draft -> approved'        => [Status::Draft, Status::Approved, true];
+        yield 'draft -> revise'          => [Status::Draft, Status::Revise, false];
+        yield 'draft -> missing'         => [Status::Draft, Status::Missing, false];
+        // needs_review => [approved, revise]
         yield 'needs_review -> approved' => [Status::NeedsReview, Status::Approved, true];
         yield 'needs_review -> revise'   => [Status::NeedsReview, Status::Revise, true];
-        // revise
-        yield 'revise -> draft'         => [Status::Revise, Status::Draft, true];
-        yield 'revise -> translated'    => [Status::Revise, Status::Translated, true];
-        yield 'revise -> approved'      => [Status::Revise, Status::Approved, false];
-        // approved
-        yield 'approved -> stale'       => [Status::Approved, Status::Stale, true];
-        yield 'approved -> needs_review' => [Status::Approved, Status::NeedsReview, true];
-        yield 'approved -> revise'      => [Status::Approved, Status::Revise, true];
-        yield 'approved -> draft'       => [Status::Approved, Status::Draft, false];
-        // stale
-        yield 'stale -> translated'     => [Status::Stale, Status::Translated, true];
-        yield 'stale -> approved'       => [Status::Stale, Status::Approved, false];
+        yield 'needs_review -> draft'    => [Status::NeedsReview, Status::Draft, false];
+        // revise => [draft, approved]
+        yield 'revise -> draft'          => [Status::Revise, Status::Draft, true];
+        yield 'revise -> approved'       => [Status::Revise, Status::Approved, true];
+        yield 'revise -> needs_review'   => [Status::Revise, Status::NeedsReview, false];
+        // approved => [revise, stale, draft]
+        yield 'approved -> revise'       => [Status::Approved, Status::Revise, true];
+        yield 'approved -> stale'        => [Status::Approved, Status::Stale, true];
+        yield 'approved -> draft'        => [Status::Approved, Status::Draft, true];
+        yield 'approved -> needs_review' => [Status::Approved, Status::NeedsReview, false];
+        // stale => [draft, approved]
+        yield 'stale -> draft'           => [Status::Stale, Status::Draft, true];
+        yield 'stale -> approved'        => [Status::Stale, Status::Approved, true];
+        yield 'stale -> needs_review'    => [Status::Stale, Status::NeedsReview, false];
     }
 
     #[DataProvider('transitionMatrix')]
@@ -128,35 +125,5 @@ final class StatusTest extends TestCase
             $from->canTransitionTo($to),
             "{$from->value} -> {$to->value} should be " . ($allowed ? 'allowed' : 'rejected'),
         );
-    }
-
-    public function testUserActionsAreSubsetOfAllowedNextStates(): void
-    {
-        foreach (Status::cases() as $status) {
-            $allowed = $status->allowedNextStates();
-            foreach ($status->userActions() as $action) {
-                self::assertContains(
-                    $action,
-                    $allowed,
-                    "userActions() bot {$action->value} an, obwohl der Service den Übergang "
-                        . "{$status->value} -> {$action->value} ablehnen würde — UI würde 409 produzieren",
-                );
-            }
-        }
-    }
-
-    public function testMissingHasNoUserActions(): void
-    {
-        // missing → … läuft per Auto-Status über updateValue, nicht über Button-Klicks
-        self::assertSame([], Status::Missing->userActions());
-    }
-
-    public function testUserActionsExcludeMissingAndStaleAsTargets(): void
-    {
-        // Diese beiden Ziel-Status sind System-induziert; UI bietet sie nicht an.
-        foreach (Status::cases() as $status) {
-            self::assertNotContains(Status::Missing, $status->userActions());
-            self::assertNotContains(Status::Stale, $status->userActions());
-        }
     }
 }

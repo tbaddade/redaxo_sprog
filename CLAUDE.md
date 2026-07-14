@@ -215,7 +215,7 @@ The addon is German-first; UI labels, lang files (`lang/*.lang`), and code comme
 - `package.yml` — declares the page tree (`dashboard`, `inbox`, hidden `create`, `glossary`, `datenpflege` → copy/CSV/migration, `settings`, `help`), the hidden `sprog.langcompare` AJAX endpoint, the eight built-in filters under `filter:`, and config defaults (`wildcard_open_tag`/`wildcard_close_tag`, `chunk_size_articles`, `workflow_dev_self_approve`).
 
 ### Namespace and autoloading
-PSR-4-style: classes live under `lib/Sprog/` in the `Sprog\` namespace. REDAXO's class loader picks them up automatically — no `composer dump-autoload` step. Note `composer.json`'s `post-install-cmd` deliberately deletes `vendor/composer` and `vendor/autoload.php` after install so Composer's autoloader doesn't conflict with REDAXO's.
+PSR-4-style: classes live under `lib/Sprog/` in the `Sprog\` namespace. REDAXO's class loader picks them up automatically — no `composer dump-autoload` step. Only the production dependency (`symfony/serializer` + polyfills) and Composer's autoloader are committed under `vendor/` (see `.gitignore`); dev tooling (PHPUnit, PHPStan, PHP-CS-Fixer) comes from a local `composer install`.
 
 A legacy `class_alias('\Sprog\Wildcard', 'Wildcard')` lives in `boot.php` for back-compat with pre-1.3 code; do not rely on the global alias in new code.
 
@@ -269,9 +269,9 @@ Under the admin-only `datenpflege` node: **Copy** (`pages/copy.structure_content
 
 ## Running, testing, building
 
-This is a plain REDAXO addon — there is no build system, no lint config, and no test suite. To work on it you need a running REDAXO 5.11+ install with the addon symlinked or copied into `redaxo/src/addons/sprog/`.
+This is a REDAXO addon with a small PHPUnit unit-test suite but no asset build step. To work on it you need a running REDAXO 5.11+ install with the addon symlinked or copied into `redaxo/src/addons/sprog/`.
 
-- **Install vendor deps** (rarely needed; `vendor/` is committed and the post-install script removes Composer's autoloader): `composer install` from the addon directory.
+- **Dev tooling & tests**: `composer install` adds the dev deps (only prod deps are committed). Then `composer test` (PHPUnit, `tests/Unit/*`), `composer analyse` (PHPStan), `composer lint` / `composer fix` (PHP-CS-Fixer). The test bootstrap (`tests/bootstrap.php`) loads `vendor/autoload.php` plus a slim PSR-4 loader for `Sprog\` and runs without a REDAXO runtime — so only framework-free classes are covered.
 - **Apply install.php** (creates/updates DB tables): re-install the addon via the REDAXO backend (System → AddOns), or call its `install.php` through REDAXO's API.
 - **Assets**: registered in `Sprog\Boot\AssetRegistry` (not inline in `boot.php`), `?v=` cache-busted from the addon version. v2 styles are in `assets/css/sprog.v2.css`; JS is split into per-page bundles (`sprog.inbox.js`, `sprog.migration.js`, `sprog.copy.js`, `sprog.langcompare.js`) loaded only where needed. No JS/CSS build step — edit in place; REDAXO republishes addon assets on (re)install.
 

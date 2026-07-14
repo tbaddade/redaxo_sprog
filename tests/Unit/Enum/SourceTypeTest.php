@@ -16,13 +16,10 @@ final class SourceTypeTest extends TestCase
         self::assertContains('wildcard', $values);
         self::assertContains('abbreviation', $values);
         self::assertContains('foreignword', $values);
-        self::assertContains('article', $values);
-        self::assertContains('slice', $values);
-        self::assertContains('yform', $values);
-        self::assertContains('media', $values);
-        self::assertContains('custom', $values);
 
-        // Sentinel — fängt versehentlich entfernte oder umbenannte Cases ab.
+        // Genau diese drei Namespaces existieren — der Sentinel fängt sowohl
+        // versehentlich entfernte als auch neu hinzugefügte Cases ab.
+        self::assertCount(3, SourceType::cases());
         self::assertCount(count(SourceType::cases()), $values);
     }
 
