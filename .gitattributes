@@ -1,0 +1,20 @@
+# Vom Auslieferungs-Paket ausschließen.
+#
+# Wirkt beim `git archive`-Export (den redaxo.org bei einer GitHub-basierten
+# Version nutzt). Wird das Paket manuell gezippt, greift .gitattributes NICHT —
+# dann das Paket am besten via `git archive` bauen, z.B.:
+#   git archive --format=zip --prefix=sprog/ -o sprog.zip HEAD
+#
+# Laufzeit-relevantes (lib, pages, assets, lang, functions, boot/install/
+# update/uninstall.php, package.yml, vendor/ = Prod-Deps, README, CHANGELOG,
+# LICENSE, composer.json) bleibt bewusst im Paket.
+
+/.gitattributes      export-ignore
+/.gitignore          export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/phpstan.neon        export-ignore
+/phpunit.xml.dist    export-ignore
+/composer.lock       export-ignore
+/tests               export-ignore
+/docs                export-ignore
+/CLAUDE.md           export-ignore
