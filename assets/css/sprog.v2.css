@@ -1188,6 +1188,14 @@
     color: inherit;
 }
 
+/* Alle <details> im Sprog-Layer ohne unteren Abstand (Akkordeons/Dropdowns:
+   Units, Filter, Glossar-Anlegen, Legende …). Bewusst mit .sprog-ui statt
+   :where() — die Regel muss auch Komponenten-Margins (z. B. .sprog-legend)
+   überschreiben; Abstände kommen bei Bedarf über Container-gap. */
+.sprog-ui details {
+    margin-bottom: 0;
+}
+
 /* ── Seitenkopf ─────────────────────────────────────────────────────────── */
 .sprog-intro {
     display: grid;
