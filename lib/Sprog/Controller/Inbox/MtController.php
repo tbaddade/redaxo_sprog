@@ -16,6 +16,8 @@ use Sprog\Support\BaseLang;
 use Sprog\Support\ClangBase;
 use Throwable;
 
+use function in_array;
+
 /**
  * Endpoint POST ?func=mt — MT-Vorschlag für eine Sprache im Inbox-Akkordeon.
  *

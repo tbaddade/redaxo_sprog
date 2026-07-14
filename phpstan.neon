@@ -23,3 +23,12 @@ parameters:
     # Compat-Layer-Bridges legen wir absichtlich locker aus, weil sie
     # dynamisch v1-Klassen aliasen — die kennt PHPStan nicht.
     treatPhpDocTypesAsCertain: false
+
+    ignoreErrors:
+        # ai_platform ist eine WEICHE Abhängigkeit: der MT-Provider prüft zur
+        # Laufzeit via class_exists() und meldet sich nur als konfiguriert, wenn
+        # das AddOn installiert ist. Ohne ai_platform kann PHPStan die Klasse
+        # FriendsOfRedaxo\AiPlatform\Service nicht auflösen — gewollt, kein Fehler.
+        -
+            identifier: class.notFound
+            path: lib/Sprog/Mt/AiPlatformProvider.php

@@ -174,14 +174,7 @@ final class AiPlatformProvider implements ProviderInterface
         $allowed = (int) max($in * 2.5, $in + 80);
 
         if ($out > $allowed) {
-            throw new ProviderException(
-                sprintf(
-                    'Das KI-Ergebnis wurde verworfen: Die Übersetzung ist unplausibel lang (%d Zeichen aus %d Zeichen Eingabe). Das Modell hat vermutlich zusätzlichen Text erzeugt statt nur zu übersetzen. Bitte ein stärkeres Text-Modell verwenden oder auf DeepL wechseln.',
-                    $out,
-                    $in,
-                ),
-                $this->name(),
-            );
+            throw new ProviderException(sprintf('Das KI-Ergebnis wurde verworfen: Die Übersetzung ist unplausibel lang (%d Zeichen aus %d Zeichen Eingabe). Das Modell hat vermutlich zusätzlichen Text erzeugt statt nur zu übersetzen. Bitte ein stärkeres Text-Modell verwenden oder auf DeepL wechseln.', $out, $in), $this->name());
         }
     }
 

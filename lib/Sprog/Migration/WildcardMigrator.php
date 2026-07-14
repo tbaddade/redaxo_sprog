@@ -59,6 +59,9 @@ final class WildcardMigrator implements MigratorInterface
 {
     private const V1_TABLE = 'sprog_wildcard';
 
+    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
+    private ?bool $availableCache = null;
+
     public function __construct(
         private readonly UnitRepository $units = new UnitRepository(),
         private readonly TranslationRepository $translations = new TranslationRepository(),
@@ -68,9 +71,6 @@ final class WildcardMigrator implements MigratorInterface
     {
         return 'wildcard';
     }
-
-    /** Instanz-Lebenszeit-Cache, damit eine SHOW-TABLES-Query pro Request reicht. */
-    private ?bool $availableCache = null;
 
     public function isAvailable(): bool
     {

@@ -262,7 +262,7 @@ $pencilSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor
                             <input type="hidden" name="id" value="<?= rex_escape((string) $editEntry->id) ?>">
                         <?php endif ?>
 
-                        <?php // Quelle ist fix die Basissprache — keine Auswahl, nur Anzeige. ?>
+                        <?php // Quelle ist fix die Basissprache — keine Auswahl, nur Anzeige.?>
                         <label class="sprog-field">
                             <span class="sprog-field--label"><?= rex_i18n::msg('sprog_glossary_add_source_lang') ?></span>
                             <input type="text" class="sprog-control" readonly
@@ -277,13 +277,13 @@ $pencilSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor
                                    autocomplete="off" spellcheck="false">
                         </label>
 
-                        <?php // „Nicht übersetzen": Marken-/Produktname bleibt unverändert und gilt für alle Sprachen. ?>
+                        <?php // „Nicht übersetzen": Marken-/Produktname bleibt unverändert und gilt für alle Sprachen.?>
                         <label class="sprog-field sprog-field--wide sprog-glossary--verbatim">
                             <input type="checkbox" name="keep_verbatim" value="1" data-role="glossary-verbatim" <?= $formKeepVerbatim ? 'checked' : '' ?>>
                             <span><?= rex_i18n::msg('sprog_glossary_keep_verbatim') ?></span>
                         </label>
 
-                        <?php // Ziel-Block — bei „Nicht übersetzen" ausgeblendet. ?>
+                        <?php // Ziel-Block — bei „Nicht übersetzen" ausgeblendet.?>
                         <div class="sprog-glossary--target-block" data-role="glossary-target-block"<?= $formKeepVerbatim ? ' hidden' : '' ?>>
                             <label class="sprog-field">
                                 <span class="sprog-field--label"><?= rex_i18n::msg('sprog_glossary_add_target_lang') ?></span>

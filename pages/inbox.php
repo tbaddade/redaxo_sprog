@@ -7,14 +7,14 @@ use Sprog\Enum\SourceType;
 use Sprog\Enum\Status;
 use Sprog\Model\TranslationListFilter;
 use Sprog\Mt\AiPlatformProvider;
-use Sprog\Support\BaseLang;
-use Sprog\Support\ClangBase;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
 use Sprog\Service\MtService;
 use Sprog\Service\TranslationListService;
 use Sprog\Service\WildcardConflictService;
 use Sprog\Service\WorkflowService;
+use Sprog\Support\BaseLang;
+use Sprog\Support\ClangBase;
 use Sprog\Support\Labels;
 use Sprog\View\InboxRowActions;
 
@@ -232,10 +232,10 @@ $unitChevronSvg = '<svg width="14" height="14" viewBox="0 0 16 16" fill="current
 // (Tooltip trägt das volle Label). Dänisches æø signalisiert „Fremdwort".
 $sourceGlyph = static function (string $ns): string {
     return match ($ns) {
-        SourceType::Wildcard->value     => '{}',
+        SourceType::Wildcard->value => '{}',
         SourceType::Abbreviation->value => 'Ab',
-        SourceType::Foreignword->value  => 'æø',
-        default                         => rex_escape(mb_strtoupper(mb_substr($ns, 0, 2))),
+        SourceType::Foreignword->value => 'æø',
+        default => rex_escape(mb_strtoupper(mb_substr($ns, 0, 2))),
     };
 };
 
@@ -479,7 +479,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                     </a>
                 <?php endif ?>
 
-                <?php // Sprache (Anzeige-Sprache) — Single-Select, submittet sofort. ?>
+                <?php // Sprache (Anzeige-Sprache) — Single-Select, submittet sofort.?>
                 <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_language')) ?>">
                     <summary class="sprog-cell" tabindex="-1">
                         <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_language') ?></span>
@@ -500,7 +500,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                     </div>
                 </details>
 
-                <?php // Bereich (Namespace) — Single-Select, submittet sofort. ?>
+                <?php // Bereich (Namespace) — Single-Select, submittet sofort.?>
                 <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_namespace')) ?>">
                     <summary class="sprog-cell" tabindex="-1">
                         <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_namespace') ?></span>
@@ -521,7 +521,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                     </div>
                 </details>
 
-                <?php // Status — Multi-Select (Checkboxen + Anwenden). ?>
+                <?php // Status — Multi-Select (Checkboxen + Anwenden).?>
                 <details class="sprog-inbox--filter-dd" data-role="filter-dropdown" tabindex="0" aria-label="<?= rex_escape(rex_i18n::msg('sprog_inbox_filter_status_aria')) ?>">
                     <summary class="sprog-cell" tabindex="-1">
                         <span class="sprog-cell--label"><?= rex_i18n::msg('sprog_inbox_filter_status') ?></span>
@@ -787,7 +787,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
 
                                                 <?php // „Zurücksetzen" verwirft die aktuelle, noch nicht gespeicherte
                                                       // Änderung (Feld zurück auf den zuletzt gespeicherten Wert). Nur
-                                                      // sichtbar, wenn das Feld „dirty" ist (JS toggelt es). ?>
+                                                      // sichtbar, wenn das Feld „dirty" ist (JS toggelt es).?>
                                                 <button
                                                     type="button"
                                                     class="sprog-btn sprog-btn--sm sprog-inbox--reset"
@@ -798,7 +798,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                                                 </button>
 
                                                 <?php // „Verlauf" lädt die gespeicherten Versionen lazy nach und erlaubt
-                                                      // mehrstufiges Wiederherstellen. ?>
+                                                      // mehrstufiges Wiederherstellen.?>
                                                 <button
                                                     type="button"
                                                     class="sprog-btn sprog-btn--sm sprog-inbox--history-toggle"
@@ -825,7 +825,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                                         </div>
 
                                         <?php if ($canEdit) : ?>
-                                            <?php // Versionsliste — leer gerendert, wird vom JS beim Aufklappen befüllt. ?>
+                                            <?php // Versionsliste — leer gerendert, wird vom JS beim Aufklappen befüllt.?>
                                             <div class="sprog-inbox--history-panel" data-role="history-panel" hidden></div>
                                         <?php endif ?>
 
@@ -1108,7 +1108,7 @@ $batchEnabled = $mtEnabled && [] !== $batchTargets;
                     </div>
 
                     <p class="sprog-inbox--batch-summary" data-role="batch-summary" aria-live="polite" hidden></p>
-                    <?php // Liste der tatsächlich übersetzten (und fehlgeschlagenen) Platzhalter — vom JS befüllt. ?>
+                    <?php // Liste der tatsächlich übersetzten (und fehlgeschlagenen) Platzhalter — vom JS befüllt.?>
                     <ul class="sprog-inbox--batch-results" data-role="batch-results" hidden></ul>
                     <p class="sprog-inbox--unit-modal-error" data-role="batch-error" hidden></p>
                 </div>

@@ -68,9 +68,9 @@ $renderBar = static function (CoverageStat $stat, array $statusOrder, bool $larg
 $coverageBucket = static function (int $percent): string {
     return match (true) {
         $percent >= 100 => 'done',
-        $percent >= 80  => 'high',
-        $percent >= 34  => 'mid',
-        default         => 'low',
+        $percent >= 80 => 'high',
+        $percent >= 34 => 'mid',
+        default => 'low',
     };
 };
 
@@ -84,10 +84,10 @@ foreach ($languages as $ovClangId => $ovClang) {
     }
     $ovStat = $totals[$ovClangId] ?? null;
     $overviewRows[] = [
-        'clang'   => $ovClang,
-        'stat'    => $ovStat,
+        'clang' => $ovClang,
+        'stat' => $ovStat,
         'percent' => null !== $ovStat ? $ovStat->percent() : 100,
-        'open'    => null !== $ovStat ? ($ovStat->total() - $ovStat->done()) : 0,
+        'open' => null !== $ovStat ? ($ovStat->total() - $ovStat->done()) : 0,
     ];
 }
 usort($overviewRows, static fn (array $a, array $b): int => ($a['percent'] <=> $b['percent']) ?: ($b['open'] <=> $a['open']));

@@ -13,12 +13,13 @@ declare(strict_types=1);
 
 namespace Sprog\Service;
 
-use Exception;
 use rex;
 use rex_api_exception;
 use rex_article_cache;
 use rex_sql;
 use rex_sql_exception;
+use Sprog\Copy\StructureMetadata;
+use Sprog\Extension;
 
 use function count;
 use function in_array;
@@ -34,8 +35,8 @@ use function in_array;
  * - **Innerhalb einer Sprache**: Kategoriename (`catname` des Startartikels) und
  *   Startartikelname (`name`) folgen einander (`clang_id = :clang`).
  *
- * Aufgerufen aus den Struktur-Extension-Points (siehe {@see \Sprog\Extension})
- * und der Copy-Funktion ({@see \Sprog\Copy\StructureMetadata}).
+ * Aufgerufen aus den Struktur-Extension-Points (siehe {@see Extension})
+ * und der Copy-Funktion ({@see StructureMetadata}).
  */
 final class StructureSyncService
 {

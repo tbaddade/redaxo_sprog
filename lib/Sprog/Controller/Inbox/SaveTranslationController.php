@@ -19,6 +19,8 @@ use Sprog\Support\Labels;
 use Sprog\View\InboxRowActions;
 use Throwable;
 
+use function in_array;
+
 /**
  * Endpoint POST ?func=save — Auto-Save aus dem Inbox-Akkordeon.
  *

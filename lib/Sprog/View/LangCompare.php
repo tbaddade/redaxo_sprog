@@ -273,6 +273,7 @@ final class LangCompare
         ]);
         $path = rex_addon::get('metainfo')->getPath('pages/content.metainfo.php');
 
+        // @phpstan-ignore closure.unusedUse ($ep wird von der inkludierten content.metainfo.php im Scope erwartet)
         $render = static function () use ($ep, $path): string {
             $out = include $path;
 
@@ -360,7 +361,7 @@ final class LangCompare
         $editor->setClang($clang);
         $editor->setEval(true);
         $editor->setSliceRevision($revision);
-        $editor->setFunction($function);
+        $editor->setFunction('add' === $function ? 'add' : 'edit');
         $content = $editor->getArticle($ctype);
 
         $fragment = new rex_fragment();

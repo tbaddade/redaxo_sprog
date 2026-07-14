@@ -181,9 +181,9 @@ final class TranslationHistoryRepository
             valueHash: isset($row['value_hash']) && '' !== $row['value_hash'] ? (string) $row['value_hash'] : null,
             status: (string) $row['status'],
             mtProvider: isset($row['mt_provider']) && '' !== $row['mt_provider'] ? (string) $row['mt_provider'] : null,
-            mtConfidence: isset($row['mt_confidence']) && null !== $row['mt_confidence'] ? (float) $row['mt_confidence'] : null,
+            mtConfidence: isset($row['mt_confidence']) ? (float) $row['mt_confidence'] : null,
             origin: (string) ($row['origin'] ?? 'manual'),
-            userId: isset($row['user_id']) && null !== $row['user_id'] ? (int) $row['user_id'] : null,
+            userId: isset($row['user_id']) ? (int) $row['user_id'] : null,
             createdAt: new DateTimeImmutable((string) $row['created_at']),
         );
     }
