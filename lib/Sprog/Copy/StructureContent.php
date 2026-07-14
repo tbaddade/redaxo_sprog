@@ -11,8 +11,10 @@ use rex_article_content;
 use rex_clang;
 use rex_extension;
 use rex_extension_point;
+use rex_logger;
 use rex_sql;
 use rex_sql_util;
+use Throwable;
 
 use function count;
 
@@ -107,15 +109,25 @@ class StructureContent extends Copy
             foreach ($items as $item) {
                 self::copyContent($item[0], $item[0], $params['clangFrom'], $params['clangTo']);
 
-                // generate content
-                $article = new rex_article_content($item[0], $params['clangTo']);
-                $content = $article->getArticle();
+                // Cache der Zielsprache neu aufbauen — best effort. copyContent()
+                // hat den Content-Cache bereits invalidiert (deleteContent), das
+                // Rendern hier ist nur Warmup. Ein nicht renderbarer Artikel darf
+                // den Kopiervorgang NICHT abbrechen: z.B. wenn die Zielsprache
+                // nicht in yrewrite gemountet ist, wirft das Rendern „getUrl() on
+                // null". Die Slices sind zu diesem Zeitpunkt bereits kopiert.
+                try {
+                    // generate content
+                    $article = new rex_article_content($item[0], $params['clangTo']);
+                    $article->getArticle();
 
-                // generate meta
-                rex_article_cache::generateMeta($item[0], $params['clangTo']);
+                    // generate meta
+                    rex_article_cache::generateMeta($item[0], $params['clangTo']);
 
-                // generate lists
-                rex_article_cache::generateLists($item[0]);
+                    // generate lists
+                    rex_article_cache::generateLists($item[0]);
+                } catch (Throwable $e) {
+                    rex_logger::logException($e);
+                }
             }
         }
         return $items;
