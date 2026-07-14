@@ -1035,6 +1035,14 @@
  * Inbox/Dashboard tragen vorerst noch eigene Klassen und docken später an.
  */
 .sprog-ui {
+    /* WebAwesome native.css (falls in der Instanz geladen) setzt über den Token
+       --wa-content-spacing Abstände zwischen Block-Elementen. Im Sprog-Layer auf
+       0 neutralisieren — harmlos ohne WebAwesome (Token dann ungenutzt), verhindert
+       aber „durchscheinende" Abstände. Weiter reichende Appearance-Konflikte NICHT
+       via all:revert lösen: Sprog bettet native REDAXO-Widgets ein, die ihr
+       REDAXO-Styling behalten müssen. */
+    --wa-content-spacing: 0;
+
     --sprog-color-bg:            #ffffff;
     --sprog-color-surface:       #f3f5f8;
     --sprog-color-fg:            #1b2733;
