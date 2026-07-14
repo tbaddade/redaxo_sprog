@@ -90,7 +90,7 @@ sprog_copy_catpriority = Kategoriepriorität
 sprog_copy_status = Status
 sprog_copy_template_id = Template
 
-sprog_copy_structure_metadata = Metadaten kopieren/synchronisieren
+sprog_copy_structure_metadata = Metadaten kopieren
 sprog_copy_structure_metadata_articles = Artikel
 sprog_copy_structure_metadata_categories = Kategorien
 sprog_copy_structure_metadata_fields = Felder auswählen
