@@ -4,6 +4,17 @@ Sprog - Changelog
 
 ## Version 2.0.0 (in Entwicklung)
 
+### Neu
+
+- Automatische Datenmigration v1 → v2 bei Installation/Update: deployte
+  Instanzen migrieren ihre Bestandsdaten (Platzhalter, Abkürzungen,
+  Fremdwörter) selbst in das neue `sprog_unit`/`sprog_translation`-Modell.
+  Idempotent und flag-gesteuert (läuft nur einmal); bei Bedarf manuell über
+  „Datenpflege → Migration" wiederholbar.
+- Artikel-Sprachvergleich (experimentell) in der Content-Maske: Seite-an-Seite-
+  Vergleich des Artikelinhalts zweier Sprachen inkl. Inline-Bearbeitung,
+  Metadaten-Vergleich und MT-Übersetzung je Feld.
+
 ### Breaking Changes
 
 - `Sprog\Filter` (Abstract-Klasse) hat jetzt typisierte Signaturen:
@@ -11,6 +22,13 @@ Sprog - Changelog
   Drittaddon-Filter, die von `Sprog\Filter` erben, müssen ihre Methoden
   entsprechend typen, sonst greift PHPs LSP-Check und es gibt einen
   Fatal Error.
+- Die v1-Backend-Seiten für Platzhalter und Abkürzungen wurden entfernt; die
+  Pflege läuft jetzt über die Inbox. Die Rechte `sprog[wildcard]` und
+  `sprog[abbreviation]` entfallen.
+- **Abkürzungs-Status entfällt:** Der v1-Aktiv/Inaktiv-Status von Abkürzungen
+  (Spalte `status`) wird bei der Migration nach v2 nicht übernommen. Zuvor
+  **deaktivierte** Abkürzungen werden danach wieder im Frontend ausgegeben.
+  Betroffene Einträge nach der Migration bei Bedarf in der Inbox prüfen.
 
 ## Version 1.3.0 - 19.11.2021
 

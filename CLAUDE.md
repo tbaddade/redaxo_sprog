@@ -210,7 +210,7 @@ The addon is German-first; UI labels, lang files (`lang/*.lang`), and code comme
 ## Architecture
 
 ### Entry points
-- `boot.php` — runs on every request. Registers permissions (`sprog[abbreviation]`, `sprog[wildcard]`), loads helper functions, builds the filter registry, hooks REDAXO extension points, and dynamically builds clang sub-pages in `PAGES_PREPARED`. Frontend rewriting (wildcards, abbreviations, foreignwords) is wired here via three `OUTPUT_FILTER` registrations — none of them run in the backend.
+- `boot.php` — runs on every request. Registers permissions (`sprog[unit_edit]`, `sprog[translator]`, `sprog[reviewer]`), loads helper functions, builds the filter registry, hooks REDAXO extension points (incl. the article language-comparison via the `STRUCTURE_CONTENT_*` EPs), and persists `clang_base` in `PAGES_PREPARED` via `Sprog\Boot\PageTreeBuilder`. Frontend rewriting (wildcards, abbreviations, foreignwords) is wired here via three `OUTPUT_FILTER` registrations — none of them run in the backend. (The legacy `sprog[wildcard]`/`sprog[abbreviation]` perms and per-language wildcard/abbreviation backend pages were removed in v2; editing runs through the inbox.)
 - `install.php` — creates three tables: `rex_sprog_wildcard`, `rex_sprog_abbreviation`, `rex_sprog_foreignword`. Wildcard rows are scoped by `(clang_id, wildcard)`; the addon links them across languages via a shared `id` column (distinct from the `pid` primary key) so the same wildcard in different languages share an `id`.
 - `package.yml` — declares the page tree, registers the eight built-in filters under the `filter:` key, and seeds `wildcard_open_tag`/`wildcard_close_tag` config.
 
@@ -223,7 +223,7 @@ A legacy `class_alias('\Sprog\Wildcard', 'Wildcard')` lives in `boot.php` for ba
 1. Tags are configurable (`wildcard_open_tag`, `wildcard_close_tag`, default `{{ ` / ` }}`) and the regexp is built in `Wildcard::getRegexp()`. It captures `wildcard`, `filter`, and `arguments`.
 2. `Wildcard::parse()` resolves all matches in a string for one `clang_id` in a single SQL query; `Wildcard::get()` resolves one wildcard.
 3. **clang_base** (config key `clang_base`, an array `clang_id => clang_id`) lets one language reuse another language's replacements. Any lookup applies this remapping before hitting the DB — keep this in mind when adding new wildcard read paths.
-4. The wildcard backend page always renders `pages/wildcard.clang_all.php` (all languages in one form); the wildcard subpath is wired in `Sprog\Boot\PageTreeBuilder::buildWildcardSubpages()` on the `PAGES_PREPARED` hook. The former per-language "clang switch" layout (`wildcard_clang_switch` config + `pages/wildcard.clang_switch.php` + per-language subnav) has been removed.
+4. There is no longer a dedicated wildcard backend page — wildcard/abbreviation/foreignword editing runs through the inbox (v2 `sprog_unit`/`sprog_translation` model, distinguished by `namespace`). The frontend read path (`Wildcard::parse()` via `Sprog\Compat\Wildcard` → `WildcardLookupService`) is v2-first with a v1 fallback and is unchanged.
 
 ### Filters
 `Sprog\Filter` is an abstract base with `name()` and `fire($value, $arguments)`. Built-ins live in `lib/Sprog/Filter/*` and are listed under `filter:` in `package.yml`. Third-party code can register more via the `SPROG_FILTER` extension point; `boot.php` instantiates each and stores `name => instance` in `rex::setProperty('SPROG_FILTER', …)`.
@@ -258,6 +258,6 @@ This is a plain REDAXO addon — there is no build system, no lint config, and n
 ## Conventions
 
 - All user-facing strings go through `rex_i18n` keys defined in `lang/*.lang` (German is canonical in `de_de.lang`).
-- Permission checks: page-level perms live in `package.yml` (`sprog[]`, `sprog[abbreviation]`, `sprog[foreignword]`, `admin[]`). For per-language sub-pages, gate on `rex::getUser()->getComplexPerm('clang')->hasPerm($id)` as `boot.php` does.
+- Permission checks: page-level perms live in `package.yml` (`sprog[]`, `admin[]`). For per-language access (e.g. the article language-comparison endpoint), gate on `rex::getUser()->getComplexPerm('clang')->hasPerm($id)`.
 - Backend-only behavior (sub-page registration, asset loading) must stay inside the `if (rex::isBackend() && rex::getUser())` block in `boot.php`; the frontend `OUTPUT_FILTER` hooks live in the `if (!rex::isBackend())` block above it.
 - When adding extension-point handlers that observe metadata, register them `LATE` so MetaInfo writes finish first (mirrors the existing `ART_META_UPDATED` / `CAT_UPDATED` registrations).

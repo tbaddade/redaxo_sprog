@@ -43,22 +43,6 @@ sprog_settings_sync_structure_article_name_to_category_name = Category name depe
 
 sprog_settings_wildcard_note = Characters that wrap a placeholder in the text, e.g. {{ and }} for {{ my_snippet }}.
 
-
-
-sprog_wildcard = Placeholder
-sprog_wildcard_title = Placeholder title
-sprog_wildcard_add = Add placeholder
-sprog_wildcard_added = Placeholder has been added
-sprog_wildcard_caption = List of placeholders
-sprog_wildcard_caption_missing = List of not yet replaced placeholders within the {0}
-sprog_wildcard_deleted = Placeholder has been deleted
-sprog_wildcard_edit = Edit placeholder
-sprog_wildcard_edited = PLaceholder has been edited
-sprog_wildcard_error_no_wildcard = Please enter a placeholder name
-sprog_wildcard_go_to_the_article = To article
-sprog_wildcard_replace = Replacement
-sprog_wildcard_without_tag = Note placeholder without opening / closing tag
-
 sprog_search = Search
 
 sprog_artefact = Artifacts
@@ -190,6 +174,7 @@ sprog_migration_ajax_server_error = Unknown server error.
 sprog_migration_ajax_chunk_limit = Migration reached the internal chunk limit. Please reload the page and resume.
 sprog_migration_ajax_bad_response = Could not read response (HTTP {0}).
 sprog_migration_autorun_failed = Automatic data migration (v1 → v2) failed: {0}. Please complete the migration manually via “Data maintenance → Migration”.
+sprog_migration_autorun_incomplete = Automatic data migration (v1 → v2) did not complete. Please finish it via “Data maintenance → Migration”.
 
 sprog_dashboard_subpage = Overview
 sprog_dashboard_heading = Overview

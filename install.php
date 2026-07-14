@@ -44,8 +44,16 @@ V2Schema::ensure();
 if (!rex_config::get('sprog', 'migration_autorun_done', false)) {
     try {
         set_time_limit(0);
-        MigrationService::create()->migrateAll();
-        rex_config::set('sprog', 'migration_autorun_done', true);
+        $migrationState = MigrationService::create()->migrateAll();
+
+        if ($migrationState->isComplete()) {
+            // Nur bei vollständigem Durchlauf als erledigt markieren — sonst
+            // versucht es der nächste Deploy erneut, statt eine halbfertige
+            // Migration dauerhaft als "done" zu verbuchen.
+            rex_config::set('sprog', 'migration_autorun_done', true);
+        } else {
+            $this->setProperty('installmsg', rex_i18n::msg('sprog_migration_autorun_incomplete'));
+        }
     } catch (Throwable $migrationError) {
         rex_logger::logException($migrationError);
         $this->setProperty('installmsg', rex_i18n::msg('sprog_migration_autorun_failed', $migrationError->getMessage()));
