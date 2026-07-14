@@ -37,13 +37,12 @@ use const PHP_INT_MIN;
  *         source_type=abbreviation, source_ref=NULL, source_hash=NULL
  *
  *       - sprog_translation: eine Row pro v1-Row
- *         value=$text, status=translated (oder missing bei leerem $text),
- *         valueHash=sha256($value) bei nicht-leerem value, revision=0
+ *         value=$text, valueHash=sha256($value) bei nicht-leerem value, revision=0
  *
- * Das v1-status-Feld (tinyint: 0/1) ignorieren wir bewusst — v2 hat
- * dafür keinen passenden Status. Inhalt bleibt erhalten; falls der
- * Admin früher inaktive Einträge unterscheiden will, geht das post-
- * migration über eine Bulk-Tag-Aktion.
+ * Das v1-status-Feld (tinyint: 0/1) wird übernommen: aktiv (1) → approved
+ * (unter der approved-only-Frontend-Regel sichtbar), inaktiv (0) → draft
+ * (unsichtbar). Leerer Text → missing. So bleibt die v1-Aktiv/Inaktiv-Semantik
+ * über die Migration hinweg erhalten.
  *
  * Cursor läuft id-basiert (WHERE id > :last_id) über die MIN(id) pro
  * abbreviation-Gruppe — robust und resumable.
@@ -150,7 +149,7 @@ final class AbbreviationMigrator implements MigratorInterface
             }
 
             $rows = rex_sql::factory()->getArray(
-                'SELECT clang_id, text FROM ' . $v1Table . '
+                'SELECT clang_id, text, status FROM ' . $v1Table . '
                  WHERE abbreviation = :abbr
                  ORDER BY clang_id',
                 ['abbr' => $abbrName],
@@ -177,7 +176,14 @@ final class AbbreviationMigrator implements MigratorInterface
 
                 foreach ($rows as $row) {
                     $value = (string) ($row['text'] ?? '');
-                    $status = '' === $value ? Status::Missing : Status::NeedsReview;
+                    // v1-Status übernehmen: aktiv (1) war live → approved,
+                    // inaktiv (0) → draft (unter der approved-only-Regel nicht
+                    // sichtbar). Leerer Text → missing.
+                    if ('' === $value) {
+                        $status = Status::Missing;
+                    } else {
+                        $status = 1 === (int) ($row['status'] ?? 0) ? Status::Approved : Status::Draft;
+                    }
 
                     $this->translations->save(new Translation(
                         id: null,

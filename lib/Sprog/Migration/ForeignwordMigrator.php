@@ -45,7 +45,9 @@ use const PHP_INT_MIN;
  * (verschiedene lang-Werte pro Gruppe) gewinnt der erste nicht-leere Wert;
  * der Admin kann das post-migration korrigieren.
  *
- * Das v1-status-Feld ignorieren wir wie beim AbbreviationMigrator.
+ * Das v1-status-Feld wird wie beim AbbreviationMigrator übernommen: aktiv (1)
+ * → approved, inaktiv (0) → draft. Der Wert einer Foreignword-Translation ist
+ * das Wort selbst (nie leer), daher kein missing-Fall.
  */
 final class ForeignwordMigrator implements MigratorInterface
 {
@@ -144,7 +146,7 @@ final class ForeignwordMigrator implements MigratorInterface
             }
 
             $rows = rex_sql::factory()->getArray(
-                'SELECT clang_id, lang FROM ' . $v1Table . '
+                'SELECT clang_id, lang, status FROM ' . $v1Table . '
                  WHERE foreignword = :word
                  ORDER BY clang_id',
                 ['word' => $foreignWord],
@@ -189,7 +191,8 @@ final class ForeignwordMigrator implements MigratorInterface
                     // mit value=foreignword an, damit das v2-Modell konsistent
                     // bleibt (jede Unit hat ihre Translations pro clang).
                     $value = $foreignWord;
-                    $status = Status::NeedsReview;
+                    // v1-Status übernehmen: aktiv (1) → approved, inaktiv (0) → draft.
+                    $status = 1 === (int) ($row['status'] ?? 0) ? Status::Approved : Status::Draft;
 
                     $this->translations->save(new Translation(
                         id: null,

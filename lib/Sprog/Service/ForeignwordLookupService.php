@@ -79,11 +79,39 @@ final class ForeignwordLookupService implements TranslationCacheInvalidator
         }
 
         $map = $this->loadFromV2($clangId);
-        if ([] === $map) {
+        // v1-Fallback nur, wenn v2 für diese Sprache GAR KEINE Zeile hat (= noch
+        // nicht migriert). Gibt es v2-Zeilen, aber keine approved, rendert
+        // bewusst nichts — statt alte v1-Daten wieder hervorzuholen.
+        if ([] === $map && !$this->v2HasRowsForClang($clangId)) {
             $map = $this->loadFromV1($clangId);
         }
 
         return $this->cacheByClang[$clangId] = $map;
+    }
+
+    /**
+     * Existiert in v2 überhaupt eine Foreignword-Übersetzung (beliebiger
+     * Status) für diese Sprache? Unterscheidet "noch nicht migriert"
+     * (→ v1-Fallback) von "migriert, aber nichts approved" (→ nichts rendern).
+     */
+    private function v2HasRowsForClang(int $clangId): bool
+    {
+        try {
+            $rows = rex_sql::factory()->getArray(
+                'SELECT 1
+                 FROM ' . rex::getTable('sprog_unit') . ' u
+                 INNER JOIN ' . rex::getTable('sprog_translation') . ' t
+                    ON t.unit_id = u.id
+                 WHERE u.namespace = :ns
+                   AND t.clang_id = :clang
+                 LIMIT 1',
+                ['ns' => self::NAMESPACE_FOREIGNWORD, 'clang' => $clangId],
+            );
+        } catch (rex_sql_exception) {
+            return false;
+        }
+
+        return [] !== $rows;
     }
 
     /**
@@ -99,11 +127,11 @@ final class ForeignwordLookupService implements TranslationCacheInvalidator
                     ON t.unit_id = u.id
                  WHERE u.namespace = :ns
                    AND t.clang_id = :clang
-                   AND t.status <> :missing',
+                   AND t.status = :approved',
                 [
                     'ns' => self::NAMESPACE_FOREIGNWORD,
                     'clang' => $clangId,
-                    'missing' => Status::Missing->value,
+                    'approved' => Status::Approved->value,
                 ],
             );
         } catch (rex_sql_exception) {

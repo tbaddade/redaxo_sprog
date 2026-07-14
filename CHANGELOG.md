@@ -25,10 +25,14 @@ Sprog - Changelog
 - Die v1-Backend-Seiten für Platzhalter und Abkürzungen wurden entfernt; die
   Pflege läuft jetzt über die Inbox. Die Rechte `sprog[wildcard]` und
   `sprog[abbreviation]` entfallen.
-- **Abkürzungs-Status entfällt:** Der v1-Aktiv/Inaktiv-Status von Abkürzungen
-  (Spalte `status`) wird bei der Migration nach v2 nicht übernommen. Zuvor
-  **deaktivierte** Abkürzungen werden danach wieder im Frontend ausgegeben.
-  Betroffene Einträge nach der Migration bei Bedarf in der Inbox prüfen.
+- **Frontend rendert nur freigegebene Übersetzungen:** Wildcards, Abkürzungen
+  und Fremdwörter erscheinen im Frontend nur noch mit Status `approved`.
+  Entwürfe und zur Prüfung eingereichte Übersetzungen sind nicht öffentlich
+  sichtbar. Damit bisher live geschaltete Inhalte nach dem Deploy sichtbar
+  bleiben, übernimmt die v1→v2-Migration Bestandsdaten als `approved`
+  (Wildcards) bzw. spiegelt das v1-Aktiv/Inaktiv-Flag (Abkürzung/Fremdwort:
+  aktiv → approved, inaktiv → draft). Der Review-Workflow greift damit nur für
+  neue und MT-Übersetzungen.
 
 ## Version 1.3.0 - 19.11.2021
 

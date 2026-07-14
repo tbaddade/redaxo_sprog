@@ -165,15 +165,43 @@ final class WildcardLookupService implements TranslationCacheInvalidator
         }
 
         $maps = $this->loadFromV2($effective);
-        if ([] === $maps['exact'] && [] === $maps['ctx']) {
-            // v2 hat nichts gefunden (Tabellen fehlen oder leer) → v1-Fallback.
-            // v1 kennt keinen Context, alles wandert in die exact-Map.
+        if ([] === $maps['exact'] && [] === $maps['ctx'] && !$this->v2HasRowsForClang($effective)) {
+            // v1-Fallback nur, wenn v2 für diese Sprache GAR KEINE Wildcard-Zeile
+            // hat (Tabellen fehlen oder noch nicht migriert). Gibt es v2-Zeilen,
+            // aber keine approved, rendert bewusst nichts — statt alte v1-Daten
+            // wieder hervorzuholen. v1 kennt keinen Context → alles in die exact-Map.
             $maps = ['exact' => $this->loadFromV1($effective), 'ctx' => []];
         }
 
         $this->cacheByClang[$effective] = $maps;
 
         return $maps;
+    }
+
+    /**
+     * Existiert in v2 überhaupt eine Wildcard-Übersetzung (beliebiger Status)
+     * für diese Sprache? Unterscheidet "noch nicht migriert" (→ v1-Fallback)
+     * von "migriert, aber nichts approved" (→ nichts rendern).
+     */
+    private function v2HasRowsForClang(int $clangId): bool
+    {
+        try {
+            $rows = rex_sql::factory()->getArray(
+                'SELECT 1
+                 FROM ' . rex::getTable('sprog_unit') . ' u
+                 INNER JOIN ' . rex::getTable('sprog_translation') . ' t
+                    ON t.unit_id = u.id
+                 WHERE u.namespace = :ns
+                   AND t.clang_id = :clang
+                 LIMIT 1',
+                ['ns' => self::NAMESPACE_WILDCARD, 'clang' => $clangId],
+            );
+        } catch (rex_sql_exception) {
+            // v2-Tabellen fehlen → definitiv nicht migriert → Fallback erlauben.
+            return false;
+        }
+
+        return [] !== $rows;
     }
 
     /**
@@ -189,12 +217,12 @@ final class WildcardLookupService implements TranslationCacheInvalidator
                     ON t.unit_id = u.id
                  WHERE u.namespace = :ns
                    AND t.clang_id = :clang
-                   AND t.status <> :missing
+                   AND t.status = :approved
                    AND t.value <> \'\'',
                 [
                     'ns' => self::NAMESPACE_WILDCARD,
                     'clang' => $clangId,
-                    'missing' => Status::Missing->value,
+                    'approved' => Status::Approved->value,
                 ],
             );
         } catch (rex_sql_exception) {
