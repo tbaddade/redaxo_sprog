@@ -1204,6 +1204,21 @@
     margin-bottom: 0;
 }
 
+/* WebAwesome native.css (falls geladen) stylt native <details> in @layer
+   wa-native mit padding/background/border/border-radius (auch im open-Zustand).
+   Da Sprogs CSS ungelayert ist, genügt eine ungelayerte Regel, um den Layer zu
+   schlagen — Spezifität egal. Bewusst :where() (0 Spezifität): Sprogs eigene
+   <details>-Klassen (z. B. .sprog-legend mit eigenem Border/Background) gewinnen
+   weiterhin, nur die von Sprog UNgestylten <details> (Units, Filter …) werden
+   auf ihren neutralen Zustand zurückgesetzt. Ohne WebAwesome ein No-Op (= UA-
+   Defaults). */
+:where(.sprog-ui) details {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
 /* ── Seitenkopf ─────────────────────────────────────────────────────────── */
 .sprog-intro {
     display: grid;
