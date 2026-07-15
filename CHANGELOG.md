@@ -14,6 +14,9 @@ Sprog - Changelog
 - Artikel-Sprachvergleich (experimentell) in der Content-Maske: Seite-an-Seite-
   Vergleich des Artikelinhalts zweier Sprachen inkl. Inline-Bearbeitung,
   Metadaten-Vergleich und MT-Übersetzung je Feld.
+- Sprachvergleich: Batch-Kopie „Alles aus ‹Sprache› kopieren" — erscheint in
+  einer leeren Sprachspalte und befüllt sie in einem Schritt aus der
+  Gegenspalte (nur bei leerer Zielsprache, verhindert Dubletten).
 
 ### Breaking Changes
 
@@ -36,6 +39,16 @@ Sprog - Changelog
 
 ### Behoben
 
+- Artikel-Sprachvergleich: Nach einem nativen ctype-/Editiermodus-Wechsel (PJAX)
+  blieb bei aktivem Vergleich die Content-Maske leer — die native Slice-Liste war
+  ausgeblendet, das Panel wurde aber nicht neu geladen. Der Vergleich
+  initialisiert sich jetzt nach jeder PJAX-Navigation neu und zieht Artikel/ctype
+  aus der URL nach.
+- Artikel-Sprachvergleich: Die Erfolgsmeldung nach dem Metadaten-Speichern
+  erscheint jetzt über der gespeicherten Spalte statt unterhalb der Panels.
+- WebAwesome-Kompatibilität: Ist `native.css` geladen, ragte das geöffnete
+  `<summary>` per negativem `margin-inline` über die Ränder hinaus. Im
+  Sprog-Layer neutralisiert.
 - Artikel-Sprachvergleich: Je nach REDAXO-Version waren beim Start des Vergleichs
   **alle Aktionen gesperrt bzw. Kopier-Button und Slice-Aktionen lösten nichts
   aus** — weil die native Slice-Liste im Ruhezustand ein Formular enthalten kann
