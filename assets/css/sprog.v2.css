@@ -553,7 +553,6 @@
 
 .sprog-status--missing      { --sprog-status-color: var(--sprog-status-missing,      #94a3b8); }
 .sprog-status--draft        { --sprog-status-color: var(--sprog-status-draft,        #f59e0b); }
-.sprog-status--translated   { --sprog-status-color: var(--sprog-status-translated,   #3b82f6); }
 .sprog-status--needs_review { --sprog-status-color: var(--sprog-status-needs_review, #d97706); }
 .sprog-status--revise       { --sprog-status-color: var(--sprog-status-revise,       #a855f7); }
 .sprog-status--approved     { --sprog-status-color: var(--sprog-status-approved,     #10b981); }
@@ -1219,6 +1218,17 @@
     background: transparent;
 }
 
+/* Ergänzung: WebAwesome zieht im offenen Zustand das <summary> per negativem
+   margin-inline (= -1 * dem details-Padding) über die Ränder, damit es bündig
+   zum gepaddeten <details> steht. Da wir das details-Padding auf 0 setzen, steht
+   das Summary sonst links/rechts über. Marge (und die von WebAwesome gekappten
+   unteren Radien) auf den neutralen UA-Zustand zurücksetzen. :where() = 0
+   Spezifität → Sprogs eigene Summary-Klassen gewinnen weiterhin. */
+:where(.sprog-ui) details summary {
+    margin: 0;
+    border-radius: 0;
+}
+
 /* ── Seitenkopf ─────────────────────────────────────────────────────────── */
 .sprog-intro {
     display: grid;
@@ -1797,7 +1807,6 @@
 }
 
 .sprog-hint--warning { color: var(--sprog-status-stale); }
-.sprog-hint--ok      { color: var(--sprog-status-approved); }
 .sprog-hint--italic  { font-style: italic; }
 
 .sprog-hint code {
@@ -1914,11 +1923,6 @@
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-}
-
-.sprog-glossary--pair-arrow {
-    color: var(--sprog-color-muted);
-    font-size: var(--sprog-text-xs);
 }
 
 /* ── Liste: ein zusammenhängender Container, bündige Zeilen (wie Inbox) ──── */
@@ -2391,12 +2395,6 @@
 }
 .sprog-inbox--filter-opt:has(input:checked)::before {
     opacity: 1;
-}
-
-/* Apply = geteiltes .sprog-btn.sprog-btn--primary, volle Popup-Breite. */
-.sprog-inbox--filter-apply {
-    width: 100%;
-    margin-top: 0.48rem;
 }
 
 /*
@@ -3573,44 +3571,6 @@ body[id^="rex-page-sprog"] .nav.rex-page-nav {
  * assets/js/sprog.langcompare.js). Nutzt die geteilten .sprog-ui-Tokens.
  * ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Toolbar (STRUCTURE_CONTENT_HEADER): Schalter + Vergleichssprache. Flex statt
-   des .sprog-ui-Grids. */
-.sprog-langcompare-bar {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--sprog-space-4);
-    padding: var(--sprog-space-2) var(--sprog-space-3);
-    margin-bottom: var(--sprog-space-3);
-    background: var(--sprog-color-surface);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius-sm);
-    font-size: var(--sprog-text-sm);
-}
-
-.sprog-langcompare-bar--toggle,
-.sprog-langcompare-bar--langselect {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--sprog-space-2);
-    cursor: pointer;
-}
-
-.sprog-langcompare-bar--toggle input {
-    width: 1.6rem;
-    height: 1.6rem;
-    cursor: pointer;
-}
-
-.sprog-langcompare-bar--langselect[hidden] {
-    display: none;
-}
-
-.sprog-langcompare-bar--langselect .sprog-control {
-    width: auto;
-    min-width: 16rem;
-}
-
 /* Bei aktivem Vergleich die native Original-Slice-Liste ausblenden — aber nur
    die direkte der Content-Maske, NICHT die nativen Listen in den Panel-Spalten
    (die liegen tiefer verschachtelt). Der ctype-Wechsel-Nav bleibt sichtbar. */
@@ -3625,8 +3585,9 @@ body.sprog-lc-on #rex-js-page-main-content > ul.rex-slices {
 .sprog-langcompare-switch {
     float: right;
     margin: 0 0 0 0.8rem;
-    /* bündig zum nativen .rex-language (das padding-top:2px hat) */
-    padding-top: 2px;
+}
+.sprog-langcompare-switch + .dropdown.rex-language {
+    padding-top: 0;
 }
 
 /* Modus-Footer als Segment-Umschalter (Inhalt / Metadaten) */
@@ -3682,6 +3643,7 @@ body.sprog-lc-on #rex-js-page-main-content > ul.rex-slices {
 .sprog-langcompare.sprog-lc-locked .rex-online,
 .sprog-langcompare.sprog-lc-locked .rex-offline,
 .sprog-langcompare.sprog-lc-locked .sprog-lc-copy,
+.sprog-langcompare.sprog-lc-locked .sprog-lc-batch,
 .sprog-langcompare.sprog-lc-locked .sprog-lc-meta-edit {
     pointer-events: none;
     opacity: 0.4;
@@ -3741,36 +3703,6 @@ body.sprog-lc-on #rex-js-page-main-content > ul.rex-slices {
     margin: 0;
 }
 
-/* Metadaten-Vergleich (read-only): Label|Wert-Raster je Sprachspalte. */
-.sprog-langcompare--meta {
-    display: grid;
-    grid-template-columns: minmax(10rem, max-content) minmax(0, 1fr);
-    gap: var(--sprog-space-2) var(--sprog-space-3);
-    margin: 0;
-    padding: var(--sprog-space-3);
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius-sm);
-}
-
-.sprog-langcompare--meta-label {
-    margin: 0;
-    font-size: var(--sprog-text-xs);
-    font-weight: 600;
-    color: var(--sprog-color-muted);
-}
-
-.sprog-langcompare--meta-value {
-    margin: 0;
-    min-width: 0;
-    font-size: var(--sprog-text-sm);
-    overflow-wrap: anywhere;
-}
-
-.sprog-langcompare--meta-empty {
-    color: var(--sprog-color-muted);
-}
-
 /* MT-Buttons wie in der Inbox (sprog-btn sprog-btn--sm, Label = Provider-Name).
    Pro Textfeld eine Button-Reihe darunter, „Alle übersetzen" im Spaltenkopf. */
 .sprog-lc-mt-wrap {
@@ -3826,93 +3758,16 @@ body.sprog-lc-on #rex-js-page-main-content > ul.rex-slices {
     color: var(--sprog-color-fg);
 }
 
-.sprog-langcompare--empty {
-    padding: var(--sprog-space-3) 0;
-    color: var(--sprog-color-muted);
-    font-style: italic;
-}
-
-.sprog-langcompare--slices {
+/* Batch-Kopie: „Alles aus <Sprache> kopieren" in einer leeren Ziel-Spalte
+   (JS-injiziert, s. injectBatchButton in sprog.langcompare.js). */
+.sprog-langcompare--batch {
     display: flex;
-    flex-direction: column;
-    gap: var(--sprog-space-3);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.sprog-langcompare--card {
-    display: flex;
-    flex-direction: column;
-    gap: var(--sprog-space-2);
-    min-width: 0;
+    align-items: flex-start;
     padding: var(--sprog-space-3);
-    background: var(--sprog-color-surface);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius-sm);
-}
-
-.sprog-langcompare--card.is-offline {
-    opacity: 0.6;
-}
-
-.sprog-langcompare--card-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--sprog-space-2);
-}
-
-.sprog-langcompare--card-meta {
-    color: var(--sprog-color-muted);
-    font-size: var(--sprog-text-2xs);
-    font-variant-numeric: tabular-nums;
-}
-
-.sprog-langcompare--card-body {
-    min-width: 0;
-    /* Modul-Output kann sehr lang/breit sein → gedeckelt + scrollbar, damit die
-       Vergleichsspalten handhabbar bleiben. */
-    max-height: 40rem;
-    overflow: auto;
-    padding: var(--sprog-space-2);
-    background: var(--sprog-color-bg);
-    border: 1px solid var(--sprog-color-border);
-    border-radius: var(--sprog-radius-sm);
-    font-size: var(--sprog-text-xs);
-}
-
-.sprog-langcompare--card-body img {
-    max-width: 100%;
-    height: auto;
-}
-
-.sprog-langcompare--render-error {
-    color: var(--sprog-color-danger);
-    font-size: var(--sprog-text-xs);
-}
-
-/* Positionsauswahl (JS-erzeugt) — inline unter der Quell-Karte. */
-.sprog-langcompare--picker {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--sprog-space-2);
-    margin-top: var(--sprog-space-2);
-    padding: var(--sprog-space-2);
+    margin-bottom: var(--sprog-space-3);
     background: var(--sprog-color-bg);
     border: 1px dashed var(--sprog-color-accent);
     border-radius: var(--sprog-radius-sm);
-}
-
-.sprog-langcompare--picker-title {
-    color: var(--sprog-color-muted);
-    font-size: var(--sprog-text-2xs);
-}
-
-.sprog-langcompare--picker-select {
-    width: auto;
-    min-width: 12rem;
 }
 
 

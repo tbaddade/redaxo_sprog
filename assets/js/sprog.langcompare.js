@@ -168,6 +168,53 @@
         });
     }
 
+    // „Alles aus <Sprache> kopieren" in eine LEERE Spalte einhängen, wenn die
+    // Gegenspalte Inhalt hat. Kopiert die ganze (leere) Zielsprache aus der Quelle
+    // (func=batch_copy). Richtung wird aus „welche Spalte ist leer" abgeleitet —
+    // der Endpoint verlangt eine leere Zielsprache (verhindert Dubletten).
+    function injectBatchButton() {
+        var host = panelHost();
+        var c = cfg();
+        if (!host || !c) {
+            return;
+        }
+        var cols = host.querySelectorAll('.sprog-langcompare--col');
+        if (cols.length < 2) {
+            return;
+        }
+        var info = Array.prototype.map.call(cols, function (col) {
+            var nameEl = col.querySelector('.sprog-langcompare--col-name');
+            return {
+                col: col,
+                clang: col.getAttribute('data-clang'),
+                name: nameEl ? nameEl.textContent.trim() : '',
+                count: col.querySelectorAll('.rex-slice-output').length,
+            };
+        });
+        info.forEach(function (target, i) {
+            var source = info[i === 0 ? 1 : 0];
+            // nur wenn Ziel leer UND Quelle Inhalt hat; nicht doppelt injizieren
+            if (0 !== target.count || 0 === source.count || target.col.querySelector('.sprog-lc-batch')) {
+                return;
+            }
+            var wrap = document.createElement('div');
+            wrap.className = 'sprog-langcompare--batch';
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'sprog-btn sprog-btn--primary sprog-btn--sm sprog-lc-batch';
+            btn.textContent = c.strings.batch.replace('{0}', source.name);
+            btn.setAttribute('data-from', source.clang);
+            btn.setAttribute('data-to', target.clang);
+            wrap.appendChild(btn);
+            var head = target.col.querySelector('.sprog-langcompare--col-head');
+            if (head) {
+                head.insertAdjacentElement('afterend', wrap);
+            } else {
+                target.col.insertBefore(wrap, target.col.firstChild);
+            }
+        });
+    }
+
     async function loadPanel(langB) {
         var c = cfg();
         var host = panelHost();
@@ -193,6 +240,7 @@
             });
             host.innerHTML = await response.text();
             injectCopyButtons();
+            injectBatchButton();
             rexReady(host);
             updateLockState();
         } catch (e) {
@@ -358,6 +406,26 @@
         }
     }
 
+    // Ganze (leere) Zielsprache aus der Quelle befüllen (func=batch_copy).
+    async function doBatch(btn) {
+        if (!window.confirm(cfg().strings.batchConfirm)) {
+            return;
+        }
+        btn.disabled = true;
+        try {
+            await post('batch_copy', {
+                article_id: cfg().article,
+                clang_a: btn.getAttribute('data-from'),
+                clang_b: btn.getAttribute('data-to'),
+                revision: cfg().revision,
+            });
+            await loadPanel(currentLangB());
+        } catch (e) {
+            btn.disabled = false;
+            window.alert(e.message);
+        }
+    }
+
     // Formular-Controls einer Spalte (de)aktivieren; im Vergleich sind beide
     // Spalten read-only, damit keine Widgets initialisiert werden (Kollision).
     function disableColumnControls(col, on) {
@@ -458,24 +526,26 @@
         }
     }
 
-    // Erfolgsmeldung nach dem Metadaten-Speichern oben in der Spalte zeigen.
+    // Erfolgsmeldung nach dem Metadaten-Speichern oben in der gespeicherten Spalte
+    // zeigen: direkt unter den Spaltenkopf, also ÜBER den Metadaten-Feldern (nicht
+    // unter der ganzen Spalte). Die Metadaten-Spalte trägt .sprog-langcompare--metacol.
     function showMetaNote(clang, msg) {
         if (!msg) {
             return;
         }
         var host = panelHost();
-        var col = host && host.querySelector('.sprog-langcompare--col[data-clang="' + clang + '"]');
+        var col = host && host.querySelector('.sprog-langcompare--metacol[data-clang="' + clang + '"]');
         if (!col) {
             return;
         }
         var note = document.createElement('div');
         note.className = 'alert alert-success sprog-lc-savenote';
         note.textContent = msg;
-        var dl = col.querySelector('.sprog-langcompare--meta');
-        if (dl) {
-            col.insertBefore(note, dl);
+        var head = col.querySelector('.sprog-langcompare--col-head');
+        if (head) {
+            head.insertAdjacentElement('afterend', note);
         } else {
-            col.appendChild(note);
+            col.insertBefore(note, col.firstChild);
         }
     }
 
@@ -525,14 +595,67 @@
     // (Reihenfolge: „Sprache …" links, „Vergleich …" rechts). Fällt zurück auf
     // die EP-Position, falls .rex-language fehlt.
     function relocateSwitch() {
-        var sw = el('sprog-langcompare-switch');
         // REDAXO rendert die Sprachauswahl bei >= 4 clangs als Dropdown
         // (.rex-language), bei 2-3 clangs als Button-Gruppe (.rex-nav-language).
         // Beide werden float:right ausgegeben; wir setzen den Switch direkt davor,
         // damit er (ebenfalls float:right) rechts daneben in derselben Zeile sitzt.
         var lang = document.querySelector('.rex-language, .rex-nav-language');
+        // Der Switch wird beim ersten Aufbau AUS dem PJAX-Container (#rex-js-page-
+        // main-content) neben die Sprachauswahl (in #rex-js-page-main) verschoben.
+        // Nach einer PJAX-Navigation liefert der Server einen frischen Switch INNEN
+        // → kurzzeitig zwei mit gleicher ID. Duplikate entfernen: den bereits neben
+        // der Sprachauswahl platzierten behalten, sonst den ersten.
+        var switches = document.querySelectorAll('#sprog-langcompare-switch');
+        if (switches.length > 1) {
+            var keep = null;
+            var i;
+            for (i = 0; i < switches.length; i++) {
+                if (lang && switches[i].nextElementSibling === lang) {
+                    keep = switches[i];
+                    break;
+                }
+            }
+            if (!keep) {
+                keep = switches[0];
+            }
+            for (i = 0; i < switches.length; i++) {
+                if (switches[i] !== keep && switches[i].parentNode) {
+                    switches[i].parentNode.removeChild(switches[i]);
+                }
+            }
+        }
+        var sw = el('sprog-langcompare-switch');
         if (sw && lang && sw.nextElementSibling !== lang) {
             lang.parentNode.insertBefore(sw, lang);
+        }
+    }
+
+    // Nach einer PJAX-Navigation läuft das genonc'te Inline-<script>, das
+    // window.sprogLangCompare (article/clang/ctype) neu setzt, NICHT erneut → die
+    // Config ist veraltet. Die veränderlichen Werte aus der aktuellen URL nachziehen,
+    // damit das Panel den richtigen Artikel/ctype lädt. csrf/endpoint/strings/
+    // mtProviders bleiben pro Session stabil und werden bewusst nicht angefasst.
+    function refreshConfigFromUrl() {
+        var c = cfg();
+        if (!c) {
+            return;
+        }
+        try {
+            var p = new URLSearchParams(window.location.search);
+            var article = parseInt(p.get('article_id'), 10);
+            var clang = parseInt(p.get('clang'), 10);
+            var ctype = parseInt(p.get('ctype'), 10);
+            if (article) {
+                c.article = article;
+            }
+            if (clang) {
+                c.clangA = clang;
+            }
+            if (ctype) {
+                c.ctype = ctype;
+            }
+        } catch (e) {
+            /* URLSearchParams nicht verfügbar → Config unverändert */
         }
     }
 
@@ -737,8 +860,13 @@
     // Zustand nach jedem Content-Render wiederherstellen (Erstladen + PJAX).
     function boot() {
         if (!cfg() || !el('sprog-langcompare-switch')) {
+            // Keine Content-Maske (z.B. via PJAX weg­navigiert) → evtl. gesetzte
+            // Vergleichs-Klassen von Body/Layout entfernen, damit sie nicht auf
+            // Fremdseiten haften (sonst bliebe die native Slice-Liste ausgeblendet).
+            deactivate();
             return;
         }
+        refreshConfigFromUrl();
         relocateSwitch();
         apply();
     }
@@ -747,6 +875,19 @@
 
     if (!window.__sprogLangCompareBound) {
         window.__sprogLangCompareBound = true;
+
+        // Nach einer nativen PJAX-Navigation (ctype-Wechsel, „Editiermodus" und
+        // andere Content-Links AUSSERHALB des Panels) läuft der genonc'te Inline-
+        // Bootstrap NICHT erneut. Ohne Re-Init bliebe der Vergleich inaktiv, während
+        // body.sprog-lc-on die native Slice-Liste weiter ausblendet → leere Maske.
+        // Deshalb hier neu booten. Bewusst pjax:end statt rex:ready: unser rexReady()
+        // feuert selbst rex:ready (würde eine Endlosschleife boot→loadPanel→rexReady
+        // →boot auslösen); pjax:end feuert ausschließlich bei echter PJAX-Navigation.
+        if (window.jQuery) {
+            window.jQuery(document).on('pjax:end', function () {
+                boot();
+            });
+        }
 
         document.addEventListener('click', function (e) {
             if (!e.target.closest) {
@@ -808,6 +949,17 @@
                     return;
                 }
                 doCopy(copyBtn);
+                return;
+            }
+
+            // „Alles aus <Sprache> kopieren" (leere Zielsprache befüllen)
+            var batchBtn = e.target.closest('.sprog-lc-batch');
+            if (batchBtn && host.contains(batchBtn)) {
+                e.preventDefault();
+                if (openForm && !openForm.contains(batchBtn)) {
+                    return;
+                }
+                doBatch(batchBtn);
                 return;
             }
 

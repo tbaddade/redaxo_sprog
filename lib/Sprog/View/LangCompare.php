@@ -105,6 +105,8 @@ final class LangCompare
                 'switchOn' => rex_i18n::rawMsg('sprog_langcompare_switch_on'),
                 'mtAll' => rex_i18n::rawMsg('sprog_langcompare_mt_all'),
                 'mtTitle' => rex_i18n::rawMsg('sprog_langcompare_mt_title'),
+                'batch' => rex_i18n::rawMsg('sprog_langcompare_batch'),
+                'batchConfirm' => rex_i18n::rawMsg('sprog_langcompare_batch_confirm'),
             ],
         ];
 
