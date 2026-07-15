@@ -4,10 +4,8 @@ sprog_title = Sprog
 sprog_function = Function
 sprog_function_add = add
 sprog_function_edit = edit
-sprog_no_results = No results
 
 sprog_settings = Settings
-sprog_settings_title = Configuration title
 sprog_settings_clang_base = Source language
 sprog_settings_base_clang = Base language
 sprog_settings_base_clang_auto = Automatic
@@ -32,7 +30,6 @@ sprog_settings_sync_within_lang_note = Aligns category and start article name wi
 sprog_settings_sync_metainfo = Meta Info
 sprog_settings_sync_metainfo_art = Article
 sprog_settings_sync_metainfo_cat = Categories
-sprog_settings_sync_metainfo_med = Media
 sprog_settings_sync_metainfo_not_found = No metainfo found
 
 sprog_settings_sync_structure_status = Status (online/offline)
@@ -68,7 +65,6 @@ sprog_export_namespace = Namespace
 sprog_export_all = All
 sprog_export_button = Export
 
-sprog_cleanup = Clean up
 
 
 sprog_copy_content = Copy contents
@@ -96,9 +92,6 @@ sprog_copy_structure_metadata_structure = Structure
 
 
 sprog_copy_button_start = Start copying
-sprog_copy_button_success = Coo, thanks!
-sprog_copy_button_cancel = Cancel
-sprog_copy_button_again = Try again
 
 sprog_copy_content_lead = Copies article content (slices) from one language to another. Optionally only from a starting article and/or clearing the target language first.
 sprog_copy_metadata_lead = Applies selected structure and meta info fields from one language to another (overwriting).
@@ -112,25 +105,9 @@ sprog_copy_ajax_server_error = Server error while copying.
 sprog_copy_ajax_bad_response = Unexpected server response.
 
 
-sprog_copy_time_elapsed = Time passed
-sprog_copy_error_title = Holy guacamolé, something went tits up!
-sprog_copy_error_text = <p>An error occurred while copying article contents. Details of what happened can be reviewed on the error page. Suggestions to improve the quality of this addon are greatly appreciated, if you encounter errors please create an issue on <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a>. Thanks a bunch!
-sprog_copy_error_link = Link to error page
 
 
-sprog_copy_structure_content_title = Copied articles...
-sprog_copy_structure_content_progress = Articel <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
-sprog_copy_structure_content_finished_title = Done: article contents have been copied
-sprog_copy_structure_content_finished_text = <p>The contents for <strong><span class="sprog-copy__target__finished-articles-num">article</span> have been copied. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
-sprog_copy_structure_content_nothing_title = No contents?
-sprog_copy_structure_content_nothing_text = <p>I'm sorry, but there are is no content to copy.</p>
 
-sprog_copy_structure_metadata_title = Copied/synchronised articels...
-sprog_copy_structure_metadata_progress = Article <span class="sprog-copy__target__progress-from">1</span> of <span class="sprog-copy__target__progress-to">…</span>
-sprog_copy_structure_metadata_finished_title = Done: Metadata has been copied/synchronized
-sprog_copy_structure_metadata_finished_text = <p>Metadata for <strong><span class="sprog-copy__target__finished-articles-num">articles</span> have been copied/synchronised. This took about <strong class="sprog-copy__target__finished-time-num"></strong>.</p>
-sprog_copy_structure_metadata_nothing_title = No metadata?
-sprog_copy_structure_metadata_nothing_text = <p>I'm sorry, but there is no metadata to copy/synchronise.</p>
 
 # --- v2 -----------------------------------------------------------------
 
@@ -208,9 +185,6 @@ sprog_inbox_summary_entries = entries
 sprog_inbox_summary_page = page {0} of {1}
 sprog_inbox_empty = No translations match the current filters.
 sprog_inbox_value_empty = — no translation yet —
-sprog_inbox_meta_updated = updated
-sprog_inbox_meta_mt = MT: {0}
-sprog_inbox_meta_revision = rev {0}
 sprog_inbox_pagination_prev = ‹ previous
 sprog_inbox_pagination_next = next ›
 sprog_inbox_pagination_page = Page {0} / {1}
@@ -221,7 +195,6 @@ sprog_inbox_filter_status_aria = Status filter (open selection)
 sprog_inbox_unit_card_aria = Translation unit „{0}" (open details)
 sprog_inbox_readonly_hint = You don't have edit rights for this language
 sprog_inbox_readonly_short = read only
-sprog_inbox_open_details = Open details
 sprog_inbox_save_saving = saving …
 sprog_inbox_save_saved = saved
 sprog_inbox_save_conflict = Conflict — the entry was changed elsewhere.
@@ -231,7 +204,6 @@ sprog_inbox_save_csrf = Invalid CSRF token.
 sprog_inbox_save_bad_request = Invalid request data.
 sprog_inbox_save_no_perm = No permission for this language.
 sprog_inbox_save_unit_missing = Translation unit not found.
-sprog_inbox_summary_match = +{0} {1}
 sprog_inbox_notes_label = Note:
 sprog_inbox_legend_summary = Legend & workflow
 sprog_inbox_legend_status_heading = Status
@@ -361,13 +333,11 @@ sprog_glossary_help_notwhen_1 = Fixed text blocks shown in the frontend — thos
 sprog_glossary_help_notwhen_2 = Whole sentences or running text — those are translated in the editor.
 sprog_glossary_help_notwhen_3 = Terms that differ by context — a glossary always enforces the same translation.
 sprog_glossary_help_status = Note: the automatic link to machine translation and the editor is still in preparation. Entries are already saved, but do not take effect yet.
-sprog_glossary_filter_source = Source
 sprog_glossary_filter_target = Target
 sprog_glossary_filter_submit = Filter
 sprog_glossary_filter_all = all
 sprog_glossary_filter_reset = Reset
 sprog_glossary_filter_search_placeholder = Search term …
-sprog_glossary_clang_no_perm = No permission for at least one of the selected languages.
 sprog_glossary_add_source_lang = Source language
 sprog_glossary_add_target_lang = Target language
 sprog_glossary_add_source_term = Source term
@@ -389,7 +359,6 @@ sprog_glossary_edit_open = Edit entry
 sprog_glossary_edit_submit = Save
 sprog_glossary_edit_cancel = Cancel
 sprog_glossary_edit_button = Edit
-sprog_glossary_edit_lang_locked = The language can't be changed while editing. Create a new entry for a different language pair.
 sprog_glossary_update_success = Entry updated: {0} → {1}
 sprog_glossary_target_all = All languages
 sprog_glossary_target_all_short = All
@@ -420,8 +389,6 @@ sprog_create_error = Could not create unit: {0}
 
 # --- Article language comparison (content view) -------------------------
 sprog_langcompare_heading = Language comparison
-sprog_langcompare_toggle = Show language comparison
-sprog_langcompare_language_b = Compare with
 sprog_langcompare_switch_off = Language comparison
 sprog_langcompare_switch_on = Comparing: {0}
 sprog_langcompare_switch_header = Compare with
@@ -434,8 +401,6 @@ sprog_langcompare_mt = MT
 sprog_langcompare_mt_all = All fields
 sprog_langcompare_mt_title = Translate from {0}
 sprog_langcompare_mt_no_provider = No translation provider configured.
-sprog_langcompare_empty = No content in this language yet.
-sprog_langcompare_offline = offline
 sprog_langcompare_batch = Copy everything from {0}
 sprog_langcompare_batch_confirm = Copy all content from the other language into this (empty) language?
 sprog_langcompare_copy_to = Copy to {0}
@@ -443,11 +408,6 @@ sprog_langcompare_confirm_delete = Delete block?
 sprog_langcompare_loading = Loading comparison…
 sprog_langcompare_server_error = The operation failed.
 sprog_langcompare_render_error = Preview unavailable ({0}).
-sprog_langcompare_picker_title = Insert:
-sprog_langcompare_position_top = At the top
-sprog_langcompare_position_after = After #{0}
-sprog_langcompare_position_end = At the end
-sprog_langcompare_position_confirm = Apply
 sprog_langcompare_position_cancel = Cancel
 sprog_langcompare_no_perm = You are not allowed to perform this action.
 sprog_langcompare_no_article = Article not found.

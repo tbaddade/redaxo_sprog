@@ -4,13 +4,9 @@ sprog_title = Sprog
 sprog_function = Funktion
 sprog_function_add = hinzufügen
 sprog_function_edit = editieren
-sprog_no_results = Keine Ergebnisse
 
-sprog_activated = aktiv
-sprog_deactivated = deaktiviert
 
 sprog_settings = Konfiguration
-sprog_settings_title = Konfiguration
 sprog_settings_clang_base = Sprachbasis
 sprog_settings_base_clang = Basissprache
 sprog_settings_base_clang_auto = Automatisch
@@ -35,7 +31,6 @@ sprog_settings_sync_within_lang_note = Gleicht Kategorie- und Startartikelname i
 sprog_settings_sync_metainfo = Meta Info
 sprog_settings_sync_metainfo_art = Artikel
 sprog_settings_sync_metainfo_cat = Kategorien
-sprog_settings_sync_metainfo_med = Medien
 sprog_settings_sync_metainfo_not_found = Keine Meta Infos gefunden
 
 sprog_settings_sync_structure_status = Status (online/offline)
@@ -71,7 +66,6 @@ sprog_export_namespace = Namespace
 sprog_export_all = Alle
 sprog_export_button = Exportieren
 
-sprog_cleanup = Aufräumen
 
 
 sprog_copy_content = Inhalte kopieren
@@ -99,8 +93,6 @@ sprog_copy_structure_metadata_structure = Struktur
 
 
 sprog_copy_button_start = Kopieren starten
-sprog_copy_button_success = Prima, danke!
-sprog_copy_button_cancel = Abbrechen
 
 sprog_copy_content_lead = Kopiert die Artikel-Inhalte (Slices) von einer Sprache in eine andere. Optional nur ab einem Startartikel und/oder mit vorherigem Leeren der Zielsprache.
 sprog_copy_metadata_lead = Übernimmt ausgewählte Struktur- und Meta-Info-Felder von einer Sprache in eine andere (überschreibend).
@@ -112,28 +104,11 @@ sprog_copy_done = Fertig – {0} Artikel verarbeitet.
 sprog_copy_failed = Fehlgeschlagen.
 sprog_copy_ajax_server_error = Serverfehler beim Kopieren.
 sprog_copy_ajax_bad_response = Unerwartete Server-Antwort.
-sprog_copy_button_again = Nochmal versuchen
 
 
-sprog_copy_time_elapsed = Verstrichene Zeit
-sprog_copy_error_title = Verdammt, etwas ist schief gelaufen!
-sprog_copy_error_text = <p>Beim Kopieren der Artikelinhalte ist ein Fehler aufgetreten. Details befinden sich auf der Fehlerseite. Wir freuen uns über jede Mithilfe, die Qualität des Addons zu verbessern, indem Fehler bei <a href="https://github.com/tbaddade/redaxo_sprog/issues">Github</a> gemeldet werden. Vielen Dank!</p>
-sprog_copy_error_link = Link zur Fehlerseite
 
 
-sprog_copy_structure_content_title = Kopierte Artikel…
-sprog_copy_structure_content_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
-sprog_copy_structure_content_finished_title = Fertig: Artikeinhalte wurden kopiert
-sprog_copy_structure_content_finished_text = <p>Die Inhalte wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
-sprog_copy_structure_content_nothing_title = Keine Inhalte?
-sprog_copy_structure_content_nothing_text = <p>Tut mir leid, aber es gibt keine Inhalte zum kopieren.</p>
 
-sprog_copy_structure_metadata_title = Kopierte/Synchronisierte Artikel…
-sprog_copy_structure_metadata_progress = Artikel <span class="sprog-copy__target__progress-from">1</span> von <span class="sprog-copy__target__progress-to">…</span>
-sprog_copy_structure_metadata_finished_title = Fertig: Metadaten wurden kopiert/synchronisiert
-sprog_copy_structure_metadata_finished_text = <p>Die Metadaten wurden für <strong><span class="sprog-copy__target__finished-articles-num">Artikel</span> kopiert/synchronisiert. Das hat etwa <strong class="sprog-copy__target__finished-time-num"></strong> gedauert.</p>
-sprog_copy_structure_metadata_nothing_title = Keine Metadaten?
-sprog_copy_structure_metadata_nothing_text = <p>Tut mir leid, aber es gibt keine Metadaten zum kopieren/synchronisieren.</p>
 
 # --- v2 -----------------------------------------------------------------
 
@@ -211,9 +186,6 @@ sprog_inbox_summary_entries = Einträge
 sprog_inbox_summary_page = Seite {0} von {1}
 sprog_inbox_empty = Keine Übersetzungen mit den gewählten Filtern.
 sprog_inbox_value_empty = — noch keine Übersetzung —
-sprog_inbox_meta_updated = aktualisiert
-sprog_inbox_meta_mt = MT: {0}
-sprog_inbox_meta_revision = rev {0}
 sprog_inbox_pagination_prev = ‹ zurück
 sprog_inbox_pagination_next = weiter ›
 sprog_inbox_pagination_page = Seite {0} / {1}
@@ -224,7 +196,6 @@ sprog_inbox_filter_status_aria = Status-Filter (Auswahl öffnen)
 sprog_inbox_unit_card_aria = Übersetzungseinheit „{0}“ (Details öffnen)
 sprog_inbox_readonly_hint = Du hast in dieser Sprache kein Bearbeitungsrecht
 sprog_inbox_readonly_short = nur lesen
-sprog_inbox_open_details = Details öffnen
 sprog_inbox_save_saving = speichere …
 sprog_inbox_save_saved = gespeichert
 sprog_inbox_save_conflict = Konflikt — der Eintrag wurde zwischenzeitlich geändert.
@@ -234,7 +205,6 @@ sprog_inbox_save_csrf = Ungültiges CSRF-Token.
 sprog_inbox_save_bad_request = Ungültige Eingabedaten.
 sprog_inbox_save_no_perm = Keine Berechtigung für diese Sprache.
 sprog_inbox_save_unit_missing = Einheit nicht gefunden.
-sprog_inbox_summary_match = +{0} {1}
 sprog_inbox_notes_label = Notiz:
 sprog_inbox_legend_summary = Legende & Workflow
 sprog_inbox_legend_status_heading = Status
@@ -364,13 +334,11 @@ sprog_glossary_help_notwhen_1 = Feste Textbausteine, die im Frontend erscheinen 
 sprog_glossary_help_notwhen_2 = Ganze Sätze oder Fließtexte — die werden im Editor übersetzt.
 sprog_glossary_help_notwhen_3 = Begriffe, die je nach Kontext unterschiedlich heißen — ein Glossar erzwingt immer dieselbe Übersetzung.
 sprog_glossary_help_status = Hinweis: Die automatische Anbindung an Maschinenübersetzung und Editor ist noch in Vorbereitung. Einträge werden bereits gespeichert, wirken aktuell aber noch nicht aktiv.
-sprog_glossary_filter_source = Quelle
 sprog_glossary_filter_target = Ziel
 sprog_glossary_filter_submit = Filtern
 sprog_glossary_filter_all = alle
 sprog_glossary_filter_reset = Zurücksetzen
 sprog_glossary_filter_search_placeholder = Begriff suchen …
-sprog_glossary_clang_no_perm = Keine Berechtigung für mindestens eine der gewählten Sprachen.
 sprog_glossary_add_source_lang = Quellsprache
 sprog_glossary_add_target_lang = Zielsprache
 sprog_glossary_add_source_term = Quell-Term
@@ -392,7 +360,6 @@ sprog_glossary_edit_open = Eintrag bearbeiten
 sprog_glossary_edit_submit = Speichern
 sprog_glossary_edit_cancel = Abbrechen
 sprog_glossary_edit_button = Bearbeiten
-sprog_glossary_edit_lang_locked = Die Sprache kann beim Bearbeiten nicht geändert werden. Für ein anderes Sprachpaar bitte neu anlegen.
 sprog_glossary_update_success = Eintrag aktualisiert: {0} → {1}
 sprog_glossary_target_all = Alle Sprachen
 sprog_glossary_target_all_short = Alle
@@ -423,8 +390,6 @@ sprog_create_error = Fehler beim Anlegen: {0}
 
 # --- Artikel-Sprachvergleich (Content-Maske) ----------------------------
 sprog_langcompare_heading = Sprachvergleich
-sprog_langcompare_toggle = Sprachvergleich anzeigen
-sprog_langcompare_language_b = Vergleichen mit
 sprog_langcompare_switch_off = Sprachvergleich
 sprog_langcompare_switch_on = Vergleich: {0}
 sprog_langcompare_switch_header = Vergleichen mit
@@ -437,8 +402,6 @@ sprog_langcompare_mt = MT
 sprog_langcompare_mt_all = Alle Felder
 sprog_langcompare_mt_title = Aus {0} übersetzen
 sprog_langcompare_mt_no_provider = Kein Übersetzungs-Provider konfiguriert.
-sprog_langcompare_empty = Noch keine Inhalte in dieser Sprache.
-sprog_langcompare_offline = offline
 sprog_langcompare_batch = Alles aus {0} übernehmen
 sprog_langcompare_batch_confirm = Alle Inhalte der Gegensprache in diese (leere) Sprache übernehmen?
 sprog_langcompare_copy_to = Nach {0} kopieren
@@ -446,11 +409,6 @@ sprog_langcompare_confirm_delete = Block löschen?
 sprog_langcompare_loading = Vergleich wird geladen…
 sprog_langcompare_server_error = Der Vorgang ist fehlgeschlagen.
 sprog_langcompare_render_error = Vorschau nicht möglich ({0}).
-sprog_langcompare_picker_title = Einfügen:
-sprog_langcompare_position_top = Am Anfang
-sprog_langcompare_position_after = Nach #{0}
-sprog_langcompare_position_end = Am Ende
-sprog_langcompare_position_confirm = Übernehmen
 sprog_langcompare_position_cancel = Abbrechen
 sprog_langcompare_no_perm = Keine Berechtigung für diesen Vorgang.
 sprog_langcompare_no_article = Artikel nicht gefunden.
