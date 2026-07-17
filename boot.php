@@ -13,6 +13,7 @@ use Sprog\Boot\AssetRegistry;
 use Sprog\Boot\FilterRegistry;
 use Sprog\Boot\PageTreeBuilder;
 use Sprog\Extension;
+use Sprog\Support\StructureClangGuard;
 
 $addon = rex_addon::get('sprog');
 
@@ -59,6 +60,15 @@ if (rex::isBackend() && rex::getUser()) {
     // (pages/sprog.langcompare.php) und beim Aufbau der Sprachauswahl geprüft.
     rex_extension::register('STRUCTURE_CONTENT_HEADER', [Extension::class, 'langCompareHeader']);
     rex_extension::register('STRUCTURE_CONTENT_AFTER_SLICES', [Extension::class, 'langCompareContainer']);
+
+    // Struktur-Sprachfilter (DEV-Opt-in, Config `structure_clang_filter`): blendet
+    // in Kategoriebaum (PAGE_STRUCTURE_HEADER) und Content-Maske
+    // (STRUCTURE_CONTENT_HEADER) die Sprach-Buttons aus, die die yrewrite-Domain
+    // der Kategorie nicht bedient. Kein Editor-UI — s. StructureClangGuard.
+    if (StructureClangGuard::isEnabled()) {
+        rex_extension::register('PAGE_STRUCTURE_HEADER', [Extension::class, 'structureClangData']);
+        rex_extension::register('STRUCTURE_CONTENT_HEADER', [Extension::class, 'structureClangData']);
+    }
 
     rex_extension::register('PAGES_PREPARED', static function (): void {
         PageTreeBuilder::publish();

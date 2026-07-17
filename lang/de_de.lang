@@ -22,6 +22,9 @@ sprog_settings_wildcard_open_tag = öffnendes Tag
 sprog_settings_synchronization = Synchronisierung
 sprog_settings_workflow = Workflow
 sprog_settings_workflow_dev_self_approve = Admins dürfen eigene Übersetzungen selbst freigeben (ohne separate Review durch Redakteure)
+sprog_settings_structure = Struktur
+sprog_settings_structure_clang_filter = Sprachauswahl auf yrewrite-Domains beschränken
+sprog_settings_structure_clang_filter_note = Blendet im Struktur-Baum und in der Bearbeiten-Maske die Sprachen aus, die die yrewrite-Domain der jeweiligen Kategorie nicht bedient. Die aktuell gewählte Sprache bleibt immer sichtbar.
 
 sprog_settings_sync_cross_lang = Zwischen den Sprachen
 sprog_settings_sync_cross_lang_note = Hält die gewählten Eigenschaften über alle Sprachen synchron.

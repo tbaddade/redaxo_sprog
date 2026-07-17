@@ -21,6 +21,9 @@ sprog_settings_wildcard_open_tag = Opening tag
 sprog_settings_synchronization = Synchronization
 sprog_settings_workflow = Workflow
 sprog_settings_workflow_dev_self_approve = Admins may approve their own translations (without a separate review by editors)
+sprog_settings_structure = Structure
+sprog_settings_structure_clang_filter = Limit language switch to yrewrite domains
+sprog_settings_structure_clang_filter_note = Hides the languages not served by the category's yrewrite domain in the structure tree and the edit mask. The currently selected language always stays visible.
 
 sprog_settings_sync_cross_lang = Between languages
 sprog_settings_sync_cross_lang_note = Keeps the selected properties in sync across all languages.

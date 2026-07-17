@@ -15,6 +15,7 @@ namespace Sprog;
 
 use rex;
 use rex_addon;
+use rex_clang;
 use rex_extension_point;
 use rex_sql;
 use rex_sql_exception;
@@ -22,6 +23,7 @@ use Sprog\Compat\Abbreviation;
 use Sprog\Compat\Foreignword;
 use Sprog\Compat\Wildcard;
 use Sprog\Service\StructureSyncService;
+use Sprog\Support\StructureClangGuard;
 use Sprog\View\LangCompare;
 
 use function array_values;
@@ -228,6 +230,36 @@ class Extension
     public static function langCompareContainer(rex_extension_point $ep): void
     {
         $ep->setSubject($ep->getSubject() . LangCompare::renderContainer());
+    }
+
+    /**
+     * Erlaubte Sprachen der aktuellen Kategorie/des Artikels als verstecktes
+     * data-Element in die Struktur einhängen (Liste: PAGE_STRUCTURE_HEADER,
+     * Content-Maske: STRUCTURE_CONTENT_HEADER). assets/js/sprog.structureclang.js
+     * blendet daraufhin die nicht bedienten Sprach-Buttons aus. Kontext-ID ist der
+     * Artikel (Content-Maske) bzw. die geöffnete Kategorie (Liste).
+     *
+     * @param rex_extension_point<string> $ep
+     */
+    public static function structureClangData(rex_extension_point $ep): void
+    {
+        if (!StructureClangGuard::isEnabled()) {
+            return;
+        }
+
+        $contextId = (int) $ep->getParam('article_id');
+        if ($contextId <= 0) {
+            $contextId = (int) $ep->getParam('category_id');
+        }
+        $clang = (int) ($ep->getParam('clang') ?? rex_clang::getCurrentId());
+        if ($clang <= 0) {
+            $clang = rex_clang::getCurrentId();
+        }
+
+        $span = StructureClangGuard::dataSpan($contextId, $clang);
+        if ('' !== $span) {
+            $ep->setSubject($ep->getSubject() . $span);
+        }
     }
 
     /**

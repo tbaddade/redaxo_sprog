@@ -26,9 +26,11 @@ use rex_sql;
 use rex_url;
 use Sprog\Mt\AiPlatformProvider;
 use Sprog\Service\MtService;
+use Sprog\Support\StructureClangGuard;
 use Throwable;
 
 use function count;
+use function in_array;
 use function is_array;
 use function json_encode;
 
@@ -57,7 +59,7 @@ final class LangCompare
      */
     public static function renderBar(int $articleId, int $clangA, int $ctype, int $revision): string
     {
-        $others = self::selectableOthers($clangA);
+        $others = self::selectableOthers($clangA, $articleId);
         if (0 === count($others)) {
             return '';
         }
@@ -142,24 +144,35 @@ final class LangCompare
     }
 
     /**
-     * Andere Sprachen als $clangA, auf die der Benutzer clang-Recht hat.
+     * Andere Sprachen als $clangA, auf die der Benutzer clang-Recht hat. Ist der
+     * Struktur-Sprachfilter aktiv, zusätzlich auf die Sprachen der yrewrite-Domain
+     * des Artikels beschränkt — dieselbe Einschränkung wie die Sprach-Buttons, damit
+     * man nur mit tatsächlich bedienten Sprachen vergleicht.
      *
      * @return array<int, string> clang_id => Name
      */
-    private static function selectableOthers(int $clangA): array
+    private static function selectableOthers(int $clangA, int $articleId): array
     {
         $user = rex::getUser();
         if (null === $user) {
             return [];
         }
 
+        $allowed = StructureClangGuard::isEnabled()
+            ? StructureClangGuard::allowedClangs($articleId, $clangA)
+            : null;
+
         $clangPerm = $user->getComplexPerm('clang');
         $others = [];
         foreach (rex_clang::getAll() as $clang) {
             $id = $clang->getId();
-            if ($id !== $clangA && $clangPerm->hasPerm($id)) {
-                $others[$id] = $clang->getName();
+            if ($id === $clangA || !$clangPerm->hasPerm($id)) {
+                continue;
             }
+            if (null !== $allowed && !in_array($id, $allowed, true)) {
+                continue;
+            }
+            $others[$id] = $clang->getName();
         }
 
         return $others;

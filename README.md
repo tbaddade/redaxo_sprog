@@ -150,6 +150,27 @@ foreach ($items as $item) {
 - Template zwischen den Sprachen
 - ausgewählte MetaInfo-Felder zwischen den Sprachen
 
+## Sprachauswahl auf yrewrite-Domains beschränken
+
+Sind mehrere Sprachen angelegt, eine Domain (yrewrite) bedient aber nur bestimmte,
+kann Sprog die übrigen Sprachen in der Struktur ausblenden: im Kategoriebaum, in
+der Bearbeiten-Maske und im Artikel-Sprachvergleich werden nur noch die Sprachen
+angeboten, die die yrewrite-Domain der jeweiligen Kategorie bedient. Die aktuell
+gewählte Sprache bleibt dabei immer sichtbar.
+
+Aktiviert wird das über **Sprog → Konfiguration → Struktur** (nur sichtbar, wenn
+yrewrite installiert ist). Die erlaubten Sprachen leitet Sprog aus der Domain ab;
+für Sonderfälle lassen sie sich per Extension Point überschreiben:
+
+```php
+rex_extension::register('SPROG_STRUCTURE_CLANGS', function (rex_extension_point $ep) {
+    $allowed = $ep->getSubject();     // int[]|null (aus yrewrite berechnet)
+    $contextId = $ep->getParam('context_id');
+    $clang = $ep->getParam('clang');
+    return $allowed;                  // int[] = erlaubte clang-IDs, null = keine Einschränkung
+});
+```
+
 ## Inhalte & Metadaten kopieren
 
 Unter **Datenpflege**:

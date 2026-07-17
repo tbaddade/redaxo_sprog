@@ -99,3 +99,7 @@ default_config:
     wildcard_close_tag: ' }}'
     chunk_size_articles: 4
     workflow_dev_self_approve: false
+    # DEV-Opt-in (kein Editor-UI): blendet in der Struktur die Sprach-Buttons aus,
+    # die die yrewrite-Domain der jeweiligen Kategorie nicht bedient.
+    # Aktivieren per Code: rex_config::set('sprog', 'structure_clang_filter', true);
+    structure_clang_filter: false

@@ -17,6 +17,12 @@ Sprog - Changelog
 - Sprachvergleich: Batch-Kopie „Alles aus ‹Sprache› kopieren" — erscheint in
   einer leeren Sprachspalte und befüllt sie in einem Schritt aus der
   Gegenspalte (nur bei leerer Zielsprache, verhindert Dubletten).
+- Struktur-Sprachfilter (optional, Admin): Beschränkt die Sprachauswahl in der
+  Struktur (Kategoriebaum, Bearbeiten-Maske) und im Sprachvergleich auf die
+  Sprachen, die die yrewrite-Domain der jeweiligen Kategorie bedient. Die aktuell
+  gewählte Sprache bleibt immer sichtbar. Aktivierung über Sprog → Konfiguration →
+  „Struktur" (nur mit yrewrite); die erlaubten Sprachen lassen sich über den
+  Extension Point `SPROG_STRUCTURE_CLANGS` überschreiben.
 
 ### Breaking Changes
 

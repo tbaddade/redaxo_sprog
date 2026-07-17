@@ -12,6 +12,7 @@
 namespace Sprog;
 
 use rex;
+use rex_addon;
 use rex_clang;
 use rex_config;
 use rex_csrf_token;
@@ -78,7 +79,7 @@ if ('post' === rex_request::requestMethod()) {
                 $messages[] = rex_view::success($this->i18n('settings_mt_saved'));
             }
         }
-    } elseif (in_array($section, ['languages', 'wildcards', 'sync', 'workflow'], true)) {
+    } elseif (in_array($section, ['languages', 'wildcards', 'sync', 'workflow', 'structure'], true)) {
         if (!$csrf->isValid()) {
             $messages[] = rex_view::error(rex_i18n::msg('csrf_token_invalid'));
         } elseif ('sync' === $section) {
@@ -112,6 +113,9 @@ if ('post' === rex_request::requestMethod()) {
                 ],
                 'workflow' => [
                     ['workflow_dev_self_approve', 'bool'],
+                ],
+                'structure' => [
+                    ['structure_clang_filter', 'bool'],
                 ],
             ];
 
@@ -159,6 +163,16 @@ $renderRadio = static function (string $name, string $value, string $label, bool
     return '<label class="sprog-settings--check">'
         . '<input type="radio" name="' . rex_escape($name) . '" value="' . rex_escape($value) . '"' . ($checked ? ' checked' : '') . '>'
         . '<span>' . $label . '</span>'
+        . '</label>';
+};
+
+// Toggle-Switch für Bool-Configs (visuell als Schalter statt Checkbox). Speichert
+// wie ein Checkbox-Feld über settings[<key>] (value=1, fehlend = false).
+$renderSwitch = static function (string $key, string $label, bool $checked): string {
+    return '<label class="sprog-switch">'
+        . '<input type="checkbox" class="sprog-switch--input" name="settings[' . rex_escape($key) . ']" value="1"' . ($checked ? ' checked' : '') . '>'
+        . '<span class="sprog-switch--track" aria-hidden="true"></span>'
+        . '<span class="sprog-switch--text">' . $label . '</span>'
         . '</label>';
 };
 
@@ -287,6 +301,30 @@ $sections .= $renderSection(
     $hidden('workflow', $csrf->getHiddenField()),
     '',
 );
+
+/*
+ |-----------------------------------------------------------------------------
+ | Sektion: Struktur (Sprachauswahl auf yrewrite-Domains beschränken)
+ |
+ | Nur sinnvoll mit yrewrite; sonst ist das Feature ein No-Op → Sektion aus.
+ | Serverseitige Auswertung s. Sprog\Support\StructureClangGuard.
+ |-----------------------------------------------------------------------------
+ */
+if (rex_addon::get('yrewrite')->isAvailable()) {
+    $structureBody = '<div class="sprog-settings--checks">'
+        . $renderSwitch('structure_clang_filter', $this->i18n('settings_structure_clang_filter'), (bool) $this->getConfig('structure_clang_filter'))
+        . '<p class="sprog-hint">' . $this->i18n('settings_structure_clang_filter_note') . '</p>'
+        . '</div>';
+
+    $sections .= $renderSection(
+        $this->i18n('settings_structure'),
+        '',
+        '',
+        $structureBody,
+        $hidden('structure', $csrf->getHiddenField()),
+        '',
+    );
+}
 
 /*
  |-----------------------------------------------------------------------------

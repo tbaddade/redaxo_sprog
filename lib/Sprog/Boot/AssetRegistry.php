@@ -7,6 +7,7 @@ namespace Sprog\Boot;
 use rex_addon_interface;
 use rex_be_controller;
 use rex_view;
+use Sprog\Support\StructureClangGuard;
 
 /**
  * Registriert Backend-CSS/JS für die Sprog-Seiten.
@@ -59,6 +60,17 @@ final class AssetRegistry
         if ('content' === rex_be_controller::getCurrentPagePart(1)) {
             rex_view::addJsFile(
                 $addon->getAssetsUrl('js/sprog.langcompare.js?v=' . $version),
+                [rex_view::JS_DEFERED => true],
+            );
+        }
+
+        // Struktur-Sprachfilter (DEV-Opt-in): blendet nicht bediente Sprach-Buttons
+        // im Kategoriebaum (page=structure) und in der Content-Maske (page=content/*)
+        // aus. Nur laden, wenn per Config aktiviert und auf einer dieser Seiten.
+        $part1 = rex_be_controller::getCurrentPagePart(1);
+        if (('structure' === $part1 || 'content' === $part1) && StructureClangGuard::isEnabled()) {
+            rex_view::addJsFile(
+                $addon->getAssetsUrl('js/sprog.structureclang.js?v=' . $version),
                 [rex_view::JS_DEFERED => true],
             );
         }
