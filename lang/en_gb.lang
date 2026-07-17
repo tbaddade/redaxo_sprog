@@ -22,6 +22,8 @@ sprog_settings_synchronization = Synchronization
 sprog_settings_workflow = Workflow
 sprog_settings_workflow_dev_self_approve = Admins may approve their own translations (without a separate review by editors)
 sprog_settings_structure = Structure
+sprog_settings_langcompare_enabled = Enable article language comparison
+sprog_settings_langcompare_enabled_note = Shows the side-by-side language comparison in the article content mask (experimental).
 sprog_settings_structure_clang_filter = Limit language switch to yrewrite domains
 sprog_settings_structure_clang_filter_note = Hides the languages not served by the category's yrewrite domain in the structure tree and the edit mask. The currently selected language always stays visible.
 

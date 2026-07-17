@@ -23,6 +23,7 @@ use rex_sql;
 use rex_url;
 use rex_view;
 use Sprog\Service\MtService;
+use Sprog\View\LangCompare;
 
 use function count;
 use function in_array;
@@ -115,6 +116,7 @@ if ('post' === rex_request::requestMethod()) {
                     ['workflow_dev_self_approve', 'bool'],
                 ],
                 'structure' => [
+                    ['langcompare_enabled', 'bool'],
                     ['structure_clang_filter', 'bool'],
                 ],
             ];
@@ -303,21 +305,26 @@ $sections .= $renderSection(
  | Serverseitige Auswertung s. Sprog\Support\StructureClangGuard.
  |-----------------------------------------------------------------------------
  */
-if (rex_addon::get('yrewrite')->isAvailable()) {
-    $structureBody = '<div class="sprog-settings--checks">'
-        . $renderSwitch('structure_clang_filter', $this->i18n('settings_structure_clang_filter'), (bool) $this->getConfig('structure_clang_filter'))
-        . '<p class="sprog-hint">' . $this->i18n('settings_structure_clang_filter_note') . '</p>'
-        . '</div>';
+$structureBody = '<div class="sprog-settings--checks">'
+    . $renderSwitch('langcompare_enabled', $this->i18n('settings_langcompare_enabled'), LangCompare::isEnabled())
+    . '<p class="sprog-hint">' . $this->i18n('settings_langcompare_enabled_note') . '</p>';
 
-    $sections .= $renderSection(
-        $this->i18n('settings_structure'),
-        '',
-        '',
-        $structureBody,
-        $hidden('structure', $csrf->getHiddenField()),
-        '',
-    );
+// yrewrite-Sprachfilter nur mit yrewrite anbieten (sonst wirkungslos).
+if (rex_addon::get('yrewrite')->isAvailable()) {
+    $structureBody .= $renderSwitch('structure_clang_filter', $this->i18n('settings_structure_clang_filter'), (bool) $this->getConfig('structure_clang_filter'))
+        . '<p class="sprog-hint">' . $this->i18n('settings_structure_clang_filter_note') . '</p>';
 }
+
+$structureBody .= '</div>';
+
+$sections .= $renderSection(
+    $this->i18n('settings_structure'),
+    '',
+    '',
+    $structureBody,
+    $hidden('structure', $csrf->getHiddenField()),
+    '',
+);
 
 /*
  |-----------------------------------------------------------------------------

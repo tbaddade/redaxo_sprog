@@ -47,6 +47,15 @@ use const JSON_THROW_ON_ERROR;
 final class LangCompare
 {
     /**
+     * Ist der Artikel-Sprachvergleich aktiviert? (Config `langcompare_enabled`,
+     * Default an.) Steuert EP-Registrierung, Asset-Laden und Settings-Switch.
+     */
+    public static function isEnabled(): bool
+    {
+        return (bool) rex_addon::get('sprog')->getConfig('langcompare_enabled', true);
+    }
+
+    /**
      * Steuer-Dropdown (STRUCTURE_CONTENT_HEADER): „Vergleichen mit …" — Auswahl
      * der Vergleichssprache (Auswahl = Vergleich aktiv, „aus" = deaktiviert) plus
      * Footer-Umschalter Inhalt/Metadaten. Ein Bootstrap-Dropdown (nicht `<select>`,

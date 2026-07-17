@@ -14,6 +14,7 @@ use Sprog\Boot\FilterRegistry;
 use Sprog\Boot\PageTreeBuilder;
 use Sprog\Extension;
 use Sprog\Support\StructureClangGuard;
+use Sprog\View\LangCompare;
 
 $addon = rex_addon::get('sprog');
 
@@ -58,8 +59,10 @@ if (rex::isBackend() && rex::getUser()) {
     // Artikel-Sprachvergleich in die Struktur-Content-Maske einhängen (Toolbar
     // oben, Panel-Host unter der Slice-Liste). Rechte werden im Endpoint
     // (pages/sprog.langcompare.php) und beim Aufbau der Sprachauswahl geprüft.
-    rex_extension::register('STRUCTURE_CONTENT_HEADER', [Extension::class, 'langCompareHeader']);
-    rex_extension::register('STRUCTURE_CONTENT_AFTER_SLICES', [Extension::class, 'langCompareContainer']);
+    if (LangCompare::isEnabled()) {
+        rex_extension::register('STRUCTURE_CONTENT_HEADER', [Extension::class, 'langCompareHeader']);
+        rex_extension::register('STRUCTURE_CONTENT_AFTER_SLICES', [Extension::class, 'langCompareContainer']);
+    }
 
     // Struktur-Sprachfilter (DEV-Opt-in, Config `structure_clang_filter`): blendet
     // in Kategoriebaum (PAGE_STRUCTURE_HEADER) und Content-Maske

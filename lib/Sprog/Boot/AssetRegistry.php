@@ -8,6 +8,7 @@ use rex_addon_interface;
 use rex_be_controller;
 use rex_view;
 use Sprog\Support\StructureClangGuard;
+use Sprog\View\LangCompare;
 
 /**
  * Registriert Backend-CSS/JS für die Sprog-Seiten.
@@ -57,7 +58,7 @@ final class AssetRegistry
         // Artikel-Sprachvergleich: hängt via STRUCTURE_CONTENT_*-EPs in der
         // Content-Maske (structure/content). Das Bundle wird nur dort geladen;
         // sein Inline-`window.sprogLangCompare`-Bootstrap ruft danach boot().
-        if ('content' === rex_be_controller::getCurrentPagePart(1)) {
+        if ('content' === rex_be_controller::getCurrentPagePart(1) && LangCompare::isEnabled()) {
             rex_view::addJsFile(
                 $addon->getAssetsUrl('js/sprog.langcompare.js?v=' . $version),
                 [rex_view::JS_DEFERED => true],

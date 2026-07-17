@@ -13,7 +13,8 @@ Sprog - Changelog
   „Datenpflege → Migration" wiederholbar.
 - Artikel-Sprachvergleich (experimentell) in der Content-Maske: Seite-an-Seite-
   Vergleich des Artikelinhalts zweier Sprachen inkl. Inline-Bearbeitung,
-  Metadaten-Vergleich und MT-Übersetzung je Feld.
+  Metadaten-Vergleich und MT-Übersetzung je Feld. Über Sprog → Konfiguration →
+  „Struktur" an-/abschaltbar (Default an).
 - Sprachvergleich: Batch-Kopie „Alles aus ‹Sprache› kopieren" — erscheint in
   einer leeren Sprachspalte und befüllt sie in einem Schritt aus der
   Gegenspalte (nur bei leerer Zielsprache, verhindert Dubletten).

@@ -23,6 +23,8 @@ sprog_settings_synchronization = Synchronisierung
 sprog_settings_workflow = Workflow
 sprog_settings_workflow_dev_self_approve = Admins dürfen eigene Übersetzungen selbst freigeben (ohne separate Review durch Redakteure)
 sprog_settings_structure = Struktur
+sprog_settings_langcompare_enabled = Artikel-Sprachvergleich aktivieren
+sprog_settings_langcompare_enabled_note = Blendet in der Artikel-Content-Maske den Seite-an-Seite-Sprachvergleich ein (experimentell).
 sprog_settings_structure_clang_filter = Sprachauswahl auf yrewrite-Domains beschränken
 sprog_settings_structure_clang_filter_note = Blendet im Struktur-Baum und in der Bearbeiten-Maske die Sprachen aus, die die yrewrite-Domain der jeweiligen Kategorie nicht bedient. Die aktuell gewählte Sprache bleibt immer sichtbar.
 
