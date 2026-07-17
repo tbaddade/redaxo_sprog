@@ -6,6 +6,13 @@ Sprog - Changelog
 
 ### Neu
 
+- **Inbox** – zentrale Verwaltung aller Übersetzungen: filtern nach Sprache,
+  Namespace und Status, inline bearbeiten, Verlauf je Übersetzung.
+- **Review-Workflow** – Status fehlt → Entwurf → zur Prüfung → freigegeben, mit
+  den Rollen `sprog[translator]` und `sprog[reviewer]`.
+- **Maschinelle Übersetzung** – DeepL oder KI (über das ai_platform-AddOn),
+  glossargestützt; Ergebnisse sind Vorschläge, die im Workflow geprüft werden.
+- **Glossar** – verbindliche Begriffs-Vorgaben für die maschinelle Übersetzung.
 - Automatische Datenmigration v1 → v2 bei Installation/Update: deployte
   Instanzen migrieren ihre Bestandsdaten (Platzhalter, Abkürzungen,
   Fremdwörter) selbst in das neue `sprog_unit`/`sprog_translation`-Modell.
