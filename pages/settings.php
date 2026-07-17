@@ -152,13 +152,6 @@ $renderSection = static function (string $title, string $headExtra, string $hint
         . '</section>';
 };
 
-$renderCheck = static function (string $key, string $label, bool $checked): string {
-    return '<label class="sprog-settings--check">'
-        . '<input type="checkbox" name="settings[' . rex_escape($key) . ']" value="1"' . ($checked ? ' checked' : '') . '>'
-        . '<span>' . $label . '</span>'
-        . '</label>';
-};
-
 $renderRadio = static function (string $name, string $value, string $label, bool $checked): string {
     return '<label class="sprog-settings--check">'
         . '<input type="radio" name="' . rex_escape($name) . '" value="' . rex_escape($value) . '"' . ($checked ? ' checked' : '') . '>'
@@ -290,7 +283,7 @@ $sections .= $renderSection(
  |-----------------------------------------------------------------------------
  */
 $workflowBody = '<div class="sprog-settings--checks">'
-    . $renderCheck('workflow_dev_self_approve', $this->i18n('settings_workflow_dev_self_approve'), (bool) $this->getConfig('workflow_dev_self_approve'))
+    . $renderSwitch('workflow_dev_self_approve', $this->i18n('settings_workflow_dev_self_approve'), (bool) $this->getConfig('workflow_dev_self_approve'))
     . '</div>';
 
 $sections .= $renderSection(
@@ -333,8 +326,8 @@ if (rex_addon::get('yrewrite')->isAvailable()) {
  */
 // „Zwischen den Sprachen": hält Werte über alle rex_clang synchron.
 $crossLangChecks = '<div class="sprog-settings--checks">'
-    . $renderCheck('sync_structure_status', $this->i18n('settings_sync_structure_status'), (bool) $this->getConfig('sync_structure_status'))
-    . $renderCheck('sync_structure_template', $this->i18n('settings_sync_structure_template'), (bool) $this->getConfig('sync_structure_template'))
+    . $renderSwitch('sync_structure_status', $this->i18n('settings_sync_structure_status'), (bool) $this->getConfig('sync_structure_status'))
+    . $renderSwitch('sync_structure_template', $this->i18n('settings_sync_structure_template'), (bool) $this->getConfig('sync_structure_template'))
     . '</div>';
 
 // „Innerhalb einer Sprache": Kategorie- ↔ Startartikelname. Die Richtung ist
