@@ -9,6 +9,7 @@ use Sprog\Model\TranslationListFilter;
 use Sprog\Mt\AiPlatformProvider;
 use Sprog\Repository\TranslationRepository;
 use Sprog\Repository\UnitRepository;
+use Sprog\Service\MigrationService;
 use Sprog\Service\MtService;
 use Sprog\Service\TranslationListService;
 use Sprog\Service\WildcardConflictService;
@@ -287,6 +288,12 @@ foreach ($clangs as $bId => $bClang) {
     $batchTargets[$bId] = $bClang;
 }
 $batchEnabled = $mtEnabled && [] !== $batchTargets;
+
+// Ausstehende v1→v2-Migration: Admins werden bereits weitergeleitet (boot.php);
+// Nicht-Admins sehen hier den Hinweis (können die admin-only Migrationsseite nicht öffnen).
+if (MigrationService::create()->isMigrationPending()) {
+    echo rex_view::warning(rex_i18n::msg('sprog_migration_pending_notice'));
+}
 
 ?>
 <article

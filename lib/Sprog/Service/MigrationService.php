@@ -7,7 +7,10 @@ namespace Sprog\Service;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use JsonException;
+use rex;
 use rex_config;
+use rex_sql;
+use rex_sql_exception;
 use RuntimeException;
 use Sprog\Migration\AbbreviationMigrator;
 use Sprog\Migration\ForeignwordMigrator;
@@ -17,10 +20,8 @@ use Sprog\Migration\MigratorInterface;
 use Sprog\Migration\WildcardMigrator;
 use Throwable;
 
-use function ceil;
 use function is_array;
 use function is_string;
-use function max;
 use function sprintf;
 
 use const JSON_THROW_ON_ERROR;
@@ -46,6 +47,10 @@ final class MigrationService
 {
     private const CONFIG_NAMESPACE = 'sprog';
     private const CONFIG_KEY = 'migration_state';
+    // Gesetzt, sobald nichts (mehr) zu migrieren ist → kurzschließt isMigrationPending().
+    private const DONE_KEY = 'migration_done';
+    // Alt-Flag der früheren install.php-Auto-Migration (v2.0.0-beta ≤ 5).
+    private const LEGACY_DONE_KEY = 'migration_autorun_done';
 
     private const MIN_CHUNK_SIZE = 1;
     private const MAX_CHUNK_SIZE = 1000;
@@ -117,6 +122,60 @@ final class MigrationService
     }
 
     /**
+     * Steht eine v1 → v2 Migration noch aus? true, wenn v1-Bestandsdaten existieren
+     * und der Migrations-State noch nicht komplett ist. Ergebnis wird per Flag
+     * gecacht (Frischinstallation ohne v1-Daten bzw. abgeschlossene Migration →
+     * dauerhaft „nicht ausstehend", keine weiteren Zählabfragen). Berücksichtigt
+     * auch das Alt-Flag der früheren Auto-Migration.
+     *
+     * @throws JsonException
+     */
+    public function isMigrationPending(): bool
+    {
+        if (
+            (bool) rex_config::get(self::CONFIG_NAMESPACE, self::DONE_KEY, false)
+            || (bool) rex_config::get(self::CONFIG_NAMESPACE, self::LEGACY_DONE_KEY, false)
+        ) {
+            return false;
+        }
+
+        $hasV1Data = false;
+        foreach ($this->migrators as $migrator) {
+            if ($migrator->isAvailable() && $migrator->totalCount() > 0) {
+                $hasV1Data = true;
+                break;
+            }
+        }
+
+        // Nicht mehr ausstehend, wenn nichts zu migrieren ist, der State komplett
+        // ist ODER bereits v2-Units vorliegen (z. B. frühere Auto-Migration ohne
+        // vermerkten State, oder bereits manuell migriert) — dann nicht erneut nerven.
+        if (!$hasV1Data || $this->state()->isComplete() || $this->hasV2Units()) {
+            rex_config::set(self::CONFIG_NAMESPACE, self::DONE_KEY, true);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Liegen bereits v2-Units vor? Dient als „schon migriert / in Benutzung"-Signal,
+     * damit eine bereits befüllte v2-Installation nicht fälschlich als „Migration
+     * ausstehend" gilt.
+     */
+    private function hasV2Units(): bool
+    {
+        try {
+            return [] !== rex_sql::factory()->getArray(
+                'SELECT 1 FROM ' . rex::getTable('sprog_unit') . ' LIMIT 1',
+            );
+        } catch (rex_sql_exception) {
+            return false;
+        }
+    }
+
+    /**
      * Initialisiert den State neu: alle verfügbaren Migratoren mit ihrem
      * totalCount, processedRows = 0, kein Fehler, kein Start-Zeitstempel.
      *
@@ -128,6 +187,10 @@ final class MigrationService
      */
     public function reset(?int $userId = null): MigrationState
     {
+        // Erneut migrieren wollen → „erledigt"-Flag zurücknehmen, damit
+        // isMigrationPending() wieder greift.
+        rex_config::remove(self::CONFIG_NAMESPACE, self::DONE_KEY);
+
         $progressBySource = [];
 
         foreach ($this->migrators as $key => $migrator) {
@@ -145,43 +208,6 @@ final class MigrationService
         ]);
 
         return $state;
-    }
-
-    /**
-     * Migriert alle verfügbaren Quellen in einem Rutsch vollständig durch —
-     * für den automatischen Aufruf bei Installation/Update (install.php), damit
-     * deployte Instanzen sich selbst migrieren, ohne dass ein Admin die
-     * Datenpflege-Seite öffnen muss.
-     *
-     * Setzt den Fortschritts-State neu auf und arbeitet jede Quelle chunk-weise
-     * bis completed. Idempotent: bereits in v2 vorhandene Units überspringen die
-     * Migratoren, ein erneuter Aufruf (z.B. bei einem weiteren Deploy) erzeugt
-     * keine Duplikate. Ein Endlosschleifen-Schutz begrenzt die Chunk-Iterationen
-     * je Quelle auf ihre Gesamtgröße.
-     *
-     * @throws JsonException
-     */
-    public function migrateAll(int $chunkSize = 200, ?int $userId = null): MigrationState
-    {
-        $state = $this->reset($userId);
-
-        foreach ($this->migrators as $source => $migrator) {
-            if (!$migrator->isAvailable()) {
-                continue;
-            }
-
-            $progress = $state->for($source);
-            $maxIterations = (int) ceil(max(1, $migrator->totalCount()) / $chunkSize) + 1;
-
-            for ($i = 0; $i < $maxIterations; ++$i) {
-                if (null === $progress || $progress->isCompleted()) {
-                    break;
-                }
-                $progress = $this->runChunk($source, $chunkSize, $userId);
-            }
-        }
-
-        return $this->state();
     }
 
     /**

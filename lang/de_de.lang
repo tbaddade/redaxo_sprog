@@ -151,8 +151,7 @@ sprog_migration_ajax_csrf = CSRF-Token ungültig.
 sprog_migration_ajax_server_error = Unbekannter Server-Fehler.
 sprog_migration_ajax_chunk_limit = Migration hat das interne Chunk-Limit erreicht. Bitte Seite neu laden und fortsetzen.
 sprog_migration_ajax_bad_response = Antwort konnte nicht gelesen werden (HTTP {0}).
-sprog_migration_autorun_failed = Die automatische Datenmigration (v1 → v2) ist fehlgeschlagen: {0}. Bitte die Migration manuell über „Datenpflege → Migration" abschließen.
-sprog_migration_autorun_incomplete = Die automatische Datenmigration (v1 → v2) wurde nicht vollständig abgeschlossen. Bitte über „Datenpflege → Migration" fortsetzen.
+sprog_migration_pending_notice = Für Sprog steht noch eine Datenmigration (v1 → v2) aus. Bitte einen Administrator, sie unter „Datenpflege → Migration" auszuführen.
 
 sprog_dashboard_subpage = Übersicht
 sprog_dashboard_heading = Übersicht

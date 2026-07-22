@@ -6,6 +6,7 @@ use Sprog\Enum\SourceType;
 use Sprog\Enum\Status;
 use Sprog\Model\CoverageStat;
 use Sprog\Service\CoverageService;
+use Sprog\Service\MigrationService;
 use Sprog\Support\ClangBase;
 use Sprog\Support\Labels;
 
@@ -91,6 +92,12 @@ foreach ($languages as $ovClangId => $ovClang) {
     ];
 }
 usort($overviewRows, static fn (array $a, array $b): int => ($a['percent'] <=> $b['percent']) ?: ($b['open'] <=> $a['open']));
+
+// Ausstehende v1→v2-Migration: Admins werden bereits weitergeleitet (boot.php);
+// Nicht-Admins sehen hier den Hinweis (können die admin-only Migrationsseite nicht öffnen).
+if (MigrationService::create()->isMigrationPending()) {
+    echo rex_view::warning(rex_i18n::msg('sprog_migration_pending_notice'));
+}
 
 ?>
 <article class="sprog-ui sprog-dashboard">

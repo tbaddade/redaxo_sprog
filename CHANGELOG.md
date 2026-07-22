@@ -13,11 +13,12 @@ Sprog - Changelog
 - **Maschinelle Übersetzung** – DeepL oder KI (über das ai_platform-AddOn),
   glossargestützt; Ergebnisse sind Vorschläge, die im Workflow geprüft werden.
 - **Glossar** – verbindliche Begriffs-Vorgaben für die maschinelle Übersetzung.
-- Automatische Datenmigration v1 → v2 bei Installation/Update: deployte
-  Instanzen migrieren ihre Bestandsdaten (Platzhalter, Abkürzungen,
-  Fremdwörter) selbst in das neue `sprog_unit`/`sprog_translation`-Modell.
-  Idempotent und flag-gesteuert (läuft nur einmal); bei Bedarf manuell über
-  „Datenpflege → Migration" wiederholbar.
+- Datenmigration v1 → v2 (Platzhalter, Abkürzungen, Fremdwörter) in das neue
+  `sprog_unit`/`sprog_translation`-Modell über „Datenpflege → Migration" —
+  chunked, idempotent, beliebig wiederholbar. Nach einem Update leitet Sprog
+  Admins dorthin, solange eine Migration aussteht (Nicht-Admins sehen einen
+  Hinweis); bis zur Migration rendert der Frontend-Fallback weiter die
+  v1-Inhalte.
 - Artikel-Sprachvergleich (experimentell) in der Content-Maske: Seite-an-Seite-
   Vergleich des Artikelinhalts zweier Sprachen inkl. Inline-Bearbeitung,
   Metadaten-Vergleich und MT-Übersetzung je Feld. Über Sprog → Konfiguration →
@@ -53,6 +54,12 @@ Sprog - Changelog
 
 ### Behoben
 
+- Update von 1.x brach mit „Class Sprog\Schema\V1Schema not found" ab: REDAXO
+  führt install.php beim Update aus einem Temp-Verzeichnis (`.new.<addon>`) aus,
+  in dem die neuen v2-Klassen noch nicht autoloadbar sind. install.php ist jetzt
+  klassenrein (v2-Schema via gezieltem `require_once`), und die Datenmigration
+  läuft nicht mehr automatisch im Install, sondern geführt über die
+  Migrationsseite (s. „Neu").
 - Artikel-Sprachvergleich: Nach einem nativen ctype-/Editiermodus-Wechsel (PJAX)
   blieb bei aktivem Vergleich die Content-Maske leer — die native Slice-Liste war
   ausgeblendet, das Panel wurde aber nicht neu geladen. Der Vergleich
