@@ -184,7 +184,18 @@ final class ForeignwordMigrator implements MigratorInterface
                     notes: null,
                 ));
 
+                $seenClangs = [];
                 foreach ($rows as $row) {
+                    $clangId = (int) ($row['clang_id'] ?? 0);
+                    // v1 erlaubte doppelte (id, clang_id)-Zeilen (dreckige Altdaten); pro
+                    // Sprache darf nur eine Translation entstehen, sonst schlägt die
+                    // UNIQUE-Constraint (unit_id, clang_id) beim zweiten Insert hart auf
+                    // (SQLSTATE 23000 / 1062). Erste Zeile gewinnt.
+                    if (isset($seenClangs[$clangId])) {
+                        continue;
+                    }
+                    $seenClangs[$clangId] = true;
+
                     // Foreignword hat in v1 keine eigene "Übersetzung" pro clang
                     // (im Sinne eines abweichenden Textes) — der Eintrag selbst
                     // ist die Markierung. Wir legen pro clang eine Translation
@@ -197,7 +208,7 @@ final class ForeignwordMigrator implements MigratorInterface
                     $this->translations->save(new Translation(
                         id: null,
                         unitId: (int) $unit->id,
-                        clangId: (int) $row['clang_id'],
+                        clangId: $clangId,
                         value: $value,
                         valueHash: ContentHash::of($value),
                         sourceHashAtTranslation: null,
