@@ -54,6 +54,13 @@ Sprog - Changelog
 
 ### Behoben
 
+- Filter `format`, `limit`, `words`: Kommas innerhalb eines Arguments (etwa in
+  HTML-Attributen wie `onclick="open('/x', 'popup')"`) zerlegten das Argument,
+  und Leerzeichen nach dem Komma landeten im Wert – `format(5, Baum)` ergab
+  zwei Leerzeichen. Argumente werden jetzt nur an Kommas außerhalb von Klammern
+  und doppelten Anführungszeichen getrennt und getrimmt; `format` fängt zudem
+  fehlende Argumente ab (bisher `ValueError` im Frontend, sobald die Übersetzung
+  mehr `%s` enthielt als übergeben wurden). (#101, @ynamite)
 - Migration v1 → v2: Doppelte v1-Platzhalter-Zeilen (gleiche `id` und
   `clang_id`; v1 hatte dort keine UNIQUE-Constraint) brachen die Migration mit
   „Duplicate entry … for key translation_unit_clang" ab. Pro Sprache wird jetzt

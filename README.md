@@ -100,6 +100,11 @@ Filter werden direkt am Platzhalter im Code notiert und haben Einfluss auf deren
 | <code>{{&#160;sprog&#124;upper&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 AFFEN SITZEN AUF EINEM BAUM` |
 | <code>{{&#160;sprog&#124;words(4)&#160;}}</code> | `5 Affen sitzen auf einem Baum` | `5 Affen sitzen auf` |
 
+Argumente werden an Kommas getrennt und getrimmt. Kommas innerhalb von Klammern
+oder doppelten Anführungszeichen trennen nicht, HTML wie
+`format(<a href="/x" title="a, b">, </a>)` bleibt also ein Argument. Fehlen bei
+`format` Argumente, werden sie als Leerstring eingesetzt.
+
 
 ### Helferfunktionen
 

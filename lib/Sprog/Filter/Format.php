@@ -12,6 +12,7 @@
 namespace Sprog\Filter;
 
 use Sprog\Filter;
+use ValueError;
 
 class Format extends Filter
 {
@@ -22,10 +23,25 @@ class Format extends Filter
 
     public function fire(string $value, string $arguments): string
     {
-        if ('' == $arguments) {
+        if ('' === $arguments) {
             return $value;
         }
 
-        return vsprintf($value, explode(',', $arguments));
+        $args = self::splitArguments($arguments);
+
+        // Mehr Platzhalter als Argumente (z.B. ein in der Inbox nachträglich
+        // ergänztes %s) darf das Frontend nicht mit einem ValueError abschießen.
+        // Auffüllen mit Leerstrings: jede Konvertierung enthält mindestens ein
+        // '%', substr_count ist damit eine sichere Obergrenze; überzählige
+        // Argumente ignoriert vsprintf. Was dann noch scheitert (z.B. nur
+        // '%3$s' oder ein unbekannter Spezifizierer wie in '50%-Rabatt'),
+        // fällt auf den unformatierten Wert zurück.
+        $args = array_pad($args, substr_count($value, '%'), '');
+
+        try {
+            return vsprintf($value, $args);
+        } catch (ValueError) {
+            return $value;
+        }
     }
 }

@@ -26,7 +26,7 @@ class Words extends Filter
             return $value;
         }
 
-        $parts = explode(',', $arguments);
+        $parts = self::splitArguments($arguments);
         $words = (int) $parts[0];
         $end = $parts[1] ?? '';
 

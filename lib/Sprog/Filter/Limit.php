@@ -26,7 +26,7 @@ class Limit extends Filter
             return $value;
         }
 
-        $parts = explode(',', $arguments);
+        $parts = self::splitArguments($arguments);
         $limit = (int) $parts[0];
         $end = $parts[1] ?? '';
 
