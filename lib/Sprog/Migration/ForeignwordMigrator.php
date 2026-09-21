@@ -27,7 +27,9 @@ use const PHP_INT_MIN;
  *
  * Schema-Mapping:
  *   v1 rex_sprog_foreignword (id, clang_id, foreignword, lang, text?, status)
- *       - eine Row pro (clang_id, foreignword), UNIQUE indexed
+ *       - eine Row pro (clang_id, foreignword), UNIQUE indexed —
+ *         damit ist pro Gruppe höchstens eine Row je clang_id garantiert,
+ *         ein Dedupe wie im WildcardMigrator entfällt
  *       - lang (varchar(2)) = Quell-Sprache des Fremdwortes für das
  *         <span lang="xx">-Attribut im Frontend
  *
@@ -184,18 +186,7 @@ final class ForeignwordMigrator implements MigratorInterface
                     notes: null,
                 ));
 
-                $seenClangs = [];
                 foreach ($rows as $row) {
-                    $clangId = (int) ($row['clang_id'] ?? 0);
-                    // v1 erlaubte doppelte (id, clang_id)-Zeilen (dreckige Altdaten); pro
-                    // Sprache darf nur eine Translation entstehen, sonst schlägt die
-                    // UNIQUE-Constraint (unit_id, clang_id) beim zweiten Insert hart auf
-                    // (SQLSTATE 23000 / 1062). Erste Zeile gewinnt.
-                    if (isset($seenClangs[$clangId])) {
-                        continue;
-                    }
-                    $seenClangs[$clangId] = true;
-
                     // Foreignword hat in v1 keine eigene "Übersetzung" pro clang
                     // (im Sinne eines abweichenden Textes) — der Eintrag selbst
                     // ist die Markierung. Wir legen pro clang eine Translation
@@ -208,7 +199,7 @@ final class ForeignwordMigrator implements MigratorInterface
                     $this->translations->save(new Translation(
                         id: null,
                         unitId: (int) $unit->id,
-                        clangId: $clangId,
+                        clangId: (int) $row['clang_id'],
                         value: $value,
                         valueHash: ContentHash::of($value),
                         sourceHashAtTranslation: null,

@@ -27,7 +27,9 @@ use const PHP_INT_MIN;
  *
  * Schema-Mapping:
  *   v1 rex_sprog_abbreviation (id, clang_id, abbreviation, text, status)
- *       - eine eigene Row pro (clang_id, abbreviation), UNIQUE indexed
+ *       - eine eigene Row pro (clang_id, abbreviation), UNIQUE indexed —
+ *         damit ist pro Gruppe höchstens eine Row je clang_id garantiert,
+ *         ein Dedupe wie im WildcardMigrator entfällt
  *       - kein gemeinsamer Gruppen-Schlüssel über Sprachen — der Identifier
  *         ist der String "abbreviation" selbst
  *
@@ -174,18 +176,7 @@ final class AbbreviationMigrator implements MigratorInterface
                     notes: null,
                 ));
 
-                $seenClangs = [];
                 foreach ($rows as $row) {
-                    $clangId = (int) ($row['clang_id'] ?? 0);
-                    // v1 erlaubte doppelte (id, clang_id)-Zeilen (dreckige Altdaten); pro
-                    // Sprache darf nur eine Translation entstehen, sonst schlägt die
-                    // UNIQUE-Constraint (unit_id, clang_id) beim zweiten Insert hart auf
-                    // (SQLSTATE 23000 / 1062). Erste Zeile gewinnt.
-                    if (isset($seenClangs[$clangId])) {
-                        continue;
-                    }
-                    $seenClangs[$clangId] = true;
-
                     $value = (string) ($row['text'] ?? '');
                     // v1-Status übernehmen: aktiv (1) war live → approved,
                     // inaktiv (0) → draft (unter der approved-only-Regel nicht
@@ -199,7 +190,7 @@ final class AbbreviationMigrator implements MigratorInterface
                     $this->translations->save(new Translation(
                         id: null,
                         unitId: (int) $unit->id,
-                        clangId: $clangId,
+                        clangId: (int) $row['clang_id'],
                         value: $value,
                         valueHash: '' === $value ? null : ContentHash::of($value),
                         sourceHashAtTranslation: null,

@@ -54,6 +54,11 @@ Sprog - Changelog
 
 ### Behoben
 
+- Migration v1 → v2: Doppelte v1-Platzhalter-Zeilen (gleiche `id` und
+  `clang_id`; v1 hatte dort keine UNIQUE-Constraint) brachen die Migration mit
+  „Duplicate entry … for key translation_unit_clang" ab. Pro Sprache wird jetzt
+  nur die neueste Zeile übernommen, verworfene Zeilen werden im System-Log
+  vermerkt. (#102, @TobiasKrais)
 - Update von 1.x brach mit „Class Sprog\Schema\V1Schema not found" ab: REDAXO
   führt install.php beim Update aus einem Temp-Verzeichnis (`.new.<addon>`) aus,
   in dem die neuen v2-Klassen noch nicht autoloadbar sind. install.php ist jetzt

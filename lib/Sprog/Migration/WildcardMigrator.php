@@ -6,6 +6,7 @@ namespace Sprog\Migration;
 
 use InvalidArgumentException;
 use rex;
+use rex_logger;
 use rex_sql;
 use rex_sql_exception;
 use Sprog\Enum\SourceType;
@@ -36,7 +37,7 @@ use const PHP_INT_MIN;
  *         source_ref=NULL, source_hash=NULL (Quell-Sprache ist konzeptuell
  *         nicht definiert — wird beim ersten Edit gesetzt)
  *
- *       - sprog_translation: eine Row pro v1-Row
+ *       - sprog_translation: eine Row pro (id, clang_id)
  *         value=$replace, status=approved (bzw. missing bei leerem replace),
  *         valueHash=sha256($value) bei nicht-leerem value, revision=0
  *
@@ -48,6 +49,11 @@ use const PHP_INT_MIN;
  * Idempotenz: vor jedem Gruppen-Insert prüfen wir, ob eine Unit mit
  * (namespace='wildcard', unit_key=$wildcardName) bereits existiert.
  * Falls ja, überspringen — bereits migriert.
+ *
+ * Doppelzeilen: v1 hat keine UNIQUE-Constraint auf (id, clang_id) — z.B. der
+ * v1-CSV-Import konnte dieselbe Sprache zweimal anlegen. Pro Sprache wird nur
+ * die neueste Zeile (höchste pid) übernommen, die übrigen werden mit Warnung
+ * im System-Log verworfen. Siehe migrateChunk().
  *
  * TODO(v3): Konstruktor, isAvailable(), migrateChunk()-Loop-Skelett,
  * Transaktions-Wrapping und ensureRowsForUnit() teilen ~80% Struktur mit
@@ -133,10 +139,15 @@ final class WildcardMigrator implements MigratorInterface
             $groupId = (int) $idRow['id'];
             $newLastId = $groupId;
 
+            // pid DESC als Tiebreaker: v1 hat keine UNIQUE-Constraint auf
+            // (id, clang_id), Doppelzeilen pro Sprache sind möglich. Bei Duplikaten
+            // gewinnt die neueste Zeile — das entspricht dem v1-Frontend, wo
+            // Wildcard::parse() die Map ohne ORDER BY überschrieb und damit die
+            // zuletzt gelesene Zeile (höchste pid) ausgab.
             $groupRows = rex_sql::factory()->getArray(
-                'SELECT wildcard, clang_id, `replace` FROM ' . $v1Table . '
+                'SELECT pid, wildcard, clang_id, `replace` FROM ' . $v1Table . '
                  WHERE id = :id
-                 ORDER BY clang_id',
+                 ORDER BY clang_id, pid DESC',
                 ['id' => $groupId],
             );
 
@@ -175,19 +186,31 @@ final class WildcardMigrator implements MigratorInterface
                     notes: null,
                 ));
 
-                $seenClangs = [];
+                /** @var array<int, array{pid: int, value: string}> $seen clang_id → übernommene Zeile */
+                $seen = [];
                 foreach ($groupRows as $row) {
                     $clangId = (int) ($row['clang_id'] ?? 0);
-                    // v1 erlaubte doppelte (id, clang_id)-Zeilen (dreckige Altdaten); pro
-                    // Sprache darf nur eine Translation entstehen, sonst schlägt die
-                    // UNIQUE-Constraint (unit_id, clang_id) beim zweiten Insert hart auf
-                    // (SQLSTATE 23000 / 1062). Erste Zeile gewinnt.
-                    if (isset($seenClangs[$clangId])) {
+                    $pid = (int) ($row['pid'] ?? 0);
+                    $value = (string) ($row['replace'] ?? '');
+
+                    // Doppelzeile pro Sprache (siehe ORDER BY oben): nur die erste,
+                    // also neueste Zeile wird zur Translation — sonst schlägt die
+                    // UNIQUE-Constraint (unit_id, clang_id) beim zweiten Insert hart
+                    // auf (SQLSTATE 23000 / 1062). Die verworfene Zeile landet im
+                    // System-Log, damit ein abweichender Wert nicht spurlos verschwindet.
+                    if (isset($seen[$clangId])) {
+                        rex_logger::factory()->log('warning', sprintf(
+                            'sprog-Migration: doppelte v1-Wildcard-Zeile verworfen (id=%d, clang_id=%d, pid=%d, Wert %s); übernommen wurde pid=%d.',
+                            $groupId,
+                            $clangId,
+                            $pid,
+                            $value === $seen[$clangId]['value'] ? 'identisch' : 'abweichend',
+                            $seen[$clangId]['pid'],
+                        ));
                         continue;
                     }
-                    $seenClangs[$clangId] = true;
+                    $seen[$clangId] = ['pid' => $pid, 'value' => $value];
 
-                    $value = (string) ($row['replace'] ?? '');
                     // v1-Wildcards hatten keinen Status und waren immer live →
                     // approved (sichtbar unter der approved-only-Frontend-Regel).
                     $status = '' === $value ? Status::Missing : Status::Approved;
