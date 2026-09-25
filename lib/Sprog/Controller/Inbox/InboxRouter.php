@@ -25,6 +25,7 @@ final class InboxRouter
             'save' => SaveTranslationController::create()->handle($user),
             'update_unit' => UpdateUnitController::create()->handle($user),
             'create_unit' => CreateUnitController::create()->handle($user),
+            'delete_unit' => DeleteUnitController::create()->handle($user),
             'transition' => TransitionController::create()->handle($user),
             'mt' => MtController::create()->handle($user),
             'history' => HistoryController::create()->list($user),
