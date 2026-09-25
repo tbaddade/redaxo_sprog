@@ -1632,6 +1632,24 @@
     color: #ffffff;
 }
 
+/* Danger spiegelt --primary in Form/Padding, aber in der Danger-Farbe — für den
+   Löschen-Button im Unit-Modal. */
+.sprog-btn--danger {
+    padding: 0.72rem 1.6rem;
+    border-radius: 0.64rem;
+    background: transparent;
+    border-color: var(--sprog-color-danger);
+    color: var(--sprog-color-danger);
+    font-size: var(--sprog-text-md);
+    font-weight: 500;
+}
+
+.sprog-btn--danger:hover:not(:disabled) {
+    background: var(--sprog-color-danger);
+    border-color: var(--sprog-color-danger);
+    color: #ffffff;
+}
+
 .sprog-btn--reset {
     min-height: 3.6rem;
     padding: 0.48rem 0.96rem;

@@ -203,6 +203,7 @@ $baseParams = [
 
 $jsonEndpoint = rex_url::currentBackendPage(['func' => 'save'], false);
 $endpointUpdateUnit = rex_url::currentBackendPage(['func' => 'update_unit'], false);
+$endpointDeleteUnit = rex_url::currentBackendPage(['func' => 'delete_unit'], false);
 $endpointTransition = rex_url::currentBackendPage(['func' => 'transition'], false);
 
 // Permission fürs Inline-Edit des Unit-Keys (Stift-Button). Editierung von
@@ -301,6 +302,7 @@ if (MigrationService::create()->isMigrationPending()) {
     data-sprog-inbox
     data-endpoint="<?= rex_escape($jsonEndpoint) ?>"
     data-endpoint-update-unit="<?= rex_escape($endpointUpdateUnit) ?>"
+    data-endpoint-delete-unit="<?= rex_escape($endpointDeleteUnit) ?>"
     data-endpoint-transition="<?= rex_escape($endpointTransition) ?>"
     data-endpoint-mt="<?= rex_escape(rex_url::currentBackendPage(['func' => 'mt'], false)) ?>"
     data-endpoint-history="<?= rex_escape(rex_url::currentBackendPage(['func' => 'history'], false)) ?>"
@@ -1049,6 +1051,11 @@ if (MigrationService::create()->isMigrationPending()) {
                 <button type="button" class="sprog-inbox--unit-modal-cancel" data-role="unit-modal-cancel">
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_cancel') ?>
                 </button>
+<?php if ($canEditUnit) : ?>
+                <button type="button" class="sprog-btn sprog-btn--danger sprog-inbox--unit-modal-delete" data-role="unit-modal-delete" hidden>
+                    <?= rex_i18n::msg('sprog_inbox_unit_modal_delete') ?>
+                </button>
+<?php endif; ?>
                 <button type="submit" class="sprog-btn sprog-btn--primary" data-role="unit-modal-submit">
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_save') ?>
                 </button>
@@ -1150,6 +1157,8 @@ window.sprogInbox = {
         notesLabel:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_notes_label'), JSON_THROW_ON_ERROR) ?>,
         modalTitleEdit:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title'), JSON_THROW_ON_ERROR) ?>,
         modalTitleCreate:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title_create'), JSON_THROW_ON_ERROR) ?>,
+        unitDeleteConfirm:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_delete_confirm'), JSON_THROW_ON_ERROR) ?>,
+        unitDeleted:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_deleted'), JSON_THROW_ON_ERROR) ?>,
         copyDone:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_copy_placeholder_done'), JSON_THROW_ON_ERROR) ?>,
         mtLoading:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_button_loading'), JSON_THROW_ON_ERROR) ?>,
         mtApplyConfirm:   <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_apply_confirm'), JSON_THROW_ON_ERROR) ?>,

@@ -6,6 +6,10 @@ Sprog - Changelog
 
 ### Neu
 
+- **Platzhalter löschen** – im Inbox-Bearbeiten-Dialog (Stift) löscht ein
+  roter Button eine Einheit samt aller Übersetzungen und ihres Verlaufs (mit
+  Bestätigung). Recht `sprog[unit_edit]` bzw. Admin; die Löschung wird im
+  Aktivitäts-Log als `unit.deleted` festgehalten.
 - **Inbox** – zentrale Verwaltung aller Übersetzungen: filtern nach Sprache,
   Namespace und Status, inline bearbeiten, Verlauf je Übersetzung.
 - **Review-Workflow** – Status fehlt → Entwurf → zur Prüfung → freigegeben, mit
