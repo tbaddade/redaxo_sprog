@@ -27,8 +27,8 @@ use function strlen;
  * Units werden per (namespace, context, key) gesucht, fehlende über den
  * UnitService angelegt (gleiche Prüfungen wie in der Inbox). Werte laufen
  * über TranslationService::updateValue (origin=import, Auto-Status wie beim
- * Inbox-Edit). Freigegebene Übersetzungen bleiben unangetastet, leere Zellen
- * werden übersprungen.
+ * Inbox-Edit). Freigegebene Übersetzungen und unveränderte Werte bleiben
+ * unangetastet, leere Zellen werden übersprungen.
  *
  * Aufrufer: pages/artefact.import.php, Konsole (sprog:import) und Code
  * anderer AddOns:
@@ -121,6 +121,14 @@ final class CsvImportService
                 $current = $this->translationRepo->findForUnitAndClang((int) $unit->id, $clangId);
                 if (null !== $current && Status::Approved === $current->status) {
                     ++$result->skippedApproved;
+                    continue;
+                }
+                // Unveränderte Werte nicht erneut speichern: updateValue würde
+                // sonst MT-Herkunft und translator_id überschreiben und
+                // source_hash_at_translation neu setzen (eine veraltete
+                // Übersetzung gälte danach als aktuell).
+                if (null !== $current && $current->value === $value) {
+                    ++$result->skippedUnchanged;
                     continue;
                 }
 

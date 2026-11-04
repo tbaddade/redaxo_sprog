@@ -12,6 +12,8 @@ Sprog - Changelog
   dieselben Prüfungen wie in der Inbox (erlaubter Namespace, Längen, Duplikat),
   bekommen für alle Sprachen eine „fehlt“-Zeile und einen `unit.created`-Eintrag
   im Aktivitäts-Log. Fehlerhafte Zeilen werden mit Zeilennummer gemeldet.
+  Unveränderte Werte werden nicht erneut gespeichert (MT-Herkunft, Übersetzer
+  und Stale-Erkennung bleiben erhalten).
 - **Platzhalter löschen** – im Inbox-Bearbeiten-Dialog (Stift) löscht ein
   roter Button eine Einheit samt aller Übersetzungen und ihres Verlaufs (mit
   Bestätigung). Der Button sitzt links abgesetzt von Abbrechen/Speichern, um

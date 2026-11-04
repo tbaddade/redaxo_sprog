@@ -37,7 +37,7 @@ if ('post' === rex_request::requestMethod()) {
             foreach ($result->ignoredColumns as $column) {
                 $messages[] = rex_view::warning($this->i18n('import_language_ignored', $column));
             }
-            $messages[] = rex_view::success($this->i18n('import_result', $result->unitsCreated, $result->valuesSet, $result->skippedApproved, $result->skippedEmpty));
+            $messages[] = rex_view::success($this->i18n('import_result', $result->unitsCreated, $result->valuesSet, $result->skippedUnchanged, $result->skippedApproved, $result->skippedEmpty));
             if ([] !== $result->errors) {
                 $items = '';
                 foreach ($result->errors as $error) {

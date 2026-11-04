@@ -215,8 +215,8 @@ $result = CsvImportService::create()->importString($csv, ','); // String
 $result->unitsCreated; $result->valuesSet; $result->errors; // …
 ```
 
-Fehlende Einheiten werden angelegt, freigegebene Übersetzungen bleiben
-unangetastet, leere Zellen werden übersprungen.
+Fehlende Einheiten werden angelegt. Freigegebene Übersetzungen und unveränderte
+Werte bleiben unangetastet, leere Zellen werden übersprungen.
 
 ## Migration von Sprog 1.x
 

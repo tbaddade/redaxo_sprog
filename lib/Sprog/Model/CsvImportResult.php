@@ -12,6 +12,8 @@ final class CsvImportResult
 {
     public int $unitsCreated = 0;
     public int $valuesSet = 0;
+    /** Wert in der Datei entspricht dem gespeicherten — nichts geschrieben. */
+    public int $skippedUnchanged = 0;
     public int $skippedApproved = 0;
     public int $skippedEmpty = 0;
 

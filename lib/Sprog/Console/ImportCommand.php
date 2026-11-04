@@ -59,7 +59,7 @@ final class ImportCommand extends rex_console_command
             ));
         }
 
-        $io->success(rex_i18n::rawMsg('sprog_import_result', $result->unitsCreated, $result->valuesSet, $result->skippedApproved, $result->skippedEmpty));
+        $io->success(rex_i18n::rawMsg('sprog_import_result', $result->unitsCreated, $result->valuesSet, $result->skippedUnchanged, $result->skippedApproved, $result->skippedEmpty));
 
         return [] === $result->errors ? self::SUCCESS : self::FAILURE;
     }
