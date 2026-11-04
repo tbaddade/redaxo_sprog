@@ -32,3 +32,11 @@ parameters:
         -
             identifier: class.notFound
             path: lib/Sprog/Mt/AiPlatformProvider.php
+
+        # yrewrite ist ebenfalls WEICH: StructureClangGuard greift nur zu, wenn
+        # `structure_clang_filter` aktiv UND rex_addon::get('yrewrite')->isAvailable().
+        # Ohne yrewrite im Scan-Pfad sind rex_yrewrite/rex_yrewrite_domain
+        # unbekannt — gewollt, kein Fehler.
+        -
+            identifier: class.notFound
+            path: lib/Sprog/Support/StructureClangGuard.php
