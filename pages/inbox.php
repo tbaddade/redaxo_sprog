@@ -1158,7 +1158,6 @@ window.sprogInbox = {
         modalTitleEdit:  <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title'), JSON_THROW_ON_ERROR) ?>,
         modalTitleCreate:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_modal_title_create'), JSON_THROW_ON_ERROR) ?>,
         unitDeleteConfirm:<?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_delete_confirm'), JSON_THROW_ON_ERROR) ?>,
-        unitDeleted:      <?= json_encode(rex_i18n::rawMsg('sprog_inbox_unit_deleted'), JSON_THROW_ON_ERROR) ?>,
         copyDone:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_copy_placeholder_done'), JSON_THROW_ON_ERROR) ?>,
         mtLoading:        <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_button_loading'), JSON_THROW_ON_ERROR) ?>,
         mtApplyConfirm:   <?= json_encode(rex_i18n::rawMsg('sprog_inbox_mt_apply_confirm'), JSON_THROW_ON_ERROR) ?>,

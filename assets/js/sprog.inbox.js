@@ -627,9 +627,9 @@
 
         /**
          * Löschen-Button (nur Edit-Mode sichtbar): nach Bestätigung POST an den
-         * delete_unit-Endpoint. Bei Erfolg wird die Akkordeon-Card ohne Reload
-         * aus dem DOM entfernt und das Modal geschlossen. Nutzt denselben CSRF-
-         * Token wie update_unit (sprog_inbox_save).
+         * delete_unit-Endpoint. Bei Erfolg wird die Liste neu geladen, damit
+         * Anzahl und Pagination stimmen. Nutzt denselben CSRF-Token wie
+         * update_unit (sprog_inbox_save).
          */
         modalDelete?.addEventListener('click', async () => {
             if (!modalActiveUnit || !endpointDeleteUnit) return;
@@ -638,9 +638,8 @@
             modalErr.hidden = true;
             modalErr.textContent = '';
 
-            const unitEl = modalActiveUnit;
             const body = new URLSearchParams();
-            body.set('unit_id', unitEl.getAttribute('data-unit-id'));
+            body.set('unit_id', modalActiveUnit.getAttribute('data-unit-id'));
             if (csrfName && csrfValue) body.set(csrfName, csrfValue);
 
             try {
@@ -658,9 +657,10 @@
                     return;
                 }
 
-                closeUnitModal();
-                unitEl.remove();
-                toast(strings.unitDeleted || 'Gelöscht', 'ok');
+                // Reload statt Card-Entfernung: Anzahl, Pagination und das
+                // Nachrücken der nächsten Einträge entsprechen so exakt dem
+                // Server-Stand (wie beim Anlegen).
+                window.location.reload();
             } catch (err) {
                 modalErr.textContent = (strings.errorPrefix || 'Fehler') + ': ' + err.message;
                 modalErr.hidden = false;

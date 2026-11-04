@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sprog\Controller\Inbox;
 
 use rex_i18n;
+use rex_sql;
 use rex_user;
 use Sprog\Http\JsonResponse;
 use Sprog\Repository\TranslationHistoryRepository;
@@ -63,10 +64,16 @@ final class DeleteUnitController
         }
 
         try {
-            $this->history->deleteByUnit((int) $unit->id);
-            $this->translations->deleteByUnit((int) $unit->id);
-            $this->units->delete((int) $unit->id);
-            $this->activity->logUnitDeleted((int) $unit->id, $user->getId(), $unit->namespace, $unit->unitKey);
+            // Alle Repositories teilen sich die rex_sql-Verbindung (DB 1) — die
+            // Transaktion umschließt also History, Translations, Unit und den
+            // Audit-Eintrag gemeinsam. Bricht ein Schritt ab, bleibt nichts halb
+            // gelöscht zurück.
+            rex_sql::factory()->transactional(function () use ($unitId, $unit, $user): void {
+                $this->history->deleteByUnit($unitId);
+                $this->translations->deleteByUnit($unitId);
+                $this->units->delete($unitId);
+                $this->activity->logUnitDeleted($unitId, $user->getId(), $unit->namespace, $unit->unitKey);
+            });
         } catch (Throwable $e) {
             JsonResponse::internalError($e->getMessage());
         }
