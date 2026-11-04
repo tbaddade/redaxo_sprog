@@ -38,7 +38,7 @@ final readonly class TranslationListFilter
      * @param int           $clangId   rex_clang.id, > 0
      * @param ?string       $namespace Single Namespace-Filter (z.B. 'wildcard'); null = alle
      * @param list<Status>  $statuses  Erlaubte Status; leer = alle
-     * @param ?string       $search    Substring-Suche in unit_key + value; null/leer = kein Filter
+     * @param ?string       $search    Substring-Suche in unit_key, context, „context.unit_key" und value; null/leer = kein Filter
      * @param int           $page      1-basiert
      * @param int           $pageSize  1..MAX_PAGE_SIZE
      * @param bool          $conflictsOnly Nur Units mit Wildcard-Konflikt (Punkt-Trenner-Ambiguität)

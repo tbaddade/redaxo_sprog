@@ -277,9 +277,13 @@ final class TranslationListService
             $escaped = rex_sql::factory()->escapeLikeWildcards($filter->search);
             $like = '%' . $escaped . '%';
 
-            // Suche auf unit_key ODER (Unit-weit) auf irgendeine Translation-Value.
+            // Suche auf Key, Bereich, den vollen Platzhalter-Pfad „bereich.key"
+            // (so wie er im Frontend steht, z.B. „page.about.title") ODER
+            // (Unit-weit) auf irgendeine Translation-Value.
             $where[] = '(
                 u.unit_key LIKE :search
+                OR u.context LIKE :search
+                OR CONCAT(u.context, \'.\', u.unit_key) LIKE :search
                 OR EXISTS (
                     SELECT 1 FROM ' . $translationTable . ' tv
                     WHERE tv.unit_id = u.id AND tv.value LIKE :search

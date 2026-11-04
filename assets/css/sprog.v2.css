@@ -1485,9 +1485,20 @@
     flex: 1 1 16rem;
 }
 
+/* Das Suchfeld ist 40px hoch (statt der üblichen 36px), damit es als
+   Hauptwerkzeug der Seite nicht verloren wirkt — die Buttons derselben Zeile
+   ziehen mit, sonst sitzt die Zeile nicht bündig. Bewusst nur die Buttons der
+   Zeile selbst: im Glossar steckt das Anlegen-Formular (Dropdown) ebenfalls in
+   der Zeile und behält seine Feldhöhen. */
+.sprog-toolbar--row > .sprog-btn,
+.sprog-toolbar--search > .sprog-btn,
+.sprog-toolbar--row .sprog-glossary--add-trigger {
+    min-height: 4rem;
+}
+
 .sprog-search {
     flex: 1 1 24rem;
-    height: 3.6rem;
+    height: 4rem;
     display: inline-flex;
     align-items: center;
     gap: 0.64rem;
@@ -1519,7 +1530,7 @@
     background: transparent;
     color: var(--sprog-color-fg);
     font: inherit;
-    font-size: var(--sprog-text-xs);
+    font-size: var(--sprog-text-md);
     padding: 0.32rem 0;
 }
 

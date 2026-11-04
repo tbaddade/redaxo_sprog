@@ -18,7 +18,9 @@ Sprog - Changelog
   versehentliches Klicken zu vermeiden. Recht `sprog[unit_edit]` bzw. Admin; die
   Löschung wird im Aktivitäts-Log als `unit.deleted` festgehalten.
 - **Inbox** – zentrale Verwaltung aller Übersetzungen: filtern nach Sprache,
-  Namespace und Status, inline bearbeiten, Verlauf je Übersetzung.
+  Namespace und Status, inline bearbeiten, Verlauf je Übersetzung. Die Suche
+  findet Schlüssel, Bereich, den vollen Platzhalter-Pfad (z. B.
+  `page.about.title`) und Inhalte.
 - **Review-Workflow** – Status fehlt → Entwurf → zur Prüfung → freigegeben, mit
   den Rollen `sprog[translator]` und `sprog[reviewer]`.
 - **Maschinelle Übersetzung** – DeepL oder KI (über das ai_platform-AddOn),
