@@ -11,6 +11,8 @@
 
 namespace Sprog;
 
+use function strlen;
+
 abstract class Filter
 {
     /**

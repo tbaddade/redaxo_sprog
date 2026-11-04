@@ -20,6 +20,7 @@ use Sprog\Support\ContentHash;
 use Throwable;
 
 use function count;
+use function sprintf;
 
 use const PHP_INT_MIN;
 

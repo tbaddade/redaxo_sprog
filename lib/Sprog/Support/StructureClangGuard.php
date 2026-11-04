@@ -16,7 +16,6 @@ namespace Sprog\Support;
 use rex_addon;
 use rex_clang;
 use rex_config;
-use rex_escape;
 use rex_extension;
 use rex_extension_point;
 use rex_yrewrite;
