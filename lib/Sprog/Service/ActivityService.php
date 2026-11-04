@@ -79,6 +79,20 @@ final class ActivityService
         ]);
     }
 
+    /**
+     * Audit-Eintrag beim Löschen einer Unit. Die Zeile bleibt als append-only
+     * Nachweis erhalten, auch wenn die referenzierte Unit gleich darauf
+     * verschwindet — die unit_id ist dann ein verwaister Backref, was für ein
+     * Audit-Log gewollt ist (das Ereignis IST die Löschung).
+     */
+    public function logUnitDeleted(int $unitId, ?int $userId, string $namespace, string $unitKey): int
+    {
+        return $this->log(self::ACTION_UNIT_DELETED, $unitId, null, $userId, [
+            'namespace' => $namespace,
+            'unit_key' => $unitKey,
+        ]);
+    }
+
     public function logSourceChanged(int $unitId, ?int $userId, ?string $oldHash, ?string $newHash, int $staleCount): int
     {
         return $this->log(self::ACTION_SOURCE_CHANGED, $unitId, null, $userId, [

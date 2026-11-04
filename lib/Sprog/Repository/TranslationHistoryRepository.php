@@ -158,6 +158,22 @@ final class TranslationHistoryRepository
         return $sql->getRows();
     }
 
+    /**
+     * Alle Historien-Snapshots einer Unit löschen — Cleanup-Schritt beim
+     * Löschen einer Unit (analog TranslationRepository::deleteByUnit). Ohne
+     * DB-Cascades räumt der Caller die Kind-Tabellen selbst ab.
+     *
+     * @throws rex_sql_exception
+     */
+    public function deleteByUnit(int $unitId): void
+    {
+        $sql = rex_sql::factory();
+        $sql->setQuery(
+            'DELETE FROM ' . $this->tableName() . ' WHERE unit_id = :unit_id',
+            ['unit_id' => $unitId],
+        );
+    }
+
     private function tableName(): string
     {
         return rex::getTable(self::TABLE);

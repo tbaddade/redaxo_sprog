@@ -20,6 +20,7 @@
     }
     const endpoint           = root.getAttribute('data-endpoint');
     const endpointUpdateUnit = root.getAttribute('data-endpoint-update-unit');
+    const endpointDeleteUnit = root.getAttribute('data-endpoint-delete-unit');
     const endpointTransition = root.getAttribute('data-endpoint-transition');
     const endpointMt         = root.getAttribute('data-endpoint-mt');
     const endpointHistory    = root.getAttribute('data-endpoint-history');
@@ -568,6 +569,7 @@
         const modalErr     = unitModal.querySelector('[data-role="modal-error"]');
         const modalCancel  = unitModal.querySelector('[data-role="unit-modal-cancel"]');
         const modalClose   = unitModal.querySelector('[data-role="unit-modal-close"]');
+        const modalDelete  = unitModal.querySelector('[data-role="unit-modal-delete"]');
 
         const endpointCreateUnit = unitModal.getAttribute('data-endpoint-create');
         const createCsrfName     = unitModal.getAttribute('data-create-csrf-name');
@@ -596,6 +598,7 @@
             modalNsSel.hidden = true;
             modalErr.hidden   = true;
             modalErr.textContent = '';
+            if (modalDelete) modalDelete.hidden = false;
             unitModal.showModal();
             modalKey.focus();
             modalKey.select();
@@ -614,12 +617,55 @@
             modalNsSel.value  = 'wildcard'; // Default: häufigster Provider
             modalErr.hidden   = true;
             modalErr.textContent = '';
+            if (modalDelete) modalDelete.hidden = true;
             unitModal.showModal();
             modalKey.focus();
         };
 
         modalCancel?.addEventListener('click', closeUnitModal);
         modalClose?.addEventListener('click', closeUnitModal);
+
+        /**
+         * Löschen-Button (nur Edit-Mode sichtbar): nach Bestätigung POST an den
+         * delete_unit-Endpoint. Bei Erfolg wird die Akkordeon-Card ohne Reload
+         * aus dem DOM entfernt und das Modal geschlossen. Nutzt denselben CSRF-
+         * Token wie update_unit (sprog_inbox_save).
+         */
+        modalDelete?.addEventListener('click', async () => {
+            if (!modalActiveUnit || !endpointDeleteUnit) return;
+            if (!window.confirm(strings.unitDeleteConfirm || 'OK?')) return;
+
+            modalErr.hidden = true;
+            modalErr.textContent = '';
+
+            const unitEl = modalActiveUnit;
+            const body = new URLSearchParams();
+            body.set('unit_id', unitEl.getAttribute('data-unit-id'));
+            if (csrfName && csrfValue) body.set(csrfName, csrfValue);
+
+            try {
+                const res = await fetch(endpointDeleteUnit, {
+                    method:  'POST',
+                    headers: { 'Accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body:    body.toString(),
+                    credentials: 'same-origin',
+                });
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok || !data || data.ok !== true) {
+                    modalErr.textContent = (data && data.error) || strings.errorPrefix || 'Fehler';
+                    modalErr.hidden = false;
+                    return;
+                }
+
+                closeUnitModal();
+                unitEl.remove();
+                toast(strings.unitDeleted || 'Gelöscht', 'ok');
+            } catch (err) {
+                modalErr.textContent = (strings.errorPrefix || 'Fehler') + ': ' + err.message;
+                modalErr.hidden = false;
+            }
+        });
 
         unitModal.addEventListener('click', (event) => {
             if (event.target === unitModal) closeUnitModal();
