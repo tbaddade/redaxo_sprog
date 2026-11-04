@@ -60,8 +60,12 @@ sprog_import_format_hint = Columns: namespace ; context ; key ; notes ; then one
 sprog_import_button = Import
 sprog_import_no_file = Please choose a CSV file.
 sprog_import_result = Import finished: {0} units created, {1} translations set, {2} approved skipped, {3} empty.
-sprog_import_errors = {0} rows skipped due to errors.
+sprog_import_errors = {0} entries skipped due to errors:
+sprog_import_error_row = Line {0}: {1}
 sprog_import_language_ignored = Unknown language column „{0}“ ignored.
+sprog_console_import_description = Imports a CSV in export format into the inbox (missing units are created, approved translations stay untouched).
+sprog_console_import_file = Path to the CSV file
+sprog_console_import_delimiter = Delimiter
 
 sprog_export = Export
 sprog_export_heading = Export inbox

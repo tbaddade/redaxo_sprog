@@ -1052,7 +1052,7 @@ if (MigrationService::create()->isMigrationPending()) {
                 <button type="button" class="sprog-btn sprog-btn--danger sprog-inbox--unit-modal-delete" data-role="unit-modal-delete" hidden>
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_delete') ?>
                 </button>
-<?php endif; ?>
+<?php endif ?>
                 <button type="button" class="sprog-inbox--unit-modal-cancel" data-role="unit-modal-cancel">
                     <?= rex_i18n::msg('sprog_inbox_unit_modal_cancel') ?>
                 </button>

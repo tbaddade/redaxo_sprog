@@ -25,6 +25,9 @@ requires:
     redaxo: '^5.21'
     php: '^8.4'
 
+console_commands:
+    sprog:import: Sprog\Console\ImportCommand
+
 filter:
     - Sprog\Filter\Format
     - Sprog\Filter\Limit

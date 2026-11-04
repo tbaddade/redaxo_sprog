@@ -10,22 +10,15 @@
  * file that was distributed with this source code.
  */
 
-use Sprog\Enum\Status;
-use Sprog\Model\Unit;
-use Sprog\Repository\TranslationRepository;
-use Sprog\Repository\UnitRepository;
-use Sprog\Service\TranslationService;
-use Symfony\Component\Serializer\Encoder\CsvEncoder;
+use Sprog\Service\CsvImportService;
 
 $csrf = rex_csrf_token::factory('sprog_artefact_import');
 $messages = [];
 
 /*
  |-----------------------------------------------------------------------------
- | Import: CSV im Export-Format → Inbox. Units per (namespace, context, key)
- | matchen; fehlende anlegen. Werte über den normalen updateValue-Pfad setzen
- | (origin=import, Auto-Status wie beim Inbox-Edit). Freigegebene bleiben
- | unangetastet, leere Zellen werden übersprungen.
+ | Import: CSV im Export-Format → Inbox. Die Logik liegt im CsvImportService
+ | (auch per Konsole `sprog:import` und aus anderen AddOns nutzbar).
  |-----------------------------------------------------------------------------
  */
 if ('post' === rex_request::requestMethod()) {
@@ -36,88 +29,24 @@ if ('post' === rex_request::requestMethod()) {
     } elseif (!is_array($file) || empty($file['tmp_name'])) {
         $messages[] = rex_view::error($this->i18n('import_no_file'));
     } else {
-        $records = (new CsvEncoder())->decode(rex_file::get($file['tmp_name']), 'csv', [CsvEncoder::DELIMITER_KEY => ';']);
-        if (!is_array($records) || !isset($records[0])) {
-            $records = [];
-        }
-
-        $clangByCode = [];
-        foreach (rex_clang::getAll() as $clang) {
-            $clangByCode[strtolower($clang->getCode())] = $clang->getId();
-        }
-        $reserved = ['namespace', 'context', 'key', 'notes'];
-
-        $unitRepo = new UnitRepository();
-        $translationRepo = new TranslationRepository();
-        $service = TranslationService::create();
         $userId = null !== rex::getUser() ? (int) rex::getUser()->getId() : null;
 
-        $unitsCreated = 0;
-        $valuesSet = 0;
-        $skippedApproved = 0;
-        $skippedEmpty = 0;
-        $errors = 0;
-        $ignoredColumns = [];
+        try {
+            $result = CsvImportService::create()->importFile((string) $file['tmp_name'], userId: $userId);
 
-        foreach ($records as $record) {
-            // Header-Keys normalisieren (BOM aus dem Export + Whitespace).
-            $row = [];
-            foreach ($record as $key => $value) {
-                $row[strtolower(trim(str_replace("\u{FEFF}", '', (string) $key)))] = $value;
+            foreach ($result->ignoredColumns as $column) {
+                $messages[] = rex_view::warning($this->i18n('import_language_ignored', $column));
             }
-
-            $namespace = trim((string) ($row['namespace'] ?? ''));
-            $unitKey = trim((string) ($row['key'] ?? ''));
-            $context = trim((string) ($row['context'] ?? ''));
-            $notes = (string) ($row['notes'] ?? '');
-
-            if ('' === $namespace || '' === $unitKey) {
-                continue;
+            $messages[] = rex_view::success($this->i18n('import_result', $result->unitsCreated, $result->valuesSet, $result->skippedApproved, $result->skippedEmpty));
+            if ([] !== $result->errors) {
+                $items = '';
+                foreach ($result->errors as $error) {
+                    $items .= '<li>' . rex_escape(rex_i18n::rawMsg('sprog_import_error_row', $error['row'], $error['message'])) . '</li>';
+                }
+                $messages[] = rex_view::warning($this->i18n('import_errors', count($result->errors)) . '<ul>' . $items . '</ul>');
             }
-
-            $unit = $unitRepo->findByKey($namespace, $unitKey, $context);
-            if (null === $unit) {
-                $unit = $unitRepo->save(new Unit(null, $namespace, $unitKey, $context, notes: '' !== $notes ? $notes : null));
-                ++$unitsCreated;
-            }
-
-            foreach ($row as $column => $value) {
-                if (in_array($column, $reserved, true)) {
-                    continue;
-                }
-                if (!isset($clangByCode[$column])) {
-                    $ignoredColumns[$column] = $column;
-                    continue;
-                }
-
-                $value = (string) $value;
-                if ('' === trim($value)) {
-                    ++$skippedEmpty;
-                    continue;
-                }
-
-                $clangId = $clangByCode[$column];
-                $current = $translationRepo->findForUnitAndClang((int) $unit->id, $clangId);
-                if (null !== $current && Status::Approved === $current->status) {
-                    ++$skippedApproved;
-                    continue;
-                }
-
-                try {
-                    $service->updateValue($unit, $clangId, $value, $userId, origin: 'import');
-                    ++$valuesSet;
-                } catch (Throwable) {
-                    ++$errors;
-                }
-            }
-        }
-
-        foreach ($ignoredColumns as $column) {
-            $messages[] = rex_view::warning($this->i18n('import_language_ignored', $column));
-        }
-        $messages[] = rex_view::success($this->i18n('import_result', $unitsCreated, $valuesSet, $skippedApproved, $skippedEmpty));
-        if ($errors > 0) {
-            $messages[] = rex_view::warning($this->i18n('import_errors', $errors));
+        } catch (Throwable $e) {
+            $messages[] = rex_view::error(rex_escape($e->getMessage()));
         }
     }
 }

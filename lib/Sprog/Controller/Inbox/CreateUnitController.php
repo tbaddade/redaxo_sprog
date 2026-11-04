@@ -6,16 +6,10 @@ namespace Sprog\Controller\Inbox;
 
 use rex_i18n;
 use rex_user;
-use Sprog\Enum\SourceType;
+use Sprog\Exception\UnitValidationException;
 use Sprog\Http\JsonResponse;
-use Sprog\Model\Unit;
-use Sprog\Repository\UnitRepository;
-use Sprog\Service\ActivityService;
-use Sprog\Service\TranslationService;
+use Sprog\Service\UnitService;
 use Throwable;
-
-use function in_array;
-use function strlen;
 
 /**
  * Endpoint POST ?func=create_unit — Modal-Create aus der Inbox.
@@ -24,79 +18,34 @@ use function strlen;
  * bei der Anlage noch keine ID existiert. Permissions: jeder eingeloggte User
  * mit sprog-Zugriff darf eine Unit anlegen — dieselbe Schwelle wie auf
  * pages/create.php, die parallel weiter erreichbar bleibt.
+ *
+ * Validierung, missing-Rows und Log liegen im UnitService.
  */
 final class CreateUnitController
 {
-    private const MAX_KEY_LEN = 191;
-    private const MAX_CONTEXT_LEN = 64;
-    private const MAX_NOTES_LEN = 500;
-
     public function __construct(
-        private readonly UnitRepository $units,
-        private readonly TranslationService $translations,
-        private readonly ActivityService $activity,
+        private readonly UnitService $units,
     ) {}
 
     public static function create(): self
     {
-        return new self(new UnitRepository(), TranslationService::create(), ActivityService::create());
+        return new self(UnitService::create());
     }
 
     public function handle(rex_user $user): never
     {
         JsonResponse::ensureCsrf('sprog_inbox_create', rex_i18n::rawMsg('sprog_inbox_save_csrf'));
 
-        $namespaceInput = trim((string) rex_request('namespace', 'string', ''));
-        $unitKeyInput = trim((string) rex_request('unit_key', 'string', ''));
-        $contextInput = Unit::normalizeContext((string) rex_request('context', 'string', ''));
-        $notesInput = trim((string) rex_request('notes', 'string', ''));
-        $notesValue = '' === $notesInput ? null : $notesInput;
-
-        // Whitelist gegen SourceType::userCreatable() — UI-Modal bietet bewusst
-        // nur wildcard/abbreviation/foreignword an; Article/Slice/YForm/Media/
-        // Custom werden über den Sync angelegt und brauchen eine source_ref,
-        // die das Modal nicht liefern kann. Wer per JS-Konsole oder curl einen
-        // anderen namespace schickt, würde sonst eine orphan Article-Unit
-        // ohne source_ref hinterlassen.
-        if (!in_array($namespaceInput, SourceType::userCreatable(), true)) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_namespace_invalid'));
-        }
-        if ('' === $unitKeyInput) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_key_empty'));
-        }
-        if (strlen($unitKeyInput) > self::MAX_KEY_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_key_too_long'));
-        }
-        if (strlen($contextInput) > self::MAX_CONTEXT_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_inbox_unit_context_too_long'));
-        }
-        if (null !== $notesValue && strlen($notesValue) > self::MAX_NOTES_LEN) {
-            JsonResponse::badRequest(rex_i18n::rawMsg('sprog_create_notes_too_long'));
-        }
-
-        if (null !== $this->units->findByKey($namespaceInput, $unitKeyInput, $contextInput)) {
-            JsonResponse::badRequest(rex_i18n::msg('sprog_create_duplicate', $unitKeyInput, $namespaceInput));
-        }
-
         try {
-            $sourceType = SourceType::tryFrom($namespaceInput);
-            $unit = $this->units->save(new Unit(
-                id: null,
-                namespace: $namespaceInput,
-                unitKey: $unitKeyInput,
-                context: $contextInput,
-                sourceType: $sourceType,
-                sourceRef: null,
-                sourceHash: null,
-                tags: [],
-                notes: $notesValue,
-            ));
-
-            // Pro definierter clang eine missing-Row anlegen — spiegelt das
-            // Verhalten von pages/create.php (siehe TranslationService::ensureRowsForUnit).
-            $this->translations->ensureRowsForUnit($unit);
-
-            $this->activity->logUnitCreated((int) $unit->id, $user->getId(), $unit->namespace, $unit->unitKey);
+            $unit = $this->units->createUnit(
+                (string) rex_request('namespace', 'string', ''),
+                (string) rex_request('unit_key', 'string', ''),
+                (string) rex_request('context', 'string', ''),
+                (string) rex_request('notes', 'string', ''),
+                $user->getId(),
+            );
+        } catch (UnitValidationException $e) {
+            JsonResponse::badRequest($e->errors[0]);
         } catch (Throwable $e) {
             JsonResponse::internalError($e->getMessage());
         }

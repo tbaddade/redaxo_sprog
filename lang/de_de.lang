@@ -61,8 +61,12 @@ sprog_import_format_hint = Spalten: namespace ; context ; key ; notes ; danach j
 sprog_import_button = Importieren
 sprog_import_no_file = Bitte eine CSV-Datei auswählen.
 sprog_import_result = Import abgeschlossen: {0} Einheiten angelegt, {1} Übersetzungen gesetzt, {2} freigegebene übersprungen, {3} leer.
-sprog_import_errors = {0} Zeilen mit Fehler übersprungen.
+sprog_import_errors = {0} Einträge wegen Fehlern übersprungen:
+sprog_import_error_row = Zeile {0}: {1}
 sprog_import_language_ignored = Unbekannte Sprachspalte „{0}“ ignoriert.
+sprog_console_import_description = Importiert eine CSV im Export-Format in die Inbox (fehlende Einheiten werden angelegt, freigegebene Übersetzungen bleiben unangetastet).
+sprog_console_import_file = Pfad zur CSV-Datei
+sprog_console_import_delimiter = Trennzeichen
 
 sprog_export = Exportieren
 sprog_export_heading = Inbox exportieren

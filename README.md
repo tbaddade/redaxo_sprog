@@ -196,6 +196,28 @@ Unter **Datenpflege**:
   andere übernehmen.
 - **Import / Export** — Platzhalter als CSV importieren bzw. exportieren.
 
+### CSV-Import aus Code oder Konsole
+
+Der Import aus **Datenpflege → Importieren** steht auch außerhalb des Backends
+zur Verfügung — gleiches Format (`namespace;context;key;notes;<sprachcode>…`),
+gleiche Prüfungen wie beim Anlegen in der Inbox:
+
+```bash
+php bin/console sprog:import pfad/zur/datei.csv --delimiter=";"
+```
+
+```php
+use Sprog\Service\CsvImportService;
+
+$result = CsvImportService::create()->importFile($path);      // Datei
+$result = CsvImportService::create()->importString($csv, ','); // String
+
+$result->unitsCreated; $result->valuesSet; $result->errors; // …
+```
+
+Fehlende Einheiten werden angelegt, freigegebene Übersetzungen bleiben
+unangetastet, leere Zellen werden übersprungen.
+
 ## Migration von Sprog 1.x
 
 Nach einem Update von 1.x liegen die Bestandsdaten (Platzhalter, Abkürzungen,

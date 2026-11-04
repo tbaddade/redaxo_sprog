@@ -6,6 +6,12 @@ Sprog - Changelog
 
 ### Neu
 
+- **CSV-Import aus Code und Konsole** – die Import-Logik liegt jetzt im
+  `Sprog\Service\CsvImportService` und ist per `bin/console sprog:import <datei>`
+  oder aus anderen AddOns nutzbar (#106). Neu angelegte Einheiten durchlaufen
+  dieselben Prüfungen wie in der Inbox (erlaubter Namespace, Längen, Duplikat),
+  bekommen für alle Sprachen eine „fehlt“-Zeile und einen `unit.created`-Eintrag
+  im Aktivitäts-Log. Fehlerhafte Zeilen werden mit Zeilennummer gemeldet.
 - **Platzhalter löschen** – im Inbox-Bearbeiten-Dialog (Stift) löscht ein
   roter Button eine Einheit samt aller Übersetzungen und ihres Verlaufs (mit
   Bestätigung). Der Button sitzt links abgesetzt von Abbrechen/Speichern, um
