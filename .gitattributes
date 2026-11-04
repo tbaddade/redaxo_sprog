@@ -17,4 +17,11 @@
 /composer.lock       export-ignore
 /tests               export-ignore
 /docs                export-ignore
+/var                 export-ignore
 /CLAUDE.md           export-ignore
+
+# Coder/Reviewer-Harness (Zwei-Session-Workflow). Bereits per .gitignore
+# untracked, daher normalerweise gar nicht im Export — die export-ignore-Zeilen
+# sind eine Absicherung, falls einer der Ordner je versehentlich getrackt wird.
+/.claude             export-ignore
+/redaxo-coder-reviewer-redaxo-addon export-ignore
