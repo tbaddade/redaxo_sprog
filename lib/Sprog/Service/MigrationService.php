@@ -103,13 +103,8 @@ final class MigrationService
             return MigrationState::empty();
         }
 
+        // persist() schreibt immer einen JSON-String — alles andere ist Fremdwert/Korruption.
         if (!is_string($stored)) {
-            // rex_config kann technisch auch Arrays liefern, je nach Set-Pfad —
-            // wir akzeptieren beides, weil wir oben JSON-string speichern.
-            if (is_array($stored)) {
-                return MigrationState::fromArray($stored);
-            }
-
             return MigrationState::empty();
         }
 
