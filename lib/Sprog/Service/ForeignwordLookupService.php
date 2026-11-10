@@ -20,9 +20,7 @@ use const JSON_THROW_ON_ERROR;
 /**
  * Frontend-Lookup für Foreignwords.
  *
- * Read-Pfad wie bei den anderen LookupServices:
- *   1. v2 (sprog_unit/sprog_translation, namespace='foreignword')
- *   2. v1-Fallback (rex_sprog_foreignword, status=1)
+ * Liest ausschließlich v2 (sprog_unit/sprog_translation, namespace='foreignword').
  *
  * Rückgabe-Form: Map "foreignword => lang-code". lang-code kann leer sein
  * — dann markiert das Frontend das Wort nicht (es gibt kein sinnvolles
@@ -78,40 +76,7 @@ final class ForeignwordLookupService implements TranslationCacheInvalidator
             return $this->cacheByClang[$clangId];
         }
 
-        $map = $this->loadFromV2($clangId);
-        // v1-Fallback nur, wenn v2 für diese Sprache GAR KEINE Zeile hat (= noch
-        // nicht migriert). Gibt es v2-Zeilen, aber keine approved, rendert
-        // bewusst nichts — statt alte v1-Daten wieder hervorzuholen.
-        if ([] === $map && !$this->v2HasRowsForClang($clangId)) {
-            $map = $this->loadFromV1($clangId);
-        }
-
-        return $this->cacheByClang[$clangId] = $map;
-    }
-
-    /**
-     * Existiert in v2 überhaupt eine Foreignword-Übersetzung (beliebiger
-     * Status) für diese Sprache? Unterscheidet "noch nicht migriert"
-     * (→ v1-Fallback) von "migriert, aber nichts approved" (→ nichts rendern).
-     */
-    private function v2HasRowsForClang(int $clangId): bool
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT 1
-                 FROM ' . rex::getTable('sprog_unit') . ' u
-                 INNER JOIN ' . rex::getTable('sprog_translation') . ' t
-                    ON t.unit_id = u.id
-                 WHERE u.namespace = :ns
-                   AND t.clang_id = :clang
-                 LIMIT 1',
-                ['ns' => self::NAMESPACE_FOREIGNWORD, 'clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            return false;
-        }
-
-        return [] !== $rows;
+        return $this->cacheByClang[$clangId] = $this->loadFromV2($clangId);
     }
 
     /**
@@ -145,33 +110,6 @@ final class ForeignwordLookupService implements TranslationCacheInvalidator
                 continue;
             }
             $map[$key] = $this->extractLangFromTags((string) ($row['tags'] ?? ''));
-        }
-
-        return $map;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function loadFromV1(int $clangId): array
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT foreignword, lang FROM ' . rex::getTable('sprog_foreignword') . '
-                 WHERE clang_id = :clang AND status = 1',
-                ['clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            return [];
-        }
-
-        $map = [];
-        foreach ($rows as $row) {
-            $key = (string) $row['foreignword'];
-            if ('' === $key) {
-                continue;
-            }
-            $map[$key] = $this->normalizeLang((string) ($row['lang'] ?? ''));
         }
 
         return $map;

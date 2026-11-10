@@ -13,15 +13,10 @@ use Sprog\Enum\Status;
 /**
  * Frontend-Lookup für Abbreviations.
  *
- * Read-Pfad wie beim WildcardLookupService:
- *   1. v2 (sprog_unit/sprog_translation, namespace='abbreviation')
- *   2. v1-Fallback (rex_sprog_abbreviation, status=1) für nicht migrierte Bestände
- *
+ * Liest ausschließlich v2 (sprog_unit/sprog_translation, namespace='abbreviation').
  * Das Frontend rendert nur `approved`-Übersetzungen (Workflow-Gate). v1's
  * per-row status-Flag (0/1) wird bei der Migration auf approved (1) bzw.
  * draft (0) abgebildet — die Aktiv/Inaktiv-Semantik bleibt also erhalten.
- * Der v1-Fallback (status=1) greift nur, wenn v2 für die Sprache noch gar
- * keine Zeile hat (= nicht migriert).
  */
 final class AbbreviationLookupService implements TranslationCacheInvalidator
 {
@@ -68,40 +63,7 @@ final class AbbreviationLookupService implements TranslationCacheInvalidator
             return $this->cacheByClang[$clangId];
         }
 
-        $map = $this->loadFromV2($clangId);
-        // v1-Fallback nur, wenn v2 für diese Sprache GAR KEINE Zeile hat (= noch
-        // nicht migriert). Gibt es v2-Zeilen, aber keine approved, rendert
-        // bewusst nichts — statt alte v1-Daten wieder hervorzuholen.
-        if ([] === $map && !$this->v2HasRowsForClang($clangId)) {
-            $map = $this->loadFromV1($clangId);
-        }
-
-        return $this->cacheByClang[$clangId] = $map;
-    }
-
-    /**
-     * Existiert in v2 überhaupt eine Abbreviation-Übersetzung (beliebiger
-     * Status) für diese Sprache? Unterscheidet "noch nicht migriert"
-     * (→ v1-Fallback) von "migriert, aber nichts approved" (→ nichts rendern).
-     */
-    private function v2HasRowsForClang(int $clangId): bool
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT 1
-                 FROM ' . rex::getTable('sprog_unit') . ' u
-                 INNER JOIN ' . rex::getTable('sprog_translation') . ' t
-                    ON t.unit_id = u.id
-                 WHERE u.namespace = :ns
-                   AND t.clang_id = :clang
-                 LIMIT 1',
-                ['ns' => self::NAMESPACE_ABBREVIATION, 'clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            return false;
-        }
-
-        return [] !== $rows;
+        return $this->cacheByClang[$clangId] = $this->loadFromV2($clangId);
     }
 
     /**
@@ -133,34 +95,6 @@ final class AbbreviationLookupService implements TranslationCacheInvalidator
         foreach ($rows as $row) {
             $key = (string) $row['unit_key'];
             $value = (string) $row['value'];
-            if ('' === $key || '' === trim($value)) {
-                continue;
-            }
-            $map[$key] = $value;
-        }
-
-        return $map;
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function loadFromV1(int $clangId): array
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT abbreviation, text FROM ' . rex::getTable('sprog_abbreviation') . '
-                 WHERE clang_id = :clang AND status = 1',
-                ['clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            return [];
-        }
-
-        $map = [];
-        foreach ($rows as $row) {
-            $key = (string) $row['abbreviation'];
-            $value = (string) $row['text'];
             if ('' === $key || '' === trim($value)) {
                 continue;
             }

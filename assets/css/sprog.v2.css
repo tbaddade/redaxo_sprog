@@ -155,30 +155,18 @@
 .sprog-migration--actions {
     display: flex;
     gap: 0.8rem;
-    justify-content: flex-end;
+}
+
+/* Fehler und der eine Start-Button stehen unter der Kartenliste. */
+.sprog-migration > .sprog-migration--error,
+.sprog-migration > .sprog-migration--actions {
+    margin-top: var(--sprog-spacing);
 }
 
 /* (Buttons nutzen jetzt das geteilte .sprog-btn / .sprog-btn--primary — die
    migration-eigenen --button*-Regeln wurden entfernt. .sprog-btn zieht seine
    Tokens aus dem .sprog-migration-Scope, inkl. der oben ergänzten
    --sprog-hover / --sprog-color-accent-strong.) */
-
-.sprog-migration--reset {
-    display: flex;
-    align-items: center;
-    gap: 1.2rem;
-    margin-top: var(--sprog-spacing);
-    padding-top: var(--sprog-spacing);
-    border-top: 1px solid var(--sprog-color-border);
-    flex-wrap: wrap;
-}
-
-.sprog-migration--hint {
-    color: var(--sprog-color-muted);
-    font-size: var(--sprog-text-xs);
-    line-height: 1.4;
-    max-width: 50ch;
-}
 
 /*
  * sprog-dashboard

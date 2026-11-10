@@ -16,12 +16,9 @@ use function is_array;
 /**
  * Frontend-Lookup für Wildcards.
  *
- * Read-Pfad der v2-Migration:
- *   1. Lookup in den v2-Tabellen (sprog_unit + sprog_translation).
- *   2. Wenn dort nichts liegt (z.B. Migration noch nicht durchgelaufen,
- *      v2-Tabellen existieren noch nicht), Fallback in die v1-Tabelle
- *      (rex_sprog_wildcard). Bestandsinstallationen rendern weiter, auch
- *      ohne dass Schritt-für-Schritt-Migration schon abgeschlossen ist.
+ * Liest ausschließlich v2 (sprog_unit + sprog_translation, nur approved).
+ * Die v1-Tabelle rex_sprog_wildcard wird nicht mehr gelesen — Bestände
+ * übernimmt die einmalige Migration (s. MigrationService).
  *
  * Caching pro Request:
  *   Die Map "wildcard => replacement" pro effektiver clang_id wird in
@@ -164,44 +161,7 @@ final class WildcardLookupService implements TranslationCacheInvalidator
             return $this->cacheByClang[$effective];
         }
 
-        $maps = $this->loadFromV2($effective);
-        if ([] === $maps['exact'] && [] === $maps['ctx'] && !$this->v2HasRowsForClang($effective)) {
-            // v1-Fallback nur, wenn v2 für diese Sprache GAR KEINE Wildcard-Zeile
-            // hat (Tabellen fehlen oder noch nicht migriert). Gibt es v2-Zeilen,
-            // aber keine approved, rendert bewusst nichts — statt alte v1-Daten
-            // wieder hervorzuholen. v1 kennt keinen Context → alles in die exact-Map.
-            $maps = ['exact' => $this->loadFromV1($effective), 'ctx' => []];
-        }
-
-        $this->cacheByClang[$effective] = $maps;
-
-        return $maps;
-    }
-
-    /**
-     * Existiert in v2 überhaupt eine Wildcard-Übersetzung (beliebiger Status)
-     * für diese Sprache? Unterscheidet "noch nicht migriert" (→ v1-Fallback)
-     * von "migriert, aber nichts approved" (→ nichts rendern).
-     */
-    private function v2HasRowsForClang(int $clangId): bool
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT 1
-                 FROM ' . rex::getTable('sprog_unit') . ' u
-                 INNER JOIN ' . rex::getTable('sprog_translation') . ' t
-                    ON t.unit_id = u.id
-                 WHERE u.namespace = :ns
-                   AND t.clang_id = :clang
-                 LIMIT 1',
-                ['ns' => self::NAMESPACE_WILDCARD, 'clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            // v2-Tabellen fehlen → definitiv nicht migriert → Fallback erlauben.
-            return false;
-        }
-
-        return [] !== $rows;
+        return $this->cacheByClang[$effective] = $this->loadFromV2($effective);
     }
 
     /**
@@ -256,33 +216,5 @@ final class WildcardLookupService implements TranslationCacheInvalidator
         }
 
         return ['exact' => $exact, 'ctx' => $ctx];
-    }
-
-    /**
-     * @return array<string, string>
-     */
-    private function loadFromV1(int $clangId): array
-    {
-        try {
-            $rows = rex_sql::factory()->getArray(
-                'SELECT wildcard, `replace` FROM ' . rex::getTable('sprog_wildcard') . '
-                 WHERE clang_id = :clang',
-                ['clang' => $clangId],
-            );
-        } catch (rex_sql_exception) {
-            return [];
-        }
-
-        $map = [];
-        foreach ($rows as $row) {
-            $key = (string) $row['wildcard'];
-            $value = (string) $row['replace'];
-            if ('' === $key || '' === trim($value)) {
-                continue;
-            }
-            $map[$key] = $value;
-        }
-
-        return $map;
     }
 }

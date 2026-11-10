@@ -16,10 +16,13 @@ use rex_addon;
 use rex_clang;
 use rex_config;
 use rex_fragment;
+use rex_i18n;
 use rex_plugin;
 use rex_sql;
 use rex_url;
 use Sprog\Cache\CacheInvalidationBus;
+use Sprog\Enum\SourceType;
+use Sprog\Repository\UnitRepository;
 use Sprog\Service\WildcardLookupService;
 
 use function count;
@@ -92,9 +95,9 @@ class Wildcard
             $clang_id = rex_clang::getCurrentId();
         }
 
-        // Lookup geht über den v2-Service: zuerst sprog_unit/sprog_translation,
-        // bei Leere fällt er auf rex_sprog_wildcard zurück. clang_base-Auflösung
-        // erledigt der Service selbst — daher hier nicht mehr doppelt mappen.
+        // Lookup geht über den v2-Service (sprog_unit/sprog_translation).
+        // clang_base-Auflösung erledigt der Service selbst — daher hier nicht
+        // mehr doppelt mappen.
         $replacement = self::lookupService()->findOne((string) $wildcard, (int) $clang_id);
 
         if (null !== $replacement && '' !== trim((string) $replacement)) {
@@ -127,7 +130,7 @@ class Wildcard
             $clang_id = rex_clang::getCurrentId();
         }
 
-        // Eine Query für alle Wildcards der Sprache; v2 zuerst, sonst v1.
+        // Eine Query für alle Wildcards der Sprache (v2).
         // clang_base wird im Service aufgelöst.
         $wildcards = self::lookupService()->allForClang((int) $clang_id);
         if ([] === $wildcards) {
@@ -221,25 +224,10 @@ class Wildcard
                 }
             }
 
-            // Alle bereits angelegten Platzhalter entfernen
+            // Bereits angelegte Platzhalter (v2) entfernen
             if (count($wildcards)) {
-                $sql = rex_sql::factory();
-                $sql->setDebug(false);
-                $sql->setQuery('
-                    SELECT  wildcard
-                    FROM    ' . rex::getTable('sprog_wildcard') . '
-                    WHERE   clang_id = :clang_id',
-                    ['clang_id' => rex_clang::getStartId()],
-                );
-
-                if ($sql->getRows() >= 1) {
-                    $items = $sql->getArray();
-                    foreach ($items as $item) {
-                        $key = (string) $item['wildcard'];
-                        if (isset($wildcards[$key])) {
-                            unset($wildcards[$key]);
-                        }
-                    }
+                foreach ((new UnitRepository())->findFullKeysByNamespace(SourceType::Wildcard->value) as $key) {
+                    unset($wildcards[$key]);
                 }
             }
             return $wildcards;
@@ -255,27 +243,24 @@ class Wildcard
             return null;
         }
 
-        $content = '';
-        $content .= '
+        $content = '
             <table class="table table-striped table-hover">
                <thead>
                    <tr>
-                       <th class="rex-table-icon"></th>
-                       <th>' . rex_addon::get('sprog')->i18n('wildcard') . '</th>
-                       <th class="rex-table-action" colspan="2">' . rex_addon::get('sprog')->i18n('function') . '</th>
+                       <th>' . rex_i18n::msg('sprog_missing_wildcards_key') . '</th>
+                       <th class="rex-table-action" colspan="2">' . rex_i18n::msg('sprog_missing_wildcards_actions') . '</th>
                    </tr>
                </thead>
-               <tbody>
-           ';
+               <tbody>';
 
         foreach ($missingWildcards as $name => $params) {
+            $createUrl = rex_url::backendPage('sprog/create', ['namespace' => SourceType::Wildcard->value, 'unit_key' => $params['wildcard']]);
             $content .= '
-                       <tr>
-                           <td class="rex-table-icon"><i class="rex-icon rex-icon-refresh"></i></td>
-                           <td data-title="' . rex_addon::get('sprog')->i18n('wildcard') . '">' . $name . '</td>
-                           <td class="rex-table-action"><a href="' . rex_url::currentBackendPage(['func' => 'add', 'wildcard_name' => $params['wildcard']]) . '"><i class="rex-icon rex-icon-edit"></i> ' . rex_addon::get('sprog')->i18n('function_add') . '</a></td>
-                           <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . rex_addon::get('sprog')->i18n('wildcard_go_to_the_article') . '</a></td>
-                       </tr>';
+                   <tr>
+                       <td data-title="' . rex_i18n::msg('sprog_missing_wildcards_key') . '"><code>' . rex_escape($name) . '</code></td>
+                       <td class="rex-table-action"><a href="' . $createUrl . '"><i class="rex-icon rex-icon-add"></i> ' . rex_i18n::msg('sprog_missing_wildcards_create') . '</a></td>
+                       <td class="rex-table-action"><a href="' . $params['url'] . '"><i class="rex-icon rex-icon-article"></i> ' . rex_i18n::msg('sprog_missing_wildcards_article') . '</a></td>
+                   </tr>';
         }
 
         $content .= '
@@ -283,7 +268,7 @@ class Wildcard
            </table>';
 
         $fragment = new rex_fragment();
-        $fragment->setVar('title', rex_addon::get('sprog')->i18n('wildcard_caption_missing', rex_addon::get('structure')->i18n('title_structure')), false);
+        $fragment->setVar('title', rex_i18n::msg('sprog_missing_wildcards_caption'), false);
         $fragment->setVar('content', $content, false);
 
         return (string) $fragment->parse('core/page/section.php');
@@ -297,31 +282,10 @@ class Wildcard
         return nl2br($replace);
     }
 
-    public static function checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary(): void
-    {
-        $sql = rex_sql::factory();
-        $records = $sql->getArray('SELECT * FROM ' . rex::getTable('sprog_wildcard') . ' ORDER BY id, clang_id');
-
-        $items = [];
-        foreach ($records as $record) {
-            $items[(int) $record['id']][(int) $record['clang_id']] = $record;
-        }
-
-        foreach ($items as $id => $clangRecords) {
-            foreach (rex_clang::getAllIds() as $clangId) {
-                if (!isset($clangRecords[$clangId])) {
-                    $firstClangRecord = $clangRecords[array_key_first($clangRecords)];
-
-                    $sqlNewRecord = rex_sql::factory();
-                    $sqlNewRecord->setTable(rex::getTable('sprog_wildcard'));
-                    $sqlNewRecord->setValue('id', $firstClangRecord['id']);
-                    $sqlNewRecord->setValue('clang_id', $clangId);
-                    $sqlNewRecord->setValue('wildcard', $firstClangRecord['wildcard']);
-                    $sqlNewRecord->addGlobalCreateFields();
-                    $sqlNewRecord->addGlobalUpdateFields();
-                    $sqlNewRecord->insert();
-                }
-            }
-        }
-    }
+    /**
+     * @deprecated since 2.0 — ohne Funktion. v2 legt für jede Einheit und jede
+     * Sprache eine Übersetzungszeile an (UnitService, CLANG_ADDED); die
+     * v1-Tabelle wird nach der Migration nicht mehr angefasst.
+     */
+    public static function checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary(): void {}
 }

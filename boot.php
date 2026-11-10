@@ -11,9 +11,9 @@
 
 use Sprog\Boot\AssetRegistry;
 use Sprog\Boot\FilterRegistry;
+use Sprog\Boot\MigrationGate;
 use Sprog\Boot\PageTreeBuilder;
 use Sprog\Extension;
-use Sprog\Service\MigrationService;
 use Sprog\Support\StructureClangGuard;
 use Sprog\View\LangCompare;
 
@@ -78,25 +78,9 @@ if (rex::isBackend() && rex::getUser()) {
         PageTreeBuilder::publish();
     });
 
-    // Nach einem Update von 1.x läuft die v1→v2-Migration manuell über
-    // „Datenpflege → Migration". Solange sie aussteht, Admins beim Aufruf einer
-    // Sprog-Seite dorthin leiten. Nicht-Admins können die admin-only Seite nicht
-    // öffnen → kein Redirect, sie sehen auf Dashboard/Inbox einen Hinweis-Banner.
-    rex_extension::register('PAGES_PREPARED', static function (): void {
-        $page = rex_request('page', 'string', '');
-        // nur die Sprog-Backend-Seiten (schließt den AJAX-Endpoint
-        // „sprog.langcompare" mit Punkt aus); Zielseite selbst ausnehmen (kein Loop).
-        if (('sprog' !== $page && !str_starts_with($page, 'sprog/')) || 'sprog/datenpflege/migration' === $page) {
-            return;
-        }
-        $user = rex::getUser();
-        if (null === $user || !$user->isAdmin()) {
-            return;
-        }
-        if (MigrationService::create()->isMigrationPending()) {
-            rex_response::sendRedirect(rex_url::backendPage('sprog/datenpflege/migration'));
-        }
-    });
+    // Nach einem Update von 1.x: Admins bis zur v1→v2-Migration auf die
+    // Migrationsseite leiten, danach den Navigationspunkt ausblenden.
+    rex_extension::register('PAGES_PREPARED', [MigrationGate::class, 'handle']);
 
     AssetRegistry::publish($addon);
 }

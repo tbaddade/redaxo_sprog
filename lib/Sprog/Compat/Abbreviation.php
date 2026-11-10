@@ -47,8 +47,7 @@ class Abbreviation
      * Wraps every configured abbreviation found inside the <body> with
      * <abbr title="…">…</abbr>.
      *
-     * Datenquelle ab v2 ist der AbbreviationLookupService (v2 zuerst,
-     * v1 als Fallback). Das Replacement-Pattern ist 1:1 das v1-Pattern,
+     * Datenquelle ab v2 ist der AbbreviationLookupService (nur v2). Das Replacement-Pattern ist 1:1 das v1-Pattern,
      * aber alle Abbreviations laufen in einem einzigen Pass über den
      * TokenMatcher — statt N preg_replace_callback-Aufrufen.
      */

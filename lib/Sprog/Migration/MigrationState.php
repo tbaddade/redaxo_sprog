@@ -44,39 +44,6 @@ final readonly class MigrationState
     }
 
     /**
-     * Gibt es noch unfertige (oder gar nicht gestartete) Quellen?
-     */
-    public function isComplete(): bool
-    {
-        if ([] === $this->progressBySource) {
-            return false;
-        }
-
-        foreach ($this->progressBySource as $progress) {
-            if (!$progress->isCompleted()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /**
-     * Erster Migrator, der noch Arbeit hat — praktisch für
-     * "weiterarbeiten am ersten unfertigen".
-     */
-    public function nextPending(): ?MigrationProgress
-    {
-        foreach ($this->progressBySource as $progress) {
-            if (!$progress->isCompleted()) {
-                return $progress;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @return array<string, mixed>
      */
     public function toArray(): array

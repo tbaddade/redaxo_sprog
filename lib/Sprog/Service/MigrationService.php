@@ -7,10 +7,7 @@ namespace Sprog\Service;
 use DateTimeImmutable;
 use InvalidArgumentException;
 use JsonException;
-use rex;
 use rex_config;
-use rex_sql;
-use rex_sql_exception;
 use RuntimeException;
 use Sprog\Migration\AbbreviationMigrator;
 use Sprog\Migration\ForeignwordMigrator;
@@ -27,16 +24,18 @@ use function sprintf;
 use const JSON_THROW_ON_ERROR;
 
 /**
- * Orchestriert die v1 → v2 Datenmigration.
+ * Orchestriert die einmalige v1 → v2 Datenmigration.
  *
- * Ablauf (vom Admin im Backend gesteuert):
- *   1. reset() — registriert alle verfügbaren Migratoren, ermittelt
- *      die Total-Counts und schreibt einen frischen State.
- *   2. runChunk($source, $chunkSize) — verarbeitet bis zu $chunkSize
- *      Einheiten der gewählten Quelle. Wird vom Backend wiederholt
- *      aufgerufen (Pattern wie das bestehende Copy-Feature), bis der
- *      State für diese Quelle completed ist.
- *   3. Wiederholen für jede Quelle, bis state.isComplete() true ergibt.
+ * Ablauf: Nach dem Update von 1.x leitet Sprog Admins auf die Migrationsseite
+ * (Boot\MigrationGate). Dort stößt ein einziger Button runNextChunk() so lange
+ * an, bis alle Quellen (Platzhalter, Abkürzungen, Fremdwörter) übertragen sind.
+ * Die Chunks verhindern Timeouts; bricht ein Lauf ab, setzt der nächste Klick
+ * an derselben Stelle fort.
+ *
+ * Danach wird das Flag `migration_done` gesetzt — endgültig: Es gibt keinen
+ * Reset und keinen zweiten Lauf (ein erneuter Lauf würde in der Inbox
+ * gelöschte Units aus den v1-Tabellen wieder anlegen). Die v1-Tabellen
+ * bleiben als Sicherung liegen, werden aber nicht mehr gelesen.
  *
  * Konkurrente Chunks (z.B. zwei offene Browser-Tabs) werden durch die
  * Idempotenz der Migratoren abgefangen: pro Quell-Einheit prüft der
@@ -47,7 +46,7 @@ final class MigrationService
 {
     private const CONFIG_NAMESPACE = 'sprog';
     private const CONFIG_KEY = 'migration_state';
-    // Gesetzt, sobald nichts (mehr) zu migrieren ist → kurzschließt isMigrationPending().
+    // Gesetzt, sobald nichts (mehr) zu migrieren ist — danach endgültig erledigt.
     private const DONE_KEY = 'migration_done';
     // Alt-Flag der früheren install.php-Auto-Migration (v2.0.0-beta ≤ 5).
     private const LEGACY_DONE_KEY = 'migration_autorun_done';
@@ -117,36 +116,30 @@ final class MigrationService
     }
 
     /**
-     * Steht eine v1 → v2 Migration noch aus? true, wenn v1-Bestandsdaten existieren
-     * und der Migrations-State noch nicht komplett ist. Ergebnis wird per Flag
-     * gecacht (Frischinstallation ohne v1-Daten bzw. abgeschlossene Migration →
-     * dauerhaft „nicht ausstehend", keine weiteren Zählabfragen). Berücksichtigt
-     * auch das Alt-Flag der früheren Auto-Migration.
+     * Ist die Migration endgültig erledigt? Reine Config-Abfrage, ohne DB-Zugriff.
+     */
+    public function isDone(): bool
+    {
+        return (bool) rex_config::get(self::CONFIG_NAMESPACE, self::DONE_KEY, false)
+            || (bool) rex_config::get(self::CONFIG_NAMESPACE, self::LEGACY_DONE_KEY, false);
+    }
+
+    /**
+     * Steht die v1 → v2 Migration noch aus? Gibt es nichts (mehr) zu migrieren
+     * (Neuinstallation ohne v1-Tabellen, leere v1-Tabellen, alle Quellen
+     * durch), wird das Flag gesetzt — ab dann kostet die Prüfung nur noch
+     * einen Config-Zugriff.
      *
      * @throws JsonException
      */
     public function isMigrationPending(): bool
     {
-        if (
-            (bool) rex_config::get(self::CONFIG_NAMESPACE, self::DONE_KEY, false)
-            || (bool) rex_config::get(self::CONFIG_NAMESPACE, self::LEGACY_DONE_KEY, false)
-        ) {
+        if ($this->isDone()) {
             return false;
         }
 
-        $hasV1Data = false;
-        foreach ($this->migrators as $migrator) {
-            if ($migrator->isAvailable() && $migrator->totalCount() > 0) {
-                $hasV1Data = true;
-                break;
-            }
-        }
-
-        // Nicht mehr ausstehend, wenn nichts zu migrieren ist, der State komplett
-        // ist ODER bereits v2-Units vorliegen (z. B. frühere Auto-Migration ohne
-        // vermerkten State, oder bereits manuell migriert) — dann nicht erneut nerven.
-        if (!$hasV1Data || $this->state()->isComplete() || $this->hasV2Units()) {
-            rex_config::set(self::CONFIG_NAMESPACE, self::DONE_KEY, true);
+        if (null === $this->nextSource()) {
+            $this->markDone();
 
             return false;
         }
@@ -155,84 +148,80 @@ final class MigrationService
     }
 
     /**
-     * Liegen bereits v2-Units vor? Dient als „schon migriert / in Benutzung"-Signal,
-     * damit eine bereits befüllte v2-Installation nicht fälschlich als „Migration
-     * ausstehend" gilt.
+     * Verarbeitet einen Chunk der nächsten unfertigen Quelle. Ist danach keine
+     * Quelle mehr offen, wird die Migration als erledigt markiert (isDone()).
+     *
+     * @throws RuntimeException wenn die Migration bereits erledigt ist
+     * @throws JsonException
+     * @return MigrationProgress|null Stand der bearbeiteten Quelle; null, wenn es nichts zu tun gab
      */
-    private function hasV2Units(): bool
+    public function runNextChunk(int $chunkSize, ?int $userId = null): ?MigrationProgress
     {
-        try {
-            return [] !== rex_sql::factory()->getArray(
-                'SELECT 1 FROM ' . rex::getTable('sprog_unit') . ' LIMIT 1',
-            );
-        } catch (rex_sql_exception) {
-            return false;
+        if ($this->isDone()) {
+            throw new RuntimeException('Die Migration ist bereits abgeschlossen.');
         }
+
+        $source = $this->nextSource();
+        $progress = null === $source ? null : $this->runChunk($source, $chunkSize, $userId);
+
+        if (null === $this->nextSource()) {
+            $this->markDone();
+        }
+
+        return $progress;
     }
 
     /**
-     * Initialisiert den State neu: alle verfügbaren Migratoren mit ihrem
-     * totalCount, processedRows = 0, kein Fehler, kein Start-Zeitstempel.
-     *
-     * Achtung: das setzt NUR den Fortschritts-Snapshot zurück. Die
-     * bereits in v2 angelegten Units und Translations bleiben — die
-     * Migratoren überspringen sie wegen Idempotenz beim nächsten Lauf.
+     * Erste verfügbare Quelle, die noch nicht abgeschlossen ist. Quellen ohne
+     * bisherigen Fortschritt zählen nur, wenn ihre v1-Tabelle Daten enthält.
      *
      * @throws JsonException
      */
-    public function reset(?int $userId = null): MigrationState
+    private function nextSource(): ?string
     {
-        // Erneut migrieren wollen → „erledigt"-Flag zurücknehmen, damit
-        // isMigrationPending() wieder greift.
-        rex_config::remove(self::CONFIG_NAMESPACE, self::DONE_KEY);
-
-        $progressBySource = [];
-
-        foreach ($this->migrators as $key => $migrator) {
+        $state = $this->state();
+        foreach ($this->migrators as $name => $migrator) {
             if (!$migrator->isAvailable()) {
                 continue;
             }
-            $progressBySource[$key] = MigrationProgress::pending($key, $migrator->totalCount());
+            $progress = $state->for($name);
+            if (null === $progress) {
+                if ($migrator->totalCount() > 0) {
+                    return $name;
+                }
+                continue;
+            }
+            if (!$progress->isCompleted()) {
+                return $name;
+            }
         }
 
-        $state = new MigrationState($progressBySource);
-        $this->persist($state);
+        return null;
+    }
 
-        $this->activity->log('migration.reset', null, null, $userId, [
-            'sources' => array_keys($progressBySource),
-        ]);
-
-        return $state;
+    private function markDone(): void
+    {
+        rex_config::set(self::CONFIG_NAMESPACE, self::DONE_KEY, true);
     }
 
     /**
-     * Verarbeitet einen Chunk einer Quelle. Aktualisiert den State und
-     * gibt den neuen Stand für diese Quelle zurück.
+     * Verarbeitet einen Chunk einer Quelle (aus nextSource(), also verfügbar
+     * und unfertig). Aktualisiert den State und gibt den neuen Stand zurück.
      *
      * @throws JsonException
      */
-    public function runChunk(string $source, int $chunkSize, ?int $userId = null): MigrationProgress
+    private function runChunk(string $source, int $chunkSize, ?int $userId = null): MigrationProgress
     {
         if ($chunkSize < self::MIN_CHUNK_SIZE || $chunkSize > self::MAX_CHUNK_SIZE) {
             throw new InvalidArgumentException(sprintf('chunkSize muss im Bereich [%d, %d] liegen, ist %d.', self::MIN_CHUNK_SIZE, self::MAX_CHUNK_SIZE, $chunkSize));
         }
 
-        if (!isset($this->migrators[$source])) {
-            throw new InvalidArgumentException('Unbekannter Migration-Source: ' . $source);
-        }
-
         $migrator = $this->migrators[$source];
-        if (!$migrator->isAvailable()) {
-            throw new RuntimeException('Migrator "' . $source . '" ist in dieser Installation nicht verfügbar.');
-        }
-
         $state = $this->state();
         $progress = $state->for($source);
 
         if (null === $progress) {
-            // Erstmaliger Aufruf für diese Quelle ohne reset() davor — wir
-            // füllen den fehlenden Eintrag silent. Das schützt vor
-            // "vergessenem reset()", korrekter Total-Count wird sowieso ermittelt.
+            // Erster Chunk dieser Quelle: Total-Count jetzt ermitteln.
             $progress = MigrationProgress::pending($source, $migrator->totalCount());
         }
 

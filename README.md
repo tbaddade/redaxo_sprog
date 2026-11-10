@@ -222,11 +222,16 @@ Werte bleiben unangetastet, leere Zellen werden übersprungen.
 
 Nach einem Update von 1.x liegen die Bestandsdaten (Platzhalter, Abkürzungen,
 Fremdwörter) zunächst noch im v1-Modell vor. Die Übernahme in das neue v2-Modell
-läuft **manuell** über **Datenpflege → Migration** — chunked, idempotent und
-beliebig wiederholbar. Solange die Migration aussteht, wird ein Administrator beim
-Aufruf einer Sprog-Seite dorthin geleitet (Nicht-Admins sehen einen Hinweis). Bis
-zur Migration rendert das Frontend die v1-Inhalte über einen Fallback unverändert
-weiter, sodass nichts „verschwindet".
+läuft **einmalig** über **Datenpflege → Migration**: Ein Button überträgt alle
+Daten in Häppchen (kein Timeout); bricht der Lauf ab, setzt der nächste Klick
+dort fort. Solange die Migration aussteht, wird ein Administrator von jeder
+Backend-Seite dorthin geleitet (ausgenommen die AddOn-Verwaltung); Nicht-Admins
+sehen in Sprog einen Hinweis.
+
+Das Frontend liest nur noch das v2-Modell — bis zur Migration fehlen dort also
+die Bestandstexte. Nach Abschluss verschwindet der Menüpunkt, eine erneute
+Migration ist nicht vorgesehen. Die v1-Tabellen bleiben als Sicherung erhalten
+(werden aber nicht mehr gelesen) und erst beim Deinstallieren entfernt.
 
 
 ## Bugtracker

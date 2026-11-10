@@ -1,90 +1,73 @@
 /*
- * sprog-migration — Frontend für die chunked Migration v1 → v2.
+ * sprog-migration — Frontend für die einmalige v1 → v2 Migration.
  *
- * Modernes Vanilla-JS, kein jQuery. Pro Migration-Item wird der Start-Button
- * gebunden; ein Klick triggert einen fetch()-Loop, der so lange Chunks anfordert,
- * bis der Server completed=true liefert oder ein Fehler kommt.
+ * Ein Button startet einen fetch()-Loop: Jeder Aufruf verarbeitet einen Chunk
+ * der nächsten unfertigen Quelle (Auswahl trifft der Server). Der Loop läuft,
+ * bis der Server done=true liefert — dann lädt die Seite neu und zeigt
+ * „abgeschlossen". Bei einem Fehler stoppt der Loop, der Button setzt fort.
  *
- * Sicherheit:
- *   - CSRF-Token wird aus dem PHP-bootstrap-Block (window.sprogMigration.csrf)
- *     bei jedem POST mitgeschickt.
- *   - Bei HTTP 4xx/5xx oder fehlendem success-Flag wird der Loop sofort gestoppt
- *     und der Fehler angezeigt — keine endlose Schleife.
- *   - Reset-Form bekommt einen confirm()-Guard via data-confirm-Attribut.
+ * Sicherheit: CSRF-Token aus window.sprogMigration.csrf bei jedem POST;
+ * HTTP 4xx/5xx oder fehlendes success-Flag beenden den Loop sofort.
  *
- * Lokalisierung:
- *   - Alle User-Strings stammen aus window.sprogMigration.strings, dort vom
- *     PHP-Bootstrap aus rex_i18n::rawMsg() befüllt. Kein String hardcoded.
+ * Lokalisierung: alle User-Strings aus window.sprogMigration.strings
+ * (PHP: rex_i18n::rawMsg). Kein String hardcoded.
  */
 (() => {
     'use strict';
 
     const cfg = window.sprogMigration;
-    if (!cfg || !cfg.strings) {
+    const root = document.querySelector('[data-sprog-migration]');
+    if (!cfg || !cfg.strings || !root) {
         return;
     }
 
     const strings = cfg.strings;
-
-    const root = document.querySelector('[data-sprog-migration]');
-    if (!root) {
+    const runBtn = root.querySelector('[data-role="run"]');
+    const errEl = root.querySelector('[data-role="error"]');
+    if (!runBtn) {
         return;
     }
 
-    root.querySelectorAll('[data-source]').forEach(initItem);
+    runBtn.addEventListener('click', async () => {
+        runBtn.disabled = true;
+        runBtn.textContent = strings.running;
+        if (errEl) {
+            errEl.hidden = true;
+        }
 
-    document.querySelectorAll('[data-confirm]').forEach((el) => {
-        el.addEventListener('submit', (event) => {
-            const message = el.getAttribute('data-confirm');
-            if (message && !window.confirm(message)) {
-                event.preventDefault();
-            }
-        });
-    });
-
-    function initItem(li) {
-        const source = li.dataset.source;
-        const runBtn = li.querySelector('[data-role="run"]');
-        if (!runBtn) {
+        try {
+            await runUntilDone();
+        } catch (err) {
+            showError(err && err.message ? err.message : String(err));
+            root.querySelectorAll('.sprog-migration--item.is-running').forEach((li) => {
+                setState(li, 'error');
+                const status = li.querySelector('[data-role="status"]');
+                if (status) {
+                    status.textContent = strings.badgeError;
+                }
+            });
+            runBtn.textContent = strings.resume;
+            runBtn.disabled = false;
             return;
         }
 
-        runBtn.addEventListener('click', async () => {
-            setState(li, 'running');
-            runBtn.disabled = true;
-            runBtn.textContent = strings.running;
+        window.location.reload();
+    });
 
-            try {
-                await runUntilDone(source, li);
-                runBtn.textContent = strings.done;
-            } catch (err) {
-                showError(li, err && err.message ? err.message : String(err));
-                setState(li, 'error');
-                runBtn.textContent = strings.retry;
-                runBtn.disabled = false;
-                return;
-            }
-        });
-    }
-
-    async function runUntilDone(source, li) {
-        // Schutz gegen Endlosschleife bei fehlerhaft pendelndem Backend:
-        // pro Item maximal ein paar tausend Chunks, dann hart abbrechen.
+    async function runUntilDone() {
+        // Schutz gegen Endlosschleife bei fehlerhaft pendelndem Backend.
         const maxChunks = 10000;
-        let chunks = 0;
 
-        while (chunks < maxChunks) {
-            chunks++;
-            const result = await runChunk(source);
+        for (let chunks = 0; chunks < maxChunks; chunks++) {
+            const result = await runChunk();
 
             if (!result || result.success !== true) {
                 throw new Error(result && result.error ? result.error : strings.serverError);
             }
 
-            applyProgress(li, result.progress);
+            applyProgress(result.progress);
 
-            if (result.completed === true) {
-                setState(li, 'completed');
+            if (result.done === true) {
                 return;
             }
         }
@@ -92,11 +75,9 @@
         throw new Error(strings.chunkLimit);
     }
 
-    async function runChunk(source) {
+    async function runChunk() {
         const body = new FormData();
         body.append('func', 'chunk');
-        body.append('source', source);
-        body.append('chunk_size', String(cfg.defaultChunkSize));
         body.append(cfg.csrf.name, cfg.csrf.value);
 
         const response = await fetch(cfg.endpoint, {
@@ -122,8 +103,13 @@
         return payload;
     }
 
-    function applyProgress(li, progress) {
-        if (!progress) {
+    function applyProgress(progress) {
+        if (!progress || !progress.source) {
+            return;
+        }
+
+        const li = root.querySelector('[data-source="' + CSS.escape(progress.source) + '"]');
+        if (!li) {
             return;
         }
 
@@ -139,47 +125,23 @@
             bar.value = processed;
         }
         if (counter) {
-            counter.innerHTML = '';
-            counter.append(
+            counter.replaceChildren(
                 document.createTextNode(String(processed) + ' '),
                 Object.assign(document.createElement('span'), { ariaHidden: 'true', textContent: '/' }),
                 document.createTextNode(' ' + String(total)),
             );
         }
 
-        li.dataset.total = String(total);
-        li.dataset.processed = String(processed);
-        li.dataset.completed = progress.completed_at ?? '';
-        li.dataset.error = progress.last_error ?? '';
-
+        const completed = Boolean(progress.completed_at);
+        setState(li, completed ? 'completed' : 'running');
         if (status) {
-            if (progress.completed_at) {
-                status.textContent = strings.badgeDone;
-            } else if (progress.last_error) {
-                status.textContent = strings.badgeError;
-            } else {
-                status.textContent = strings.badgeRunning;
-            }
-        }
-
-        const errEl = li.querySelector('[data-role="error"]');
-        if (errEl) {
-            if (progress.last_error) {
-                errEl.textContent = progress.last_error;
-                errEl.hidden = false;
-            } else {
-                errEl.hidden = true;
-            }
+            status.textContent = completed ? strings.badgeDone : strings.badgeRunning;
         }
     }
 
-    function showError(li, message) {
-        let errEl = li.querySelector('[data-role="error"]');
+    function showError(message) {
         if (!errEl) {
-            errEl = document.createElement('p');
-            errEl.className = 'sprog-migration--error';
-            errEl.dataset.role = 'error';
-            li.append(errEl);
+            return;
         }
         errEl.textContent = message;
         errEl.hidden = false;
@@ -196,10 +158,8 @@
     }
 
     /**
-     * Mini-Helper für rex_i18n-Stil-Platzhalter ({0}, {1}, …).
-     * String-Werte sind in PHP rex_escape-frei (rawMsg), die Werte hier sollten
-     * ebenfalls reine Strings sein — der Aufrufer setzt sie via textContent,
-     * also keine HTML-Interpretation.
+     * Mini-Helper für rex_i18n-Stil-Platzhalter ({0}, {1}, …). Der Aufrufer
+     * setzt das Ergebnis via textContent, also keine HTML-Interpretation.
      */
     function formatString(template, ...args) {
         if (typeof template !== 'string') {

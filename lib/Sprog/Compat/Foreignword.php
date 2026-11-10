@@ -24,12 +24,9 @@ use function sprintf;
  * <span lang="xx">…</span>-Wrap, damit Screenreader die Wörter
  * mit korrekter Sprachausgabe lesen.
  *
- * Auf v2 neu eingeführt — auf master gab es bisher weder die Klasse
- * noch eine Backend-Page noch eine v1-Tabelle. Die zugrundeliegende
- * Tabelle rex_sprog_foreignword wird von install.php seit der
- * v2.0-dev-Tranche idempotent angelegt; v1-Daten aus xong/master
- * werden bei einem Cross-Branch-Merge automatisch unter
- * 'foreignword'-Namespace migrierbar.
+ * Datenquelle ist der ForeignwordLookupService (nur v2, namespace
+ * 'foreignword'). Eine v1-Tabelle rex_sprog_foreignword liest nur noch die
+ * einmalige Migration.
  */
 class Foreignword
 {

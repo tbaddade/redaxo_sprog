@@ -10,11 +10,10 @@ use rex_sql_table;
 /**
  * v1-Bestandstabellen (Wildcards / Abbreviations / Foreignwords).
  *
- * v2 legt diese Tabellen NICHT mehr an — existieren sie (Update von 1.x), werden
- * sie vom Frontend-Fallback gelesen und von der Migration nach v2 überführt;
- * fehlen sie, gehen Migratoren (SHOW TABLES-Guard) und Lookup-Services (Fang von
- * rex_sql_exception) sauber leer aus. Daher bleibt hier nur noch das Aufräumen
- * beim Uninstall.
+ * v2 legt diese Tabellen NICHT mehr an — existieren sie (Update von 1.x), liest
+ * nur noch die einmalige Migration sie (Migratoren mit SHOW TABLES-Guard); danach
+ * bleiben sie als Sicherung liegen. Das Frontend liest ausschließlich v2. Daher
+ * bleibt hier nur noch das Aufräumen beim Uninstall.
  */
 final class V1Schema
 {

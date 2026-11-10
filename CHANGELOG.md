@@ -30,10 +30,16 @@ Sprog - Changelog
 - **Glossar** – verbindliche Begriffs-Vorgaben für die maschinelle Übersetzung.
 - Datenmigration v1 → v2 (Platzhalter, Abkürzungen, Fremdwörter) in das neue
   `sprog_unit`/`sprog_translation`-Modell über „Datenpflege → Migration" —
-  chunked, idempotent, beliebig wiederholbar. Nach einem Update leitet Sprog
-  Admins dorthin, solange eine Migration aussteht (Nicht-Admins sehen einen
-  Hinweis); bis zur Migration rendert der Frontend-Fallback weiter die
-  v1-Inhalte.
+  einmalig, mit einem Button, in Häppchen und fortsetzbar. Nach einem Update
+  leitet Sprog Admins von jeder Backend-Seite dorthin, solange die Migration
+  aussteht (Nicht-Admins sehen einen Hinweis). Danach ist sie abgeschlossen:
+  kein Zurücksetzen, kein zweiter Lauf, der Menüpunkt verschwindet. Das
+  Frontend liest nur noch v2; die v1-Tabellen bleiben als Sicherung liegen
+  (#107: kein Fallback mehr auf eine womöglich fehlende v1-Tabelle, der
+  `rex_sql`-Abfragen im selben Request beschädigte).
+  `Sprog\Wildcard::getMissingWildcards()` prüft gegen v2 (Anlege-Link führt
+  auf „Neue Einheit“); `checkAllLanguagesHaveAllWildcardsAndRepairIfNecessary()`
+  ist veraltet und ohne Funktion — v2 legt die Zeilen je Sprache selbst an.
 - Artikel-Sprachvergleich (experimentell) in der Content-Maske: Seite-an-Seite-
   Vergleich des Artikelinhalts zweier Sprachen inkl. Inline-Bearbeitung,
   Metadaten-Vergleich und MT-Übersetzung je Feld. Über Sprog → Konfiguration →

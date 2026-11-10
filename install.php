@@ -19,15 +19,14 @@ use Sprog\Schema\V2Schema;
  * (Datei bereits via Autoloader geladen).
  *
  * Die v1-Bestandstabellen (sprog_wildcard/_abbreviation/_foreignword) werden hier
- * NICHT angelegt: Existieren sie (Update von 1.x), liest der Frontend-Fallback sie
- * weiter und die Migration überführt sie nach v2; fehlen sie (Neuinstallation),
- * gehen Migratoren (SHOW TABLES-Guard) und Lookup-Services (Fang von
- * rex_sql_exception) sauber leer aus.
+ * NICHT angelegt: Existieren sie (Update von 1.x), überführt die Migration sie
+ * nach v2; fehlen sie (Neuinstallation), gilt die Migration als erledigt. Das
+ * Frontend liest ausschließlich v2.
  *
- * Die v1 → v2 Datenmigration läuft NICHT hier, sondern manuell über
+ * Die v1 → v2 Datenmigration läuft NICHT hier, sondern einmalig über
  * „Datenpflege → Migration". Nach einem Update leitet Sprog Admins dorthin, solange
- * eine Migration aussteht (s. boot.php) — so gibt es keine stillen Timeouts beim
- * Install-Klick, und der Fortschritt bleibt sichtbar/retrybar.
+ * sie aussteht (Sprog\Boot\MigrationGate) — so gibt es keine stillen Timeouts beim
+ * Install-Klick, und der Fortschritt bleibt sichtbar und fortsetzbar.
  */
 require_once __DIR__ . '/lib/Sprog/Schema/V2Schema.php';
 

@@ -110,6 +110,27 @@ final class UnitRepository
     }
 
     /**
+     * Alle Schlüssel eines Namespaces so, wie sie im Template stehen:
+     * `unit_key` bzw. `context.unit_key`.
+     *
+     * @throws rex_sql_exception
+     * @return list<string>
+     */
+    public function findFullKeysByNamespace(string $namespace): array
+    {
+        $rows = rex_sql::factory()->getArray(
+            'SELECT context, unit_key FROM ' . $this->tableName() . '
+             WHERE namespace = :namespace',
+            ['namespace' => $namespace],
+        );
+
+        return array_values(array_map(
+            static fn (array $r): string => ('' === (string) $r['context'] ? '' : $r['context'] . '.') . $r['unit_key'],
+            $rows,
+        ));
+    }
+
+    /**
      * Nachschlagen über das natürliche Schlüsseltripel (namespace, context, unit_key).
      * Spiegelt den UNIQUE-Index der sprog_unit-Tabelle (V2Schema).
      *
